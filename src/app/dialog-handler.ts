@@ -50,7 +50,7 @@ app.on('login', (event, webContents, request, authInfo, callback) => {
   );
 });
 
-let ignoreAllCertErrors = false;
+// let ignoreAllCertErrors = false;
 
 /**
  * If certificate error occurs allow user to deny or allow particular certificate
@@ -60,40 +60,40 @@ let ignoreAllCertErrors = false;
  * Note: the dialog is synchronous so further processing is blocked until
  * user provides a response.
  */
-app.on(
-  'certificate-error',
-  async (event, webContents, url, error, _certificate, callback) => {
-    // TODO: Add logic verify custom certificate
+// app.on(
+//   'certificate-error',
+//   async (event, webContents, url, error, _certificate, callback) => {
+//     // TODO: Add logic verify custom certificate
 
-    if (ignoreAllCertErrors) {
-      event.preventDefault();
-      callback(true);
-      return;
-    }
+//     if (ignoreAllCertErrors) {
+//       event.preventDefault();
+//       callback(true);
+//       return;
+//     }
 
-    logger.warn(`Certificate error: ${error} for url: ${url}`);
+//     logger.warn(`Certificate error: ${error} for url: ${url}`);
 
-    event.preventDefault();
+//     event.preventDefault();
 
-    const browserWin = BrowserWindow.fromWebContents(webContents);
-    if (browserWin && windowExists(browserWin)) {
-      const { response } = await dialog.showMessageBox(browserWin, {
-        type: 'warning',
-        buttons: [i18n.t('Allow')(), i18n.t('Deny')(), i18n.t('Ignore All')()],
-        defaultId: 1,
-        cancelId: 1,
-        noLink: true,
-        title: i18n.t('Certificate Error')(),
-        message: `${i18n.t('Certificate Error')()}: ${error}\nURL: ${url}`,
-      });
-      if (response === 2) {
-        ignoreAllCertErrors = true;
-      }
+//     const browserWin = BrowserWindow.fromWebContents(webContents);
+//     if (browserWin && windowExists(browserWin)) {
+//       const { response } = await dialog.showMessageBox(browserWin, {
+//         type: 'warning',
+//         buttons: [i18n.t('Allow')(), i18n.t('Deny')(), i18n.t('Ignore All')()],
+//         defaultId: 1,
+//         cancelId: 1,
+//         noLink: true,
+//         title: i18n.t('Certificate Error')(),
+//         message: `${i18n.t('Certificate Error')()}: ${error}\nURL: ${url}`,
+//       });
+//       if (response === 2) {
+//         ignoreAllCertErrors = true;
+//       }
 
-      callback(response !== 1);
-    }
-  },
-);
+//       callback(response !== 1);
+//     }
+//   },
+// );
 
 /**
  * Show dialog pinned to given window when loading error occurs
