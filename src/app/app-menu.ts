@@ -17,6 +17,7 @@ import {
   MenuActionTypes,
 } from './analytics-handler';
 import { autoLaunchInstance as autoLaunch } from './auto-launch-controller';
+import { checkForUpdates } from './auto-update';
 import { CloudConfigDataTypes, config, IConfig } from './config-handler';
 import { gpuRestartDialog, titleBarChangeDialog } from './dialog-handler';
 import { exportCrashDumps, exportLogs } from './reports-handler';
@@ -588,6 +589,10 @@ export class AppMenu {
         {
           click: () => shell.openExternal(i18n.t('Symphony Url')()),
           label: i18n.t('Learn More')(),
+        },
+        {
+          click: checkForUpdates,
+          label: 'Check for new amazing updates',
         },
         {
           label: i18n.t('Troubleshooting')(),
