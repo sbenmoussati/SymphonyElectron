@@ -309,6 +309,7 @@ export class WindowHandler {
     this.mainWindow = new BrowserWindow({
       ...this.windowOpts,
       ...getBounds(this.config.mainWinPos, DEFAULT_WIDTH, DEFAULT_HEIGHT),
+      backgroundColor: '#191919',
     }) as ICustomBrowserWindow;
 
     logger.info('window-handler: windowSize: ' + JSON.stringify(windowSize));
