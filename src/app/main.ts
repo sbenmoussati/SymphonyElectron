@@ -1,4 +1,4 @@
-import { app, systemPreferences } from 'electron';
+import { app, dialog, systemPreferences } from 'electron';
 import * as electronDownloader from 'electron-dl';
 import * as shellPath from 'shell-path';
 
@@ -24,6 +24,47 @@ if (isMac) {
     'false',
   );
 }
+
+import log = require('electron-log');
+import { autoUpdater } from 'electron-updater';
+log.transports.file.level = 'debug';
+autoUpdater.logger = log;
+
+autoUpdater.on('checking-for-update', () => {
+  logger.info('auto-update: Checking for update...');
+});
+
+autoUpdater.on('update-available', (info) => {
+  logger.info('auto-update: Update available.', info);
+});
+
+autoUpdater.on('update-not-available', (info) => {
+  logger.info('auto-update: Update not available.', info);
+});
+
+autoUpdater.on('error', (err) => {
+  logger.info('Error in auto-updater. ' + err);
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+  let logMessage = 'auto-update: Download speed: ' + progressObj.bytesPerSecond;
+  logMessage = logMessage + ' - Downloaded ' + progressObj.percent + '%';
+  logMessage =
+    logMessage + ' (' + progressObj.transferred + '/' + progressObj.total + ')';
+  logger.info(logMessage);
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  logger.info('auto-update: Update downloaded', info);
+  dialog
+    .showMessageBox({
+      title: 'Install Updates',
+      message: 'Updates downloaded, application will be quit for update...',
+    })
+    .then(() => {
+      setImmediate(() => autoUpdater.quitAndInstall());
+    });
+});
 
 logger.info(`App started with the args ${JSON.stringify(process.argv)}`);
 
@@ -87,6 +128,8 @@ const startApplication = async () => {
     }
   }
   await app.whenReady();
+  logger.info('auto-update: init');
+  autoUpdater.checkForUpdatesAndNotify();
   if (oneStart) {
     return;
   }
