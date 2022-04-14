@@ -1452,12 +1452,10 @@ export class WindowHandler {
       if (source == null) {
         this.execCmd(this.screenShareIndicatorFrameUtil, []);
       }
-
-      window.send('start-share' + id, source);
       if (this.screenPickerWindow && windowExists(this.screenPickerWindow)) {
-        // SDA-3635 hack
-        setTimeout(() => this.screenPickerWindow?.close(), 500);
+        this.screenPickerWindow?.hide();
       }
+      window.send('start-share' + id, source);
     });
     this.screenPickerWindow.once('closed', () => {
       ipcMain.removeListener('screen-source-select', screenSourceSelect);
@@ -1729,6 +1727,11 @@ export class WindowHandler {
       topPositionOfIndicatorScreen,
     );
     this.screenSharingIndicatorWindow.setVisibleOnAllWorkspaces(true);
+    setTimeout(() => {
+      if (this.screenPickerWindow && windowExists(this.screenPickerWindow)) {
+        this.screenPickerWindow.close();
+      }
+    }, 300);
     this.screenSharingIndicatorWindow.setSkipTaskbar(true);
     this.screenSharingIndicatorWindow.setAlwaysOnTop(true, 'screen-saver');
     this.screenSharingIndicatorWindow.webContents.once(
