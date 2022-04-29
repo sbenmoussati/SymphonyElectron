@@ -3,7 +3,7 @@ import {
   showNetworkConnectivityError,
 } from '../src/app/dialog-handler';
 import { windowHandler } from '../src/app/window-handler';
-import { BrowserWindow, dialog, ipcRenderer } from './__mocks__/electron';
+import { dialog, ipcRenderer } from './__mocks__/electron';
 
 jest.mock('../src/app/window-handler', () => {
   return {
