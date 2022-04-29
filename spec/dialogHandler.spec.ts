@@ -54,69 +54,69 @@ describe('dialog handler', () => {
       );
     });
 
-    describe('certificate-error', () => {
-      let urlMocked;
-      const errorMocked = 'check for server certificate revocation';
-      const certificate = null;
-      beforeEach(() => {
-        jest.clearAllMocks().resetModules();
-      });
-      it('should return true when buttonId is 0', async (done) => {
-        urlMocked = 'https://symphony.corporate.com/';
-        BrowserWindow.fromWebContents = jest.fn(() => {
-          return { isDestroyed: jest.fn(() => false) };
-        });
-        dialog.showMessageBox = jest.fn(() => {
-          return { response: 0 };
-        });
-        await ipcRenderer.send(
-          'certificate-error',
-          webContentsMocked,
-          urlMocked,
-          errorMocked,
-          certificate,
-          callbackMocked,
-        );
-        expect(callbackMocked).toBeCalledWith(true);
-        await ipcRenderer.send(
-          'certificate-error',
-          webContentsMocked,
-          urlMocked,
-          errorMocked,
-          certificate,
-          callbackMocked,
-        );
-        done(expect(callbackMocked).toBeCalledWith(true));
-      });
+    // describe('certificate-error', () => {
+    //   let urlMocked;
+    //   const errorMocked = 'check for server certificate revocation';
+    //   const certificate = null;
+    //   beforeEach(() => {
+    //     jest.clearAllMocks().resetModules();
+    //   });
+    //   it('should return true when buttonId is 0', async (done) => {
+    //     urlMocked = 'https://symphony.corporate.com/';
+    //     BrowserWindow.fromWebContents = jest.fn(() => {
+    //       return { isDestroyed: jest.fn(() => false) };
+    //     });
+    //     dialog.showMessageBox = jest.fn(() => {
+    //       return { response: 0 };
+    //     });
+    //     await ipcRenderer.send(
+    //       'certificate-error',
+    //       webContentsMocked,
+    //       urlMocked,
+    //       errorMocked,
+    //       certificate,
+    //       callbackMocked,
+    //     );
+    //     expect(callbackMocked).toBeCalledWith(true);
+    //     await ipcRenderer.send(
+    //       'certificate-error',
+    //       webContentsMocked,
+    //       urlMocked,
+    //       errorMocked,
+    //       certificate,
+    //       callbackMocked,
+    //     );
+    //     done(expect(callbackMocked).toBeCalledWith(true));
+    //   });
 
-      it('should return false when buttonId is 1', async (done) => {
-        urlMocked = 'https://symphony2.corporate.com/';
-        BrowserWindow.fromWebContents = jest.fn(() => {
-          return { isDestroyed: jest.fn(() => false) };
-        });
-        dialog.showMessageBox = jest.fn(() => {
-          return { response: 1 };
-        });
-        await ipcRenderer.send(
-          'certificate-error',
-          webContentsMocked,
-          urlMocked,
-          errorMocked,
-          certificate,
-          callbackMocked,
-        );
-        expect(callbackMocked).toBeCalledWith(false);
-        await ipcRenderer.send(
-          'certificate-error',
-          webContentsMocked,
-          urlMocked,
-          errorMocked,
-          certificate,
-          callbackMocked,
-        );
-        done(expect(callbackMocked).toBeCalledWith(false));
-      });
-    });
+    //   it('should return false when buttonId is 1', async (done) => {
+    //     urlMocked = 'https://symphony2.corporate.com/';
+    //     BrowserWindow.fromWebContents = jest.fn(() => {
+    //       return { isDestroyed: jest.fn(() => false) };
+    //     });
+    //     dialog.showMessageBox = jest.fn(() => {
+    //       return { response: 1 };
+    //     });
+    //     await ipcRenderer.send(
+    //       'certificate-error',
+    //       webContentsMocked,
+    //       urlMocked,
+    //       errorMocked,
+    //       certificate,
+    //       callbackMocked,
+    //     );
+    //     expect(callbackMocked).toBeCalledWith(false);
+    //     await ipcRenderer.send(
+    //       'certificate-error',
+    //       webContentsMocked,
+    //       urlMocked,
+    //       errorMocked,
+    //       certificate,
+    //       callbackMocked,
+    //     );
+    //     done(expect(callbackMocked).toBeCalledWith(false));
+    //   });
+    // });
   });
 
   it('should call `showLoadFailure` correctly', () => {
