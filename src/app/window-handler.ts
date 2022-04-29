@@ -28,6 +28,7 @@ import {
   getCommandLineArgs,
   getGuid,
 } from '../common/utils';
+import { whitelistHandler } from '../common/whitelist-handler';
 import { notification } from '../renderer/notification';
 import { cleanAppCacheOnCrash } from './app-cache-handler';
 import { AppMenu } from './app-menu';
@@ -54,7 +55,6 @@ import {
   didVerifyAndRestoreWindow,
   getBounds,
   getWindowByName,
-  handleCertificateProxyVerification,
   handleDownloadManager,
   injectStyles,
   isSymphonyReachable,
@@ -667,11 +667,61 @@ export class WindowHandler {
     });
 
     // Certificate verification proxy
-    if (!isDevEnv) {
-      this.mainWebContents.session.setCertificateVerifyProc(
-        handleCertificateProxyVerification,
-      );
-    }
+    const siteNameAcceptedStatus = new Map<string, boolean>();
+    this.mainWebContents.session.setCertificateVerifyProc(
+      async (request, callback) => {
+        const { hostname: hostUrl, errorCode } = request;
+
+        if (errorCode === 0) {
+          return callback(0);
+        }
+
+        const { tld, domain, subdomain } = whitelistHandler.parseDomain(
+          hostUrl,
+        );
+        const host = domain + tld;
+        const { ctWhitelist } = config.getConfigFields(['ctWhitelist']);
+
+        if (
+          ctWhitelist &&
+          Array.isArray(ctWhitelist) &&
+          ctWhitelist.length > 0 &&
+          ctWhitelist.indexOf(host) > -1
+        ) {
+          return callback(0);
+        }
+        let siteName = `${domain}${tld}`;
+        if (subdomain.length) {
+          siteName = `${subdomain}.${siteName}`;
+        }
+        logger.warn(
+          `Certificate error: ${request.verificationResult} error code  ${request.errorCode} for url: ${siteName}`,
+        );
+
+        const isSiteNameAccepted = siteNameAcceptedStatus.get(siteName);
+        if (isSiteNameAccepted !== undefined) {
+          callback(0);
+          return;
+        }
+
+        const browserWin = this.mainWindow;
+        if (browserWin && windowExists(browserWin)) {
+          const { response } = await dialog.showMessageBox(browserWin, {
+            type: 'warning',
+            buttons: [i18n.t('Allow once (risky)')(), i18n.t('Deny')()],
+            defaultId: 1,
+            cancelId: 1,
+            noLink: true,
+            title: i18n.t('window handler Certificate Error')(),
+            message: `${siteName} ${i18n.t(
+              'window handler  Invalid security certificate',
+            )()}\n ${request.verificationResult}`,
+          });
+          siteNameAcceptedStatus.set(siteName, !response);
+          callback(response === 0 ? 0 : -2);
+        }
+      },
+    );
 
     app.on('browser-window-focus', () => {
       this.registerGlobalShortcuts();

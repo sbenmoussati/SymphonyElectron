@@ -2,7 +2,7 @@ import { app, BrowserWindow, dialog } from 'electron';
 
 import { i18n } from '../common/i18n';
 import { logger } from '../common/logger';
-import { whitelistHandler } from '../common/whitelist-handler';
+// import { whitelistHandler } from '../common/whitelist-handler';
 import { CloudConfigDataTypes, config } from './config-handler';
 import { ICustomBrowserWindow, windowHandler } from './window-handler';
 import { windowExists } from './window-utils';
@@ -58,43 +58,43 @@ app.on('login', (event, webContents, request, authInfo, callback) => {
  * Note: the dialog is synchronous so further processing is blocked until
  * user provides a response.
  */
-const siteNameAcceptedStatus = new Map<string, boolean>();
-app.on(
-  'certificate-error',
-  async (event, webContents, url, error, _certificate, callback) => {
-    // TODO: Add logic verify custom certificate
-    event.preventDefault();
-    const { tld, domain, subdomain } = whitelistHandler.parseDomain(url);
-    let siteName = `${domain}${tld}`;
-    if (subdomain.length) {
-      siteName = `${subdomain}.${siteName}`;
-    }
-    logger.warn(`Certificate error: ${error} for url: ${siteName}`);
+// const siteNameAcceptedStatus = new Map<string, boolean>();
+// app.on(
+//   'certificate-error',
+//   async (event, webContents, url, error, _certificate, callback) => {
+//     // TODO: Add logic verify custom certificate
+//     event.preventDefault();
+//     const { tld, domain, subdomain } = whitelistHandler.parseDomain(url);
+//     let siteName = `${domain}${tld}`;
+//     if (subdomain.length) {
+//       siteName = `${subdomain}.${siteName}`;
+//     }
+//     logger.warn(`Certificate error: ${error} for url: ${siteName}`);
 
-    const isSiteNameAccepted = siteNameAcceptedStatus.get(siteName);
-    if (isSiteNameAccepted !== undefined) {
-      callback(isSiteNameAccepted);
-      return;
-    }
+//     const isSiteNameAccepted = siteNameAcceptedStatus.get(siteName);
+//     if (isSiteNameAccepted !== undefined) {
+//       callback(isSiteNameAccepted);
+//       return;
+//     }
 
-    const browserWin = BrowserWindow.fromWebContents(webContents);
-    if (browserWin && windowExists(browserWin)) {
-      const { response } = await dialog.showMessageBox(browserWin, {
-        type: 'warning',
-        buttons: [i18n.t('Allow once (risky)')(), i18n.t('Deny')()],
-        defaultId: 1,
-        cancelId: 1,
-        noLink: true,
-        title: i18n.t('Certificate Error')(),
-        message: `${siteName} ${i18n.t(
-          'Invalid security certificate',
-        )()}\n ${error}`,
-      });
-      siteNameAcceptedStatus.set(siteName, !response);
-      callback(!response);
-    }
-  },
-);
+//     const browserWin = BrowserWindow.fromWebContents(webContents);
+//     if (browserWin && windowExists(browserWin)) {
+//       const { response } = await dialog.showMessageBox(browserWin, {
+//         type: 'warning',
+//         buttons: [i18n.t('Allow once (risky)')(), i18n.t('Deny')()],
+//         defaultId: 1,
+//         cancelId: 1,
+//         noLink: true,
+//         title: i18n.t('dialog handler Certificate Error')(),
+//         message: `${siteName} ${i18n.t(
+//           'dialog handler  Invalid security certificate',
+//         )()}\n ${error}`,
+//       });
+//       siteNameAcceptedStatus.set(siteName, !response);
+//       callback(!response);
+//     }
+//   },
+// );
 
 /**
  * Show dialog pinned to given window when loading error occurs
