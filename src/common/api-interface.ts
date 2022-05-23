@@ -72,6 +72,7 @@ export enum apiName {
   symphonyApi = 'symphony-api',
   mainWindowName = 'main',
   notificationWindowName = 'notification-window',
+  screenSharingIndicatorName = 'screen-sharing-indicator',
   welcomeScreenName = 'welcome-screen',
 }
 

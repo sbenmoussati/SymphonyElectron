@@ -219,5 +219,6 @@
   "Zoom Out": "Zoom Arrière",
   "Allow once (risky)": "Autoriser une fois (risqué)",
   "Deny": "Refuser",
-  "Invalid security certificate": "possède un certificat de sécurité non valide."
+  "Invalid security certificate": "possède un certificat de sécurité non valide.",
+  "Screen sharing indicator - Symphony": "Indicateur de partage d'écran - Symphony"
 }

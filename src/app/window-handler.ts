@@ -158,7 +158,7 @@ export class WindowHandler {
   private welcomeScreenWindow: Electron.BrowserWindow | null = null;
   private screenPickerWindow: Electron.BrowserWindow | null = null;
   private screenPickerPlaceholderWindow: Electron.BrowserWindow | null = null;
-  private screenSharingIndicatorWindow: Electron.BrowserWindow | null = null;
+  private screenSharingIndicatorWindow: ICustomBrowserWindow | null = null;
   private screenSharingFrameWindow: Electron.BrowserWindow | null = null;
   private basicAuthWindow: Electron.BrowserWindow | null = null;
   private notificationSettingsWindow: Electron.BrowserWindow | null = null;
@@ -1724,7 +1724,7 @@ export class WindowHandler {
           titleBarStyle: 'customButtonsOnHover',
           minimizable: false,
           maximizable: false,
-          title: 'Screen Sharing Indicator - Symphony',
+          title: i18n.t('Screen sharing indicator - Symphony')(),
           closable: false,
         },
         {
@@ -1771,7 +1771,9 @@ export class WindowHandler {
     this.screenSharingIndicatorWindow = createComponentWindow(
       'screen-sharing-indicator',
       opts,
-    );
+    ) as ICustomBrowserWindow;
+    this.screenSharingIndicatorWindow.winName =
+      apiName.screenSharingIndicatorName;
     this.moveWindow(
       this.screenSharingIndicatorWindow,
       topPositionOfIndicatorScreen,
