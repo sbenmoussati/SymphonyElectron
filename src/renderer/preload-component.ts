@@ -11,6 +11,7 @@ import ScreenPicker from './components/screen-picker';
 import ScreenSharingFrame from './components/screen-sharing-frame';
 import ScreenSharingIndicator from './components/screen-sharing-indicator';
 import SnippingTool from './components/snipping-tool';
+import Splash from './components/splash';
 import Welcome from './components/welcome';
 import WindowsTitleBar from './components/windows-title-bar';
 
@@ -25,6 +26,7 @@ const enum components {
   welcome = 'welcome',
   snippingTool = 'snipping-tool',
   titleBar = 'title-bar',
+  splash = 'splash',
 }
 
 const loadStyle = (style) => {
@@ -98,6 +100,10 @@ const load = () => {
       }
       loadStyle(components.titleBar);
       component = WindowsTitleBar;
+      break;
+    case components.splash:
+      loadStyle(components.splash);
+      component = Splash;
       break;
   }
   const element = React.createElement(component);

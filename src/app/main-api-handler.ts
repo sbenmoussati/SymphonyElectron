@@ -5,6 +5,7 @@ import {
   desktopCapturer,
   dialog,
   ipcMain,
+  shell,
   systemPreferences,
 } from 'electron';
 import {
@@ -369,6 +370,11 @@ ipcMain.on(
         break;
       case apiCmds.launchCloud9:
         loadC9Shell(event.sender);
+        break;
+      case apiCmds.login:
+        shell.openExternal(
+          'https://corporate.symphony.com/login/sso/initsso?RelayState=https%3A%2F%2Fcorporate.symphony.com%2Fclient-bff%2Fdevice-login%2Fdevice-login-1%2Findex.html%3FcallbackScheme=symphony',
+        );
         break;
       default:
         break;

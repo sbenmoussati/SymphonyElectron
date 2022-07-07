@@ -99,8 +99,8 @@ const startApplication = async () => {
   // Picks global config values and updates them in the user config
   await config.updateUserConfigOnStart();
   setSessionProperties();
-  await windowHandler.createApplication();
-  logger.info(`main: created application`);
+  await windowHandler.createSplashScreen();
+  logger.info(`main: created splash screen`);
 };
 
 // Handle multiple/single instances

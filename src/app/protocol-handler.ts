@@ -4,6 +4,7 @@ import { isMac } from '../common/env';
 import { logger } from '../common/logger';
 import { getCommandLineArgs } from '../common/utils';
 import { activate } from './window-actions';
+import { windowHandler } from './window-handler';
 
 enum protocol {
   SymphonyProtocol = 'symphony://',
@@ -45,11 +46,22 @@ class ProtocolHandler {
    * @param url {String}
    * @param isAppRunning {Boolean} - whether the application is running
    */
-  public sendProtocol(url: string, isAppRunning: boolean = true): void {
+  public async sendProtocol(
+    url: string,
+    isAppRunning: boolean = true,
+  ): Promise<void> {
     if (url && url.length > 2083) {
       logger.info(
         `protocol-handler: protocol handler url length is greater than 2083, not performing any action!`,
       );
+      return;
+    }
+    if (url.includes('anticsrf') && url.includes('skey')) {
+      logger.info('Device login hack detected');
+      const parsedURL = new URL(url);
+      const skey = parsedURL.searchParams.get('skey');
+      const csrf = parsedURL.searchParams.get('anticsrf');
+      await windowHandler.createApplication(csrf, skey);
       return;
     }
     logger.info(

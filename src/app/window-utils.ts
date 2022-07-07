@@ -752,15 +752,9 @@ export const reloadWindow = (browserWindow: ICustomBrowserWindow) => {
   if (!browserWindow || !windowExists(browserWindow)) {
     return;
   }
-
-  const windowName = browserWindow.winName;
   const mainWebContents = windowHandler.getMainWebContents();
   // reload the main window
-  if (
-    windowName === apiName.mainWindowName &&
-    mainWebContents &&
-    !mainWebContents.isDestroyed()
-  ) {
+  if (mainWebContents && !mainWebContents.isDestroyed()) {
     logger.info(`window-utils: reloading the main window`);
     mainWebContents.reload();
 
@@ -769,13 +763,6 @@ export const reloadWindow = (browserWindow: ICustomBrowserWindow) => {
     windowHandler.execCmd(windowHandler.screenShareIndicatorFrameUtil, []);
 
     return;
-  }
-
-  // Send an event to SFE that restarts the pop-out window
-  if (mainWebContents && !mainWebContents.isDestroyed()) {
-    logger.info(`window-handler: reloading the window`, { windowName });
-    const bounds = browserWindow.getBounds();
-    mainWebContents.send('restart-floater', { windowName, bounds });
   }
 };
 

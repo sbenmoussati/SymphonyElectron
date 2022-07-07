@@ -12,6 +12,7 @@ import {
   ipcMain,
   RenderProcessGoneDetails,
   screen,
+  session,
   shell,
   WebContents,
 } from 'electron';
@@ -157,6 +158,7 @@ export class WindowHandler {
   private mainWindow: ICustomBrowserWindow | null = null;
   private aboutAppWindow: Electron.BrowserWindow | null = null;
   private welcomeScreenWindow: Electron.BrowserWindow | null = null;
+  private splashScreenWindow: Electron.BrowserWindow | null = null;
   private screenPickerWindow: Electron.BrowserWindow | null = null;
   private screenPickerPlaceholderWindow: Electron.BrowserWindow | null = null;
   private screenSharingIndicatorWindow: Electron.BrowserWindow | null = null;
@@ -272,9 +274,65 @@ export class WindowHandler {
   }
 
   /**
+   * Starting point of the app - splash screen
+   */
+  public createSplashScreen() {
+    const opts: ICustomBrowserWindowConstructorOpts = this.getWindowOpts(
+      {
+        width: DEFAULT_WELCOME_SCREEN_WIDTH,
+        height: DEFAULT_WELCOME_SCREEN_HEIGHT,
+        frame: !this.isCustomTitleBar,
+        alwaysOnTop: false,
+        resizable: false,
+        minimizable: false,
+        fullscreenable: false,
+        webPreferences: {
+          devTools: true,
+        },
+      },
+      {
+        devTools: isDevEnv,
+      },
+    );
+    this.splashScreenWindow = createComponentWindow('splash', opts);
+    this.splashScreenWindow.webContents.on('did-finish-load', () => {
+      if (!this.splashScreenWindow || this.splashScreenWindow.isDestroyed()) {
+        return;
+      }
+      logger.info(`finished loading welcome screen.`);
+      const ssoValue = !!(
+        this.userConfig.url &&
+        this.userConfig.url.indexOf('/login/sso/initsso') > -1
+      );
+
+      this.splashScreenWindow.webContents.send('page-load-welcome', {
+        locale: i18n.getLocale(),
+        resource: i18n.loadedResources,
+      });
+
+      const userConfigUrl =
+        this.userConfig.url &&
+        this.userConfig.url.indexOf('/login/sso/initsso') > -1
+          ? this.userConfig.url.slice(
+              0,
+              this.userConfig.url.indexOf('/login/sso/initsso'),
+            )
+          : this.userConfig.url;
+      this.splashScreenWindow.webContents.send('splash-ready', {
+        url: userConfigUrl || this.startUrl,
+        message: '',
+        urlValid: !!userConfigUrl,
+        sso: ssoValue,
+      });
+      this.appMenu = new AppMenu();
+      this.addWindow(opts.winKey, this.splashScreenWindow);
+    });
+  }
+
+  /**
    * Starting point of the app
    */
-  public async createApplication() {
+  public async createApplication(csrf: string | null, skey: string | null) {
     this.spellchecker = new SpellChecker();
     logger.info(
       `window-handler: initialized spellchecker module with locale ${this.spellchecker.locale}`,
@@ -284,7 +342,19 @@ export class WindowHandler {
       'window-handler: createApplication mainWinPos: ' +
         JSON.stringify(this.config.mainWinPos),
     );
+    const cookie = {
+      url: 'https://corporate.symphony.com',
+      name: 'skey',
+      value: skey || '',
+    };
+    session.defaultSession.cookies.set(cookie);
 
+    const cookie2 = {
+      url: 'https://corporate.symphony.com',
+      name: 'anti-csrf-cookie',
+      value: csrf || '',
+    };
+    session.defaultSession.cookies.set(cookie2);
     const { isFullScreen, isMaximized } = this.config.mainWinPos
       ? this.config.mainWinPos
       : { isFullScreen: false, isMaximized: false };
@@ -307,7 +377,10 @@ export class WindowHandler {
       this.showWelcomeScreen();
       return;
     }
-
+    if (this.splashScreenWindow && windowExists(this.splashScreenWindow)) {
+      this.splashScreenWindow.hide();
+      this.splashScreenWindow = null;
+    }
     // set window opts with additional config
     this.mainWindow = new BrowserWindow({
       ...this.windowOpts,
