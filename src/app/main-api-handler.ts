@@ -373,7 +373,7 @@ ipcMain.on(
         break;
       case apiCmds.login:
         shell.openExternal(
-          'https://corporate.symphony.com/login/sso/initsso?RelayState=https%3A%2F%2Fcorporate.symphony.com%2Fclient-bff%2Fdevice-login%2Fdevice-login-1%2Findex.html%3FcallbackScheme=symphony',
+          'https://corporate.symphony.com/login/sso/initsso?RelayState=https%3A%2F%2Fcorporate.symphony.com%2Fclient-bff%2Fdevice-login%2Findex.html%3FcallbackScheme=symphony',
         );
         break;
       default:

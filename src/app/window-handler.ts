@@ -279,8 +279,8 @@ export class WindowHandler {
   public createSplashScreen() {
     const opts: ICustomBrowserWindowConstructorOpts = this.getWindowOpts(
       {
-        width: DEFAULT_WELCOME_SCREEN_WIDTH,
-        height: DEFAULT_WELCOME_SCREEN_HEIGHT,
+        width: 342,
+        height: 250,
         frame: !this.isCustomTitleBar,
         alwaysOnTop: false,
         resizable: false,
