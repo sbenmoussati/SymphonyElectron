@@ -102,6 +102,7 @@ export class AutoUpdate {
     }
     setImmediate(() => {
       if (this.autoUpdater) {
+        this.autoUpdater.autoInstallOnAppQuit = true;
         this.autoUpdater.quitAndInstall();
       }
     });
