@@ -301,7 +301,6 @@ export class WindowHandler {
 
     // Displays welcome screen instead of starting the main application
     if (
-      config.isFirstTimeLaunch() &&
       this.globalConfig.url.indexOf('https://my.symphony.com') >= 0 &&
       urlFromCmd === null
     ) {
@@ -728,7 +727,8 @@ export class WindowHandler {
         frame: !this.isCustomTitleBar,
         alwaysOnTop: isMac,
         resizable: false,
-        minimizable: false,
+        minimizable: true,
+        autoHideMenuBar: true,
         fullscreenable: false,
       },
       {
