@@ -36,7 +36,7 @@
     "copy": "run-os",
     "copy:darwin": "ncp config 'node_modules/electron/dist/Electron.app/Contents/config'",
     "copy:win32": "ncp config node_modules\\electron\\dist\\config",
-    "unpacked-mac": "npm run prebuild && npm run test && ./node_modules/.bin/electron-builder build --mac",
+    "unpacked-mac": "npm run prebuild  && ./node_modules/.bin/electron-builder build --mac --universal",
     "unpacked-win": "npm run prebuild && npm run test && node_modules\\.bin\\electron-builder build --win --x64"
   },
   "build": {
@@ -60,6 +60,7 @@
       "!node_modules/@nornagon/cld/deps/cld${/*}",
       "!node_modules/@nornagon/cld/build/deps${/*}",
       "!node_modules/@nornagon/spellchecker/vendor${/*}",
+      "!node_modules/**/*.{mk,a,o,h}",
       "!**/*.map"
     ],
     "extraFiles": [
