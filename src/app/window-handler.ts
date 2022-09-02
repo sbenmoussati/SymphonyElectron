@@ -556,8 +556,8 @@ export class WindowHandler {
           );
         }
       }
-      // Register dev tools on initial launch
-      this.registerGlobalShortcuts();
+      // // Register dev tools on initial launch
+      // this.registerGlobalShortcuts();
     });
 
     this.mainWebContents.on(
