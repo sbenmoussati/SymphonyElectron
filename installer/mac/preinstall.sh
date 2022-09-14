@@ -56,7 +56,7 @@ compare_versions()
         exit 1
     fi
 
-    delete_app
+    # delete_app
 
 }
 
