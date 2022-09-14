@@ -506,7 +506,7 @@
 				<key>REFERENCE_PATH</key>
 				<string></string>
 				<key>RELOCATABLE</key>
-				<false/>
+				<true/>
 				<key>USE_HFS+_COMPRESSION</key>
 				<false/>
 				<key>VERSION</key>
