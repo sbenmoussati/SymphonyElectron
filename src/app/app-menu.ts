@@ -39,6 +39,7 @@ import {
 
 import { autoLaunchInstance as autoLaunch } from './auto-launch-controller';
 import { autoUpdate, AutoUpdateTrigger } from './auto-update-handler';
+import { startProcessReporting } from './process-reporting-handler';
 
 export const menuSections = {
   about: 'about',
@@ -639,6 +640,10 @@ export class AppMenu {
               click: async () => exportLogs(),
               accelerator: 'Ctrl+Shift+D',
               label: showLogsLabel,
+            },
+            {
+              click: async () => startProcessReporting(app),
+              label: 'Open process manager',
             },
             {
               click: () => exportCrashDumps(),

@@ -7,6 +7,7 @@ import AboutBox from './components/about-app';
 import BasicAuth from './components/basic-auth';
 import NotificationComp from './components/notification-comp';
 import NotificationSettings from './components/notification-settings';
+import ProcessManager from './components/process-manager';
 import ScreenPicker from './components/screen-picker';
 import ScreenSharingFrame from './components/screen-sharing-frame';
 import ScreenSharingIndicator from './components/screen-sharing-indicator';
@@ -25,6 +26,7 @@ const enum components {
   welcome = 'welcome',
   snippingTool = 'snipping-tool',
   titleBar = 'windows-title-bar',
+  processManager = 'process-manager',
 }
 
 /**
@@ -81,6 +83,8 @@ const load = () => {
       }
       component = WindowsTitleBar;
       break;
+    case components.processManager:
+      component = ProcessManager;
   }
   const element = React.createElement(component);
   ReactDOM.render(element, document.getElementById('Root'));
