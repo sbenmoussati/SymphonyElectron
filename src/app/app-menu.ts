@@ -682,22 +682,13 @@ export class AppMenu {
           label: i18n.t('Check for updates')(),
         },
         {
-          label: i18n.t('About Symphony')(),
-          visible: isWindowsOS || isLinux,
-          click(_menuItem, focusedWindow) {
-            const windowName = focusedWindow
-              ? (focusedWindow as ICustomBrowserWindow).winName
-              : '';
-            windowHandler.createAboutAppWindow(windowName);
-          },
-        },
-        {
           click: (_item) =>
             windowHandler.switchClient(ClientSwitchType.CLIENT_1_5),
           visible: isCorp,
           type: 'checkbox',
           checked: windowHandler.url?.startsWith(CORP_URL + '/client/'),
           label: i18n.t('Switch to client 1.5')(),
+          accelerator: isMac ? 'Cmd+Alt+1' : 'Ctrl+Shift+1',
         },
         {
           click: (_item) =>
@@ -706,6 +697,7 @@ export class AppMenu {
           type: 'checkbox',
           checked: windowHandler.url?.startsWith(CORP_URL + '/client-bff'),
           label: i18n.t('Switch to client 2.0')(),
+          accelerator: isMac ? 'Cmd+Alt+2' : 'Ctrl+Shift+2',
         },
         {
           click: (_item) =>
@@ -714,6 +706,17 @@ export class AppMenu {
           type: 'checkbox',
           checked: windowHandler.url?.startsWith(CORP_URL + '/bff-daily/daily'),
           label: i18n.t('Switch to client 2.0 daily')(),
+          accelerator: isMac ? 'Cmd+Alt+3' : 'Ctrl+Shift+3',
+        },
+        {
+          label: i18n.t('About Symphony')(),
+          visible: isWindowsOS || isLinux,
+          click(_menuItem, focusedWindow) {
+            const windowName = focusedWindow
+              ? (focusedWindow as ICustomBrowserWindow).winName
+              : '';
+            windowHandler.createAboutAppWindow(windowName);
+          },
         },
       ],
     };
