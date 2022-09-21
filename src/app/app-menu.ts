@@ -692,28 +692,59 @@ export class AppMenu {
           },
         },
         {
-          click: (_item) =>
-            windowHandler.switchClient(ClientSwitchType.CLIENT_1_5),
+          label: i18n.t('Client 2.0 channel')(),
           visible: isCorp,
-          type: 'checkbox',
-          checked: windowHandler.url?.startsWith(CORP_URL + '/client/'),
-          label: i18n.t('Switch to client 1.5')(),
+          submenu: [
+            {
+              click: (_item) =>
+                windowHandler.switchClient(ClientSwitchType.CLIENT_2_0),
+              visible: isCorp,
+              type: 'checkbox',
+              checked: windowHandler.url?.startsWith(CORP_URL + '/client-bff'),
+              label: i18n.t('Stable')(),
+            },
+            {
+              click: (_item) =>
+                windowHandler.switchClient(ClientSwitchType.CLIENT_2_0_DAILY),
+              visible: isCorp,
+              type: 'checkbox',
+              checked: windowHandler.url?.startsWith(
+                CORP_URL + '/bff-daily/daily',
+              ),
+              label: i18n.t('Daily')(),
+            },
+          ],
         },
         {
-          click: (_item) =>
-            windowHandler.switchClient(ClientSwitchType.CLIENT_2_0),
+          label: i18n.t('SDA update channel')(),
+          id: 'channels',
           visible: isCorp,
-          type: 'checkbox',
-          checked: windowHandler.url?.startsWith(CORP_URL + '/client-bff'),
-          label: i18n.t('Switch to client 2.0')(),
-        },
-        {
-          click: (_item) =>
-            windowHandler.switchClient(ClientSwitchType.CLIENT_2_0_DAILY),
-          visible: isCorp,
-          type: 'checkbox',
-          checked: windowHandler.url?.startsWith(CORP_URL + '/bff-daily/daily'),
-          label: i18n.t('Switch to client 2.0 daily')(),
+          submenu: [
+            {
+              id: 'sda-stable',
+              click: (_item) => this.setSDAUpdateChannel('stable'),
+              visible: isCorp,
+              type: 'checkbox',
+              checked: this.getUpdateChannel() === 'stable',
+              label: i18n.t('Stable')(),
+            },
+            {
+              id: 'sda-latest',
+              click: (_item) => this.setSDAUpdateChannel('latest'),
+              visible: isCorp,
+              type: 'checkbox',
+              checked: this.getUpdateChannel() === 'latest',
+              label: i18n.t('Latest')(),
+            },
+            {
+              id: 'sda-beta',
+              click: (_item) => this.setSDAUpdateChannel('beta'),
+              visible: isCorp,
+              type: 'checkbox',
+              checked: this.getUpdateChannel() === 'beta',
+              label: i18n.t('Beta')(),
+            },
+          ],
         },
       ],
     };
@@ -796,5 +827,27 @@ export class AppMenu {
       label: i18n.t(label)(),
       click: (_item, focusedWindow) => (focusedWindow ? action() : null),
     };
+  }
+
+  /**
+   * Returns auto-updage channel
+   * @return {string} Auto-update channel
+   */
+  private getUpdateChannel() {
+    const { autoUpdateChannel } = config.getConfigFields(['autoUpdateChannel']);
+    return autoUpdateChannel;
+  }
+
+  /**
+   * Updates auto-updage channel
+   * @param autoUpdateChannel {string}
+   */
+  private async setSDAUpdateChannel(autoUpdateChannel: string) {
+    await config.updateUserConfig({ autoUpdateChannel });
+    this.menu?.getMenuItemById('channels')?.submenu?.items.map((item) => {
+      if (item.id !== `sda-${autoUpdateChannel}`) {
+        item.checked = false;
+      }
+    });
   }
 }
