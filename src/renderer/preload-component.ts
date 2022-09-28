@@ -10,7 +10,8 @@ import NotificationSettings from './components/notification-settings';
 import ScreenPicker from './components/screen-picker';
 import ScreenSharingFrame from './components/screen-sharing-frame';
 import ScreenSharingIndicator from './components/screen-sharing-indicator';
-import SnippingTool from './components/snipping-tool';
+import SnippingToolV2 from './components/snipping-tool-v2';
+// import SnippingToolV3 from './components/snipping-tool-v3';
 import Welcome from './components/welcome';
 import WindowsTitleBar from './components/windows-title-bar';
 
@@ -67,7 +68,7 @@ const load = () => {
     case components.snippingTool:
       loadStyle(components.snippingTool);
       document.title = i18n.t('Symphony')();
-      component = SnippingTool;
+      component = SnippingToolV2;
       break;
     case components.basicAuth:
       loadStyle(components.basicAuth);

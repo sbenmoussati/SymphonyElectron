@@ -1185,8 +1185,8 @@ export class WindowHandler {
     }
 
     const OS_PADDING = 25;
-    const MIN_TOOL_HEIGHT = 312;
-    const MIN_TOOL_WIDTH = 320;
+    const MIN_TOOL_HEIGHT = 600;
+    const MIN_TOOL_WIDTH = 600;
     const BUTTON_BAR_TOP_HEIGHT = 48;
     const BUTTON_BAR_BOTTOM_HEIGHT = 72;
     const BUTTON_BARS_HEIGHT = BUTTON_BAR_TOP_HEIGHT + BUTTON_BAR_BOTTOM_HEIGHT;
@@ -1243,12 +1243,12 @@ export class WindowHandler {
 
     const opts: ICustomBrowserWindowConstructorOpts = this.getWindowOpts(
       {
-        width: toolWidth,
-        height: toolHeight,
         modal: false,
         alwaysOnTop: false,
-        resizable: false,
+        resizable: true,
         fullscreenable: false,
+        minWidth: 700,
+        minHeight: 920,
       },
       {
         devTools: true,
