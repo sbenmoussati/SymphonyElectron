@@ -5,6 +5,7 @@ import {
   desktopCapturer,
   dialog,
   ipcMain,
+  screen,
   systemPreferences,
 } from 'electron';
 import {
@@ -167,6 +168,21 @@ ipcMain.on(
         break;
       case apiCmds.openScreenPickerWindow:
         if (Array.isArray(arg.sources) && typeof arg.id === 'number') {
+          const mainWindow = windowHandler.getMainWindow();
+          if (mainWindow) {
+            const mainWindowSourceId = mainWindow?.getMediaSourceId();
+
+            const winBounds = mainWindow?.getBounds();
+            const distScreen = screen.getDisplayNearestPoint({
+              x: winBounds?.x,
+              y: winBounds?.y,
+            });
+            arg.sources.push({
+              name: 'Symphony',
+              id: mainWindowSourceId,
+              display_id: distScreen.id.toString(),
+            });
+          }
           windowHandler.createScreenPickerWindow(
             event.sender,
             arg.sources,
