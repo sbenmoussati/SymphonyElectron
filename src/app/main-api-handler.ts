@@ -278,6 +278,7 @@ ipcMain.on(
           const appMenu = windowHandler.appMenu;
           if (appMenu && windowHandler.isMana) {
             appMenu.buildMenu();
+            windowHandler.setThumbarButtons();
           }
           logger.info('main-api-handler: isMana: ' + windowHandler.isMana);
         }

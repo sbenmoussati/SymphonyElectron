@@ -9,6 +9,7 @@ import {
   dialog,
   Event,
   ipcMain,
+  nativeImage,
   RenderProcessGoneDetails,
   screen,
   shell,
@@ -301,6 +302,7 @@ export class WindowHandler {
       ...getBounds(this.config.mainWinPos, DEFAULT_WIDTH, DEFAULT_HEIGHT),
     }) as ICustomBrowserWindow;
     const localMenuShortcuts = new LocalMenuShortcuts();
+    this.setThumbarButtons();
     localMenuShortcuts.buildShortcutMenu();
 
     logger.info('window-handler: windowSize: ' + JSON.stringify(windowSize));
@@ -2178,6 +2180,39 @@ export class WindowHandler {
   public onExportLogs(): void {
     logger.info('window-handler: Exporting logs');
     exportLogs();
+  }
+
+  /**
+   * Adds custom buttons to thumbar
+   */
+  public setThumbarButtons(): void {
+    if (this.mainWindow && windowExists(this.mainWindow)) {
+      const onlineIcon = nativeImage.createFromPath(
+        path.join(__dirname, 'online.png'),
+      );
+      const oooIcon = nativeImage.createFromPath(
+        path.join(__dirname, 'ooo.png'),
+      );
+      const done = this.mainWindow.setThumbarButtons([
+        {
+          tooltip: 'Online',
+          icon: onlineIcon,
+          click() {
+            // tslint:disable-next-line: no-console
+            console.log('online clicked');
+          },
+        },
+        {
+          tooltip: 'OOO',
+          icon: oooIcon,
+          click() {
+            // tslint:disable-next-line: no-console
+            console.log('ooo clicked');
+          },
+        },
+      ]);
+      logger.info('----> ', done);
+    }
   }
 
   /**
