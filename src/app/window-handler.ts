@@ -4,6 +4,7 @@ import {
   BrowserView,
   BrowserWindow,
   BrowserWindowConstructorOptions,
+  CookiesSetDetails,
   crashReporter,
   DesktopCapturerSource,
   dialog,
@@ -11,6 +12,7 @@ import {
   ipcMain,
   RenderProcessGoneDetails,
   screen,
+  session,
   shell,
   WebContents,
 } from 'electron';
@@ -82,6 +84,7 @@ export enum ClientSwitchType {
 
 const MAIN_WEB_CONTENTS_EVENTS = ['enter-full-screen', 'leave-full-screen'];
 const SHORTCUT_KEY_THROTTLE = 1000; // 1sec
+const SDA_PERSISTED_SESSION = 'persist:SDA-persisted-session-3';
 
 export interface ICustomBrowserWindowConstructorOpts
   extends Electron.BrowserWindowConstructorOptions {
@@ -147,7 +150,8 @@ export class WindowHandler {
   private defaultPodUrl: string = 'https://[POD].symphony.com';
   private contextIsolation: boolean = true;
   private backgroundThrottling: boolean = false;
-  private windowOpts: ICustomBrowserWindowConstructorOpts = {} as ICustomBrowserWindowConstructorOpts;
+  private windowOpts: ICustomBrowserWindowConstructorOpts =
+    {} as ICustomBrowserWindowConstructorOpts;
   private globalConfig: IGlobalConfig = {} as IGlobalConfig;
   private config: IConfig = {} as IConfig;
   // Window reference
@@ -249,6 +253,7 @@ export class WindowHandler {
         },
         {
           preload: path.join(__dirname, '../renderer/_preload-main.js'),
+          partition: SDA_PERSISTED_SESSION,
         },
       ),
       ...this.opts,
@@ -302,6 +307,37 @@ export class WindowHandler {
       ...this.windowOpts,
       ...getBounds(this.config.mainWinPos, DEFAULT_WIDTH, DEFAULT_HEIGHT),
     }) as ICustomBrowserWindow;
+    const userSession = session.fromPartition(SDA_PERSISTED_SESSION);
+    const cookies = userSession.cookies;
+    cookies.on('changed', async (_event, cookie, _cause, removed) => {
+      if (cookie.session && !removed) {
+        const url = `${
+          cookie.secure ? 'https' : 'http'
+        }://${cookie.domain?.replace(/^\./, '')}`;
+        logger.info('cookie URL', url, cookie);
+        const sessionCookie: CookiesSetDetails = {
+          url,
+          name: cookie.name,
+          value: cookie.value,
+          expirationDate: new Date().setDate(new Date().getDate() + 14),
+          secure: true,
+        };
+        try {
+          if (
+            sessionCookie.name &&
+            url.includes('corporate') &&
+            (sessionCookie.name === 'skey' ||
+              sessionCookie.name === 'anti-csrf-cookie')
+          ) {
+            logger.info('cookie matched', sessionCookie);
+            await cookies.remove(url, sessionCookie.name);
+            await cookies.set(sessionCookie);
+          }
+        } catch (error) {
+          logger.error('Setting cookie fail: ', error, sessionCookie);
+        }
+      }
+    });
     const localMenuShortcuts = new LocalMenuShortcuts();
     localMenuShortcuts.buildShortcutMenu();
 
