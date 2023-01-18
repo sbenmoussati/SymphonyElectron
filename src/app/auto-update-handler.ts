@@ -1,6 +1,6 @@
+import { MacUpdater, NsisUpdater } from '@imjs/electron-differential-updater';
 import { GenericServerOptions } from 'builder-util-runtime';
 import electronLog from 'electron-log';
-import { MacUpdater, NsisUpdater } from 'electron-updater';
 
 import { isMac, isWindowsOS } from '../common/env';
 import { logger } from '../common/logger';
