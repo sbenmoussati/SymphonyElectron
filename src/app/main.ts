@@ -1,4 +1,11 @@
-import { app, systemPreferences } from 'electron';
+import {
+  app,
+  Menu,
+  MenuItem,
+  nativeImage,
+  systemPreferences,
+  Tray,
+} from 'electron';
 import * as electronDownloader from 'electron-dl';
 
 import { isDevEnv, isLinux, isMac } from '../common/env';
@@ -24,6 +31,8 @@ if (isMac) {
     'false',
   );
 }
+
+let tray: Tray;
 
 logger.info(`App started with the args ${JSON.stringify(process.argv)}`);
 
@@ -92,6 +101,57 @@ const startApplication = async () => {
       await autoLaunchInstance.handleAutoLaunch();
     }
   }
+
+  const presenceMenu = Menu.buildFromTemplate([
+    new MenuItem({ type: 'separator' }),
+    {
+      label: 'Available',
+      click() {
+        // tslint:disable-next-line: no-console
+        console.log('Available');
+        const img = nativeImage.createFromPath('presence/sym_available_3.png');
+        tray.setImage(img);
+      },
+    },
+    {
+      label: 'Busy',
+      click() {
+        // tslint:disable-next-line: no-console
+        console.log('Busy');
+        const img = nativeImage.createFromPath('presence/sym_busy_black.png');
+        tray.setImage(img);
+      },
+    },
+    {
+      label: 'Be right back',
+      click() {
+        // tslint:disable-next-line: no-console
+        console.log('Be right back');
+        const img = nativeImage.createFromPath('presence/sym_brb_black.png');
+        tray.setImage(img);
+      },
+    },
+    {
+      label: 'Offline',
+      click() {
+        // tslint:disable-next-line: no-console
+        console.log('Offline');
+        const img = nativeImage.createFromPath('presence/symphony_black.png');
+        tray.setImage(img);
+      },
+    },
+    new MenuItem({ type: 'separator' }),
+  ]);
+
+  app.whenReady().then(() => {
+    if (process.platform === 'darwin') {
+      app.dock.setMenu(presenceMenu);
+      const img = nativeImage.createFromPath('presence/symphony_black.png');
+      tray = new Tray(img);
+      tray.setToolTip('Symphony');
+      tray.setContextMenu(presenceMenu);
+    }
+  });
   await app.whenReady();
   if (oneStart) {
     return;
