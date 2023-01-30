@@ -1,6 +1,6 @@
 import { GenericServerOptions } from 'builder-util-runtime';
 import electronLog from 'electron-log';
-import { autoUpdater, MacUpdater } from 'electron-updater';
+import { MacUpdater } from 'electron-updater';
 import { isMac, isWindowsOS } from '../common/env';
 import { logger } from '../common/logger';
 import { isUrl } from '../common/utils';
@@ -8,7 +8,7 @@ import { whitelistHandler } from '../common/whitelist-handler';
 import { config } from './config-handler';
 import { windowHandler } from './window-handler';
 
-import * as DeltaUpdater from '@electron-delta/updater';
+import DeltaUpdater = require('@electron-delta/updater');
 
 const DEFAULT_AUTO_UPDATE_CHANNEL = 'client-bff/sda-update';
 
@@ -28,8 +28,10 @@ export class AutoUpdate {
     if (isMac) {
       this.autoUpdater = new MacUpdater(opts);
     } else if (isWindowsOS) {
-      const deltaOpts = this.getGenericServerDeltaUpdateOptions();
-      this.autoUpdater = new DeltaUpdater(deltaOpts);
+      this.autoUpdater = new DeltaUpdater({
+        logger,
+        hostURL: this.getUpdateUrl(),
+      });
     }
 
     if (this.autoUpdater) {
@@ -195,16 +197,6 @@ export class AutoUpdate {
       provider: 'generic',
       url: this.getUpdateUrl(),
       channel: autoUpdateChannel || null,
-    };
-    return opts;
-  };
-  private getGenericServerDeltaUpdateOptions = () => {
-    const { autoUpdateChannel } = config.getConfigFields(['autoUpdateChannel']);
-    const opts = {
-      provider: 'generic',
-      url: this.getUpdateUrl(),
-      channel: autoUpdateChannel || null,
-      autoUpdater,
     };
     return opts;
   };
