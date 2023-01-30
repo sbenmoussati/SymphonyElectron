@@ -33,11 +33,12 @@
     "test": "run-s lint test:unit",
     "test:unit": "cross-env ELECTRON_QA=true jest --config jest-config.json --runInBand --detectOpenHandles",
     "unpacked-mac": "npm run prebuild && npm run test && ./node_modules/.bin/electron-builder build --mac",
-    "unpacked-win": "npm run prebuild && npm run test && node_modules\\.bin\\electron-builder build --win --x64"
+    "unpacked-win": "npm run prebuild && node_modules\\.bin\\electron-builder build --win --x64"
   },
   "build": {
     "appId": "com.symphony.electron-desktop",
-    "compression": "maximum",
+    "afterAllArtifactBuild": ".electron-delta.js",
+    "compression": "store",
     "artifactName": "${productName}-${version}-${os}.${ext}",
     "asar": true,
     "asarUnpack": "**/*.node",
@@ -168,7 +169,7 @@
     "builder-util-runtime": "^9.0.3",
     "cross-env": "5.2.1",
     "del": "3.0.0",
-    "electron": "^22.0.0",
+    "electron": "^22.1.0",
     "electron-builder": "23.6.0",
     "electron-builder-squirrel-windows": "20.44.0",
     "electron-icon-maker": "0.0.5",
@@ -202,6 +203,8 @@
     "typescript": "3.9.10"
   },
   "dependencies": {
+    "@electron-delta/builder": "^0.1.17",
+    "@electron-delta/updater": "^0.1.17",
     "@types/lazy-brush": "^1.0.0",
     "archiver": "4.0.2",
     "async.map": "0.5.2",
