@@ -46,8 +46,8 @@ echo D | xcopy /y "C:\jenkins\workspace\tronlibraries\library" "library"
 
 echo "Installing dependencies..."
 call npm install
-
-call rmdir node_modules\@symphony\symphony-c9-shell\shell\x64
+call del /f /s /q node_modules\@symphony\symphony-c9-shell\shell\x64>nul
+call rmdir /s /q node_modules\@symphony\symphony-c9-shell\shell\x64
 
 :: Signing screen snippet and screen share indicator
 
