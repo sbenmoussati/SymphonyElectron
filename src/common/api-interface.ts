@@ -73,6 +73,8 @@ export enum apiCmds {
   updateAndRestart = 'update-and-restart',
   downloadUpdate = 'download-update',
   checkForUpdates = 'check-for-updates',
+  onPresenceUpdate = 'on-presence-update',
+  updatePresenceStatus = 'update-presence-status',
 }
 
 export enum apiName {
@@ -127,6 +129,7 @@ export interface IApiArgs {
   data: Uint8Array;
   autoUpdateTrigger: AutoUpdateTrigger;
   hideOnCapture: boolean;
+  presenceStatus: string;
 }
 
 export type Themes = 'light' | 'dark';

@@ -101,6 +101,7 @@ const startApplication = async () => {
       await autoLaunchInstance.handleAutoLaunch();
     }
   }
+<<<<<<< Updated upstream
 
   const presenceMenu = Menu.buildFromTemplate([
     new MenuItem({ type: 'separator' }),
@@ -175,6 +176,15 @@ const startApplication = async () => {
       tray.setContextMenu(presenceMenu);
     }
   });
+=======
+<<<<<<< Updated upstream
+=======
+
+  app.whenReady().then(() => {
+    app.setAccessibilitySupportEnabled(false);
+  });
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
   await app.whenReady();
   if (oneStart) {
     return;

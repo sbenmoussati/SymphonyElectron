@@ -96,6 +96,8 @@ if (ssfWindow.ssf) {
     updateAndRestart: ssfWindow.ssf.updateAndRestart,
     downloadUpdate: ssfWindow.ssf.downloadUpdate,
     checkForUpdates: ssfWindow.ssf.checkForUpdates,
+    onPresenceUpdate: ssfWindow.ssf.onPresenceUpdate,
+    registerPresenceUpdation: ssfWindow.ssf.registerPresenceUpdation,
   });
 }
 

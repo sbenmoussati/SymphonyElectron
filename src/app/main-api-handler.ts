@@ -5,7 +5,11 @@ import {
   desktopCapturer,
   dialog,
   ipcMain,
+  Menu,
+  MenuItem,
+  nativeImage,
   systemPreferences,
+  Tray,
 } from 'electron';
 import {
   apiCmds,
@@ -50,6 +54,81 @@ import { autoUpdate, AutoUpdateTrigger } from './auto-update-handler';
 
 // Swift search API
 let swiftSearchInstance;
+let tray: Tray;
+const updatePresence = (presenceStatus: any) => {
+  const mainWebContents = windowHandler.mainWebContents;
+  // Display client banner
+  if (mainWebContents && !mainWebContents.isDestroyed()) {
+    mainWebContents.send('change-presence-status', {
+      presenceStatus,
+    });
+  }
+};
+const presenceMenu = Menu.buildFromTemplate([
+  new MenuItem({ type: 'separator' }),
+  new MenuItem({
+    label: 'My presence',
+    submenu: [
+      {
+        label: 'Available',
+        click() {
+          updatePresence('AVAILABLE');
+          const img = nativeImage.createFromPath(
+            'presence/sym_available_3.png',
+          );
+          tray.setImage(img);
+        },
+      },
+      {
+        label: 'Busy',
+        click() {
+          updatePresence('BUSY');
+          const img = nativeImage.createFromPath('presence/sym_busy_black.png');
+          tray.setImage(img);
+        },
+      },
+      {
+        label: 'Be right back',
+        click() {
+          updatePresence('BE_RIGHT_BACK');
+          const img = nativeImage.createFromPath('presence/sym_brb_black.png');
+          tray.setImage(img);
+        },
+      },
+      {
+        label: 'Offline',
+        click() {
+          updatePresence('OUT_OF_OFFICE');
+          const img = nativeImage.createFromPath('presence/symphony_black.png');
+          tray.setImage(img);
+        },
+      },
+    ],
+  }),
+  new MenuItem({
+    label: 'Settings',
+    click: () => {
+      windowHandler.mainWebContents?.sendInputEvent({
+        type: 'keyDown',
+        keyCode: 'CommandOrControl+,',
+      });
+    },
+  }),
+  new MenuItem({
+    label: 'Quit Symphony',
+    role: 'quit',
+  }),
+]);
+app.whenReady().then(() => {
+  if (process.platform === 'darwin') {
+    app.dock.setMenu(presenceMenu);
+    const img = nativeImage.createFromPath('presence/symphony_black.png');
+    tray = new Tray(img);
+    tray.setToolTip('Symphony');
+    tray.setContextMenu(presenceMenu);
+  }
+});
+
 try {
   // tslint:disable-next-line:no-var-requires
   const { SSAPIBridge } = {} as any; // require('swift-search');
@@ -393,6 +472,21 @@ ipcMain.on(
           autoUpdate.checkUpdates(arg.autoUpdateTrigger);
         } else {
           autoUpdate.checkUpdates();
+        }
+        break;
+      case apiCmds.onPresenceUpdate:
+        const presenceStatus = arg.presenceStatus as any;
+        const imgMapping = {
+          OUT_OF_OFFICE: 'presence/symphony_black.png',
+          OFFLINE: 'presence/symphony_black.png',
+          BE_RIGHT_BACK: 'presence/sym_brb_black.png',
+          BUSY: 'presence/sym_busy_black.png',
+          AVAILABLE: 'presence/sym_available_3.png',
+        };
+        const imgPath = imgMapping[presenceStatus.category];
+        if (imgPath) {
+          const img = nativeImage.createFromPath(imgPath);
+          tray.setImage(img);
         }
         break;
       default:

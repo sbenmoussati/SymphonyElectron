@@ -58,6 +58,7 @@ export interface ILocalObject {
   >;
   c9PipeEventCallback?: (event: string, arg?: any) => void;
   c9MessageCallback?: (status: IShellStatus) => void;
+  presenceUpdationCallback?: Array<(presenceStatus: any) => void>;
 }
 
 const local: ILocalObject = {
@@ -738,6 +739,21 @@ export class SSFApi {
   }
 
   /**
+   * Allows JS to update presence status
+   * @param callback
+   */
+  public registerPresenceUpdation(
+    callback: (presenceStatus: any) => void,
+  ): void {
+    if (!local.presenceUpdationCallback) {
+      local.presenceUpdationCallback = new Array<() => void>();
+    }
+    if (typeof callback === 'function') {
+      local.presenceUpdationCallback.push(callback);
+    }
+  }
+
+  /**
    * Connects to a Cloud9 pipe
    *
    * @param pipe pipe name
@@ -845,6 +861,17 @@ export class SSFApi {
     ipcRenderer.send(apiName.symphonyApi, {
       cmd: apiCmds.checkForUpdates,
       autoUpdateTrigger,
+    });
+  }
+
+  /**
+   * Presence status handler
+   * @param presenceStatus current user presence status
+   */
+  public onPresenceUpdate(presenceStatus: any): void {
+    ipcRenderer.send(apiName.symphonyApi, {
+      cmd: apiCmds.onPresenceUpdate,
+      presenceStatus,
     });
   }
 }
@@ -1078,7 +1105,7 @@ local.ipcRenderer.on('notification-actions', (_event, args) => {
 });
 
 /**
- * An event triggered by the main process on updating the cloud config
+ * An event triggered by the main process on updating the banner
  * @param {string[]}
  */
 local.ipcRenderer.on('display-client-banner', (_event, args) => {
@@ -1089,6 +1116,22 @@ local.ipcRenderer.on('display-client-banner', (_event, args) => {
         return;
       }
       callback(args.reason, args.action);
+    }
+  }
+});
+
+/**
+ * An event triggered by the main process on updating the presence status
+ * @param {string[]}
+ */
+local.ipcRenderer.on('change-presence-status', (_event, args) => {
+  if (local.presenceUpdationCallback) {
+    for (const callback of local.presenceUpdationCallback) {
+      const presenceStatus = args.presenceStatus;
+      if (presenceStatus) {
+        callback(presenceStatus);
+        return;
+      }
     }
   }
 });
