@@ -83,7 +83,9 @@ const presenceMenu = Menu.buildFromTemplate([
         label: 'Busy',
         click() {
           updatePresence('BUSY');
-          const img = nativeImage.createFromPath('presence/sym_busy_black.png');
+          const img = nativeImage.createFromPath(
+            'presence/Presence_Busy_Mac_1x.png',
+          );
           tray.setImage(img);
         },
       },
@@ -480,7 +482,7 @@ ipcMain.on(
           OUT_OF_OFFICE: 'presence/symphony_black.png',
           OFFLINE: 'presence/symphony_black.png',
           BE_RIGHT_BACK: 'presence/sym_brb_black.png',
-          BUSY: 'presence/sym_busy_black.png',
+          BUSY: 'presence/Presence_Busy_Mac_2x.png',
           AVAILABLE: 'presence/sym_available_3.png',
         };
         const imgPath = imgMapping[presenceStatus.category];
