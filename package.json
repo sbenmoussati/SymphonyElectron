@@ -213,6 +213,7 @@
     "electron-dl": "3.5.0",
     "electron-fetch": "1.9.1",
     "electron-log": "4.4.8",
+    "electron-process-reporter": "^1.4.0",
     "electron-updater": "^5.0.1",
     "filesize": "6.4.0",
     "lazy-brush": "^1.0.1",
