@@ -26,10 +26,12 @@ class C9ShellHandler {
     this._sender = sender;
 
     powerMonitor.on('suspend', () => {
+      logger.info('kill c9 shell');
       this.terminateShell();
     });
 
     powerMonitor.on('resume', () => {
+      logger.info('start c9 shell');
       this.startShell();
     });
   }
