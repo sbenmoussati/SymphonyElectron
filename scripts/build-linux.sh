@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NODE_REQUIRED_VERSION=v12.13.1
+NODE_REQUIRED_VERSION=v16.13.2
 SNYK_ORG=sda
 SNYK_PROJECT_NAME="Symphony Desktop Application"
 
@@ -16,7 +16,7 @@ if [ -x "$(command -v nvm)" ]; then
 fi
 
 # Source all the profile files to ensure nvm is in path
-source $HOME/.nvm/nvm.sh
+. $HOME/.nvm/nvm.sh
 
 NODE_CURRENT_VERSION=$(nvm current)
 if [ "$NODE_REQUIRED_VERSION" != "$NODE_CURRENT_VERSION" ]; then
@@ -83,7 +83,7 @@ sed -i -e "s/\"buildNumber\"[[:space:]]*\:[[:space:]]*\".*\"/\"buildNumber\":\" 
 echo "Setting package version in pre install script to ${PKG_VERSION}"
 sed -i -e "s/CURRENT_VERSION=APP_VERSION/CURRENT_VERSION=${PKG_VERSION}/g" ./installer/mac/preinstall.sh
 
-if [ "$EXPIRY_PERIOD" == "0" ] || [ "$EXPIRY_PERIOD" == 0 ]; then
+if [ "$EXPIRY_PERIOD" -eq "0" ] || [ "$EXPIRY_PERIOD" -eq 0 ]; then
   echo 'Expiry period not set, so, not creating expiry for the build'
 else
   gulp setExpiry --period ${EXPIRY_PERIOD}

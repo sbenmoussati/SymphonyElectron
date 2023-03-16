@@ -55,7 +55,7 @@ export class PresenceStatus {
     place: string,
   ) => {
     let backgroundImage: string = '';
-    const os = isWindowsOS ? 'windows' : isMac ? 'macOS' : 'linux';
+    const os = isWindowsOS ? 'windows' : 'macOS';
     const theme = nativeTheme.shouldUseDarkColors ? 'light' : 'dark';
     const assetsPath = `src/renderer/assets/presence-status/${os}/${theme}`;
     let fileExtension = 'png';
@@ -63,7 +63,7 @@ export class PresenceStatus {
     switch (place) {
       case 'tray':
         iconPlace = '-tray';
-        fileExtension = isWindowsOS ? 'ico' : isMac ? 'png' : 'png';
+        fileExtension = isWindowsOS ? 'ico' : 'png';
         break;
       case 'thumbnail':
         iconPlace = '-thumbnail';
