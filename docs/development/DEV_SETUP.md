@@ -126,7 +126,7 @@ always-auth = true
 - Download and install Docker daemon [here](https://www.docker.com/products/docker-desktop)
 - Run the below docker commands under the project directory
 - To generate and tag the container
-`docker build -t linux:6.0.0 --build-arg REPO=https://github.com/symphonyoss/SymphonyElectron --build-arg BRANCH=linux .`
+`docker build -t linux:6.0.0 --build-arg REPO=https://github.com/finos/SymphonyElectron --build-arg BRANCH=main .`
 - To make sure the image is created and tagged correctly
 `docker images`
 - To run the docker image and generate the linux builds 🎉

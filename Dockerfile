@@ -1,4 +1,4 @@
-ARG REPO=https://github.com/symphonyoss/SymphonyElectron.git
+ARG REPO=https://github.com/finos/SymphonyElectron.git
 ARG BRANCH=main
 
 FROM ubuntu:latest
@@ -28,7 +28,7 @@ RUN apt-get install -y \
     rpm
 
 # install node
-RUN curl -sL https://deb.nodesource.com/setup_12.x | bash
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash
 RUN apt-get install -y nodejs
 
 # Clone specific branch and repo
