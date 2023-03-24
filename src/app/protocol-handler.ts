@@ -1,4 +1,4 @@
-import { CookiesSetDetails, session, WebContents } from 'electron';
+import { app, CookiesSetDetails, session, WebContents } from 'electron';
 import { apiName } from '../common/api-interface';
 import { isMac } from '../common/env';
 import { logger } from '../common/logger';
@@ -63,7 +63,7 @@ class ProtocolHandler {
     );
     // Handle protocol for Seamless login
     if (url?.includes('skey') && url?.includes('anticsrf')) {
-      await this.handleSeamlessLogin(url);
+      await this.handleBrowserLogin(url);
       return;
     }
 
@@ -110,14 +110,33 @@ class ProtocolHandler {
   }
 
   /**
+   * handles browser login
+   */
+  public async handleBrowserLogin(protocolUri: string): Promise<void> {
+    const appIsReady = app.isReady();
+    if (appIsReady) {
+      this.processURL(protocolUri);
+    } else {
+      app.whenReady().then(() => {
+        this.processURL(protocolUri);
+      });
+    }
+  }
+
+  /**
    * Sets session cookies and navigates to the pod url
    */
-  public async handleSeamlessLogin(protocolUri: string): Promise<void> {
+  private async processURL(protocolUri: string): Promise<void> {
+    if (config.userConfig && Object.keys(config.userConfig).length > 0) {
+      // force user config fetch
+      await config.readUserConfig();
+    }
     const globalConfig = config.getGlobalConfigFields(['url']);
     const userConfig = config.getUserConfigFields(['url']);
     const url = userConfig.url ? userConfig.url : globalConfig.url;
     const { subdomain, tld, domain } = whitelistHandler.parseDomain(url);
-    const cookieDomain = `.${subdomain}.${domain}${tld}`;
+    const formattedPodUrl = `${subdomain}.${domain}${tld}`;
+    const cookieDomain = `.${formattedPodUrl}`;
     if (protocolUri) {
       const urlParams = new URLSearchParams(new URL(protocolUri).search);
       const skeyValue = urlParams.get('skey');
@@ -152,10 +171,17 @@ class ProtocolHandler {
         }
       }
       const mainWebContents = windowHandler.getMainWebContents();
-      if (mainWebContents && !mainWebContents?.isDestroyed() && url) {
-        logger.info('protocol-handler: redirecting main webContents ', url);
-        windowHandler.setMainWindowOrigin(url);
-        mainWebContents?.loadURL(url);
+      if (
+        mainWebContents &&
+        !mainWebContents?.isDestroyed() &&
+        formattedPodUrl
+      ) {
+        logger.info(
+          'protocol-handler: redirecting main webContents ',
+          formattedPodUrl,
+        );
+        windowHandler.setMainWindowOrigin(formattedPodUrl);
+        mainWebContents?.loadURL(formattedPodUrl);
       }
     }
   }
