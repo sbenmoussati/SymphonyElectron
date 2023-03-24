@@ -298,8 +298,8 @@ ipcMain.on(
           if (mainWebContents) {
             const items = presenceStatus.createThumbarButtons();
             presenceStatus.updateSystemTrayPresence();
-            mainWindow?.setThumbarButtons(items);
-            logger.info('main-api-handler: Add actions preview menu');
+            const res = mainWindow?.setThumbarButtons(items);
+            logger.info('main-api-handler: Add actions preview menu', res);
           }
 
           if (appMenu && windowHandler.isMana) {

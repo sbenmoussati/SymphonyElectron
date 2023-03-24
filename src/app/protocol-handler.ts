@@ -135,8 +135,8 @@ class ProtocolHandler {
     const userConfig = config.getUserConfigFields(['url']);
     const url = userConfig.url ? userConfig.url : globalConfig.url;
     const { subdomain, tld, domain } = whitelistHandler.parseDomain(url);
-    const formattedPodUrl = `${subdomain}.${domain}${tld}`;
-    const cookieDomain = `.${formattedPodUrl}`;
+    const formattedPodUrl = `https://${subdomain}.${domain}${tld}`;
+    const cookieDomain = `.${subdomain}.${domain}${tld}`;
     if (protocolUri) {
       const urlParams = new URLSearchParams(new URL(protocolUri).search);
       const skeyValue = urlParams.get('skey');

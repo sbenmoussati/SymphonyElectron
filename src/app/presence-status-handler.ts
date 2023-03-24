@@ -38,7 +38,6 @@ class PresenceStatus {
           ),
         ),
         tooltip: i18n.t(EPresenceStatusCategory.AVAILABLE, this.NAMESPACE)(),
-        flags: ['enabled'],
       },
       {
         click: () => {
@@ -55,7 +54,6 @@ class PresenceStatus {
           ),
         ),
         tooltip: i18n.t(EPresenceStatusCategory.BUSY, this.NAMESPACE)(),
-        flags: ['enabled'],
       },
       {
         click: () => {
@@ -75,7 +73,6 @@ class PresenceStatus {
           EPresenceStatusCategory.BE_RIGHT_BACK,
           this.NAMESPACE,
         )(),
-        flags: ['enabled'],
       },
       {
         click: () => {
@@ -95,7 +92,6 @@ class PresenceStatus {
           EPresenceStatusCategory.OUT_OF_OFFICE,
           this.NAMESPACE,
         )(),
-        flags: ['enabled'],
       },
     ];
   };
