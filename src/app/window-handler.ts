@@ -2294,6 +2294,14 @@ export class WindowHandler {
   };
 
   /**
+   * Opens Chromium media internals
+   */
+  public openMediaInternals() {
+    const mediaInternalsWindow = new BrowserWindow();
+    mediaInternalsWindow.loadURL('chrome://media-internals');
+  }
+
+  /**
    * Listens for app load timeouts and reloads if required
    */
   private listenForLoad() {
