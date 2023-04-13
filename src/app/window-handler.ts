@@ -565,7 +565,8 @@ export class WindowHandler {
             url: podUrl,
             message: '',
             urlValid: !!podUrl,
-            isPodConfigured: this.isPodConfigured && !!podUrl,
+            isPodConfigured: !!podUrl,
+            isFirstTimeLaunch: config.isFirstTimeLaunch(),
             isBrowserLoginEnabled: this.config.enableBrowserLogin,
             browserLoginAutoConnect: this.config.browserLoginAutoConnect,
           });
