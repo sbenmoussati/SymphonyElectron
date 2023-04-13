@@ -699,6 +699,15 @@ export class AppMenu {
                 );
               },
             },
+            {
+              label: i18n.t('Chromium debugging')(),
+              submenu: [
+                {
+                  label: i18n.t('Media internals')(),
+                  click: windowHandler.openMediaInternals,
+                },
+              ],
+            },
           ],
         },
         {
