@@ -15,6 +15,7 @@ import { ICustomBrowserWindow, windowHandler } from './window-handler';
 
 import { autoLaunchInstance } from './auto-launch-controller';
 import { presenceStatusStore } from './stores';
+import { voiceHandler } from './voice-handler';
 
 // Set automatic period substitution to false because of a bug in draft js on the client app
 // See https://perzoinc.atlassian.net/browse/SDA-2215 for more details
@@ -83,7 +84,7 @@ const startApplication = async () => {
   await config.initializeUserConfig();
   await config.readUserConfig();
   await config.checkFirstTimeLaunch();
-
+  voiceHandler.registerSymphonyAsDefaultCallApp();
   if (config.isFirstTimeLaunch()) {
     logger.info(
       `main: This is a first time launch! will update config and handle auto launch`,

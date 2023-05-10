@@ -78,10 +78,9 @@
         "CFBundleURLTypes": [
           {
             "CFBundleTypeRole": "Viewer",
-            "CFBundleURLName": "com.symphony.electron-desktop",
+            "CFBundleURLName": "SymTel",
             "CFBundleURLSchemes": [
-              "tel",
-              "symphony"
+              "tel"
             ]
           }
         ]
