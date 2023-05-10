@@ -77,9 +77,11 @@
       "extendInfo": {
         "CFBundleURLTypes": [
           {
+            "CFBundleTypeRole": "Viewer",
             "CFBundleURLName": "com.symphony.electron-desktop",
             "CFBundleURLSchemes": [
-              "tel"
+              "tel",
+              "symphony"
             ]
           }
         ]
