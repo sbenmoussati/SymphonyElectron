@@ -74,6 +74,16 @@
       "entitlements": "entitlements.mac.plist",
       "notarize": false,
       "entitlementsInherit": "entitlements.mac.plist",
+      "extendInfo": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLName": "com.symphony.electron-desktop",
+            "CFBundleURLSchemes": [
+              "tel"
+            ]
+          }
+        ]
+      },
       "gatekeeperAssess": true,
       "hardenedRuntime": true,
       "binaries": [
