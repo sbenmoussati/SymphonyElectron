@@ -61,6 +61,7 @@ export interface ILocalObject {
   c9PipeEventCallback?: (event: string, arg?: any) => void;
   c9MessageCallback?: (status: IShellStatus) => void;
   updateMyPresenceCallback?: (presence: EPresenceStatusCategory) => void;
+  phoneNumberCallback?: (arg: string) => void;
 }
 
 const local: ILocalObject = {
@@ -876,6 +877,21 @@ export class SSFApi {
       autoUpdateTrigger,
     });
   }
+
+  /**
+   * Allows JS to register SDA for calls
+   * @param doRegister boolean
+   */
+  public registerVoiceServices(
+    phoneNumberCallback: (arg: string) => void,
+  ): void {
+    if (typeof phoneNumberCallback === 'function') {
+      local.phoneNumberCallback = phoneNumberCallback;
+    }
+    ipcRenderer.send(apiName.symphonyApi, {
+      cmd: apiCmds.registerVoiceServices,
+    });
+  }
 }
 
 /**
@@ -1144,6 +1160,24 @@ local.ipcRenderer.on('c9-pipe-event', (_event, args) => {
 local.ipcRenderer.on('c9-status-event', (_event, args) => {
   local.c9MessageCallback?.call(null, args?.status);
 });
+
+/**
+ * An event triggered by the main process
+ * for ever few minutes if the user is active
+ *
+ * @param {number} idleTime - current system idle tick
+ */
+local.ipcRenderer.on(
+  'phone-number-received',
+  (_event: Event, phoneNumber: string) => {
+    if (
+      typeof phoneNumber === 'string' &&
+      typeof local.phoneNumberCallback === 'function'
+    ) {
+      local.phoneNumberCallback(phoneNumber);
+    }
+  },
+);
 
 // Invoked whenever the app is reloaded/navigated
 const sanitize = (): void => {

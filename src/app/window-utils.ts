@@ -1,3 +1,4 @@
+import { exec } from 'child_process';
 import {
   app,
   BrowserView,
@@ -1431,4 +1432,88 @@ export const loadBrowserViews = async (
   windowHandler.setTitleBarView(titleBarView);
 
   return mainView.webContents;
+};
+
+/**
+ *
+ * @param callback
+ */
+export const getLaunchServicesPlistPath = (
+  callback: (plist: string) => void,
+) => {
+  const secure = `${process.env.HOME}/Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure.plist`;
+  const insecure = `${process.env.HOME}/Library/Preferences/com.apple.LaunchServices.plist`;
+
+  fs.exists(secure, (exists) =>
+    exists ? callback(secure) : callback(insecure),
+  );
+};
+
+/**
+ *
+ * @param callback
+ */
+export const readDefaults = (callback) => {
+  getLaunchServicesPlistPath((plistPath) => {
+    const tmpPath = `${plistPath}.${Math.random()}`;
+    exec(`plutil -convert json "${plistPath}" -o "${tmpPath}"`, (err) => {
+      if (err) {
+        callback(err);
+        return;
+      }
+      fs.readFile(tmpPath, (readErr, data) => {
+        if (readErr) {
+          callback(readErr);
+          return;
+        }
+        try {
+          const json = JSON.parse(data.toString());
+          callback(json.LSHandlers, json);
+          fs.unlink(tmpPath, (err) => {
+            logger.error('Error: ', err);
+          });
+        } catch (e) {
+          callback(e);
+        }
+      });
+    });
+  });
+};
+
+/**
+ *
+ * @param defaults
+ * @param callback
+ */
+export const writeDefaults = (defaults, callback) => {
+  getLaunchServicesPlistPath((plistPath) => {
+    const tmpPath = `${plistPath}.${Math.random()}`;
+    exec(`plutil -convert json "${plistPath}" -o "${tmpPath}"`, (err) => {
+      if (err) {
+        callback(err);
+        return;
+      }
+      try {
+        let data = fs.readFileSync(tmpPath).toString();
+        data = JSON.parse(data);
+        (data as any).LSHandlers = defaults;
+        data = JSON.stringify(data);
+        fs.writeFileSync(tmpPath, data);
+      } catch (e) {
+        callback(e as any);
+        return;
+      }
+      exec(`plutil -convert binary1 "${tmpPath}" -o "${plistPath}"`, () => {
+        fs.unlink(tmpPath, (err) => {
+          logger.error('error: ', err);
+        });
+        exec(
+          '/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user',
+          (registerErr) => {
+            callback(registerErr as any);
+          },
+        );
+      });
+    });
+  });
 };

@@ -37,7 +37,7 @@
   },
   "build": {
     "appId": "com.symphony.electron-desktop",
-    "compression": "maximum",
+    "compression": "store",
     "artifactName": "${productName}-${version}-${os}.${ext}",
     "asar": true,
     "asarUnpack": "**/*.node",
@@ -74,6 +74,17 @@
       "entitlements": "entitlements.mac.plist",
       "notarize": false,
       "entitlementsInherit": "entitlements.mac.plist",
+      "extendInfo": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleTypeRole": "Viewer",
+            "CFBundleURLName": "SymTel",
+            "CFBundleURLSchemes": [
+              "tel"
+            ]
+          }
+        ]
+      },
       "gatekeeperAssess": true,
       "hardenedRuntime": true,
       "binaries": [
@@ -219,6 +230,7 @@
     "electron-updater": "^5.0.1",
     "filesize": "6.4.0",
     "lazy-brush": "^1.0.1",
+    "rage-edit": "^1.2.0",
     "react": "16.14.0",
     "react-dom": "16.14.0",
     "rimraf": "^3.0.2",
