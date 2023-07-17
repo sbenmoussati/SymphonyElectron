@@ -183,26 +183,39 @@ class VoiceHandler {
    * Registers app on macOS
    */
   private registerAppOnMacOS(protocols: PhoneNumberProtocol[]) {
-    this.readLaunchServicesPlist((plist) => {
-      for (const protocol of protocols) {
-        const itemIdx = plist.LSHandlers.findIndex(
-          (lsHandler) => lsHandler.LSHandlerURLScheme === protocol,
-        );
-        // macOS allows only one app being declared as able to make calls
-        if (itemIdx !== -1) {
-          plist.splice(itemIdx, 1);
-        }
-        const plistEntry = {
-          LSHandlerURLScheme: protocol,
-          LSHandlerRoleAll: 'com.symphony.electron-desktop',
-          LSHandlerPreferredVersions: {
-            LSHandlerRoleAll: '-',
-          },
-        };
-        plist.LSHandlers.push(plistEntry);
+    const allowedProtocols = [PhoneNumberProtocol.Sms, PhoneNumberProtocol.Tel];
+    for (const protocol of protocols) {
+      const idx = allowedProtocols.indexOf(protocol);
+      if (idx > -1) {
+        app.setAsDefaultProtocolClient(protocol);
+        allowedProtocols.splice(idx, 1);
       }
-      this.updateLaunchServicesPlist(plist);
-    });
+    }
+    if (allowedProtocols.length) {
+      for (const unsupportedProtocol of allowedProtocols) {
+        app.removeAsDefaultProtocolClient(unsupportedProtocol);
+      }
+    }
+    // this.readLaunchServicesPlist((plist) => {
+    //   for (const protocol of protocols) {
+    //     const itemIdx = plist.LSHandlers.findIndex(
+    //       (lsHandler) => lsHandler.LSHandlerURLScheme === protocol,
+    //     );
+    //     // macOS allows only one app being declared as able to make calls
+    //     if (itemIdx !== -1) {
+    //       plist.splice(itemIdx, 1);
+    //     }
+    //     const plistEntry = {
+    //       LSHandlerURLScheme: protocol,
+    //       LSHandlerRoleAll: 'com.symphony.electron-desktop',
+    //       LSHandlerPreferredVersions: {
+    //         LSHandlerRoleAll: '-',
+    //       },
+    //     };
+    //     plist.LSHandlers.push(plistEntry);
+    //   }
+    //   this.updateLaunchServicesPlist(plist);
+    // });
   }
 
   /**
