@@ -103,6 +103,7 @@ if (ssfWindow.ssf) {
     getMyPresence: ssfWindow.ssf.getMyPresence,
     registerPhoneNumberServices: ssfWindow.ssf.registerPhoneNumberServices,
     unregisterPhoneNumberServices: ssfWindow.ssf.unregisterPhoneNumberServices,
+    persistLogs: ssfWindow.ssf.persistLogs,
   });
 }
 

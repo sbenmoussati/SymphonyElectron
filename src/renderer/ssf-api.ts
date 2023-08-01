@@ -351,6 +351,17 @@ export class SSFApi {
   }
 
   /**
+   * Persist logs on the disk
+   * @param logs
+   */
+  public persistLogs(logs: any) {
+    local.ipcRenderer.send(apiName.symphonyApi, {
+      cmd: apiCmds.persistLogs,
+      log: logs,
+    });
+  }
+
+  /**
    * Allows JS to register analytics event handler
    * to pass analytics event data
    *

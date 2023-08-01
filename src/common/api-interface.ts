@@ -80,6 +80,7 @@ export enum apiCmds {
   updateSymphonyTray = 'update-system-tray',
   registerPhoneNumberServices = 'register-phone-numbers-services',
   unregisterPhoneNumberServices = 'unregister-phone-numbers-services',
+  persistLogs = 'persistLogs',
 }
 
 export enum apiName {

@@ -1,5 +1,5 @@
 import { app, WebContents } from 'electron';
-import electronLog, { LogLevel, transports } from 'electron-log';
+import electronLog, { ElectronLog, LogLevel, transports } from 'electron-log';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as util from 'util';
@@ -38,6 +38,7 @@ class Logger {
   private readonly logQueue: ILogMsg[];
   private readonly logPath: string;
   private loggerWindow: WebContents | null;
+  private rendererLogger: ElectronLog;
 
   constructor() {
     this.loggerWindow = null;
@@ -59,14 +60,20 @@ class Logger {
     }
 
     this.logPath = app.getPath('logs');
-
-    if (app.isPackaged) {
-      transports.file.file = path.join(this.logPath, `app_${Date.now()}.log`);
-      transports.file.level = 'debug';
-      transports.file.format =
-        '{y}-{m}-{d} {h}:{i}:{s}:{ms} {z} | {level} | {text}';
-      transports.file.appName = 'Symphony';
-    }
+    this.rendererLogger = electronLog.create('c2-logger');
+    transports.file.file = path.join(this.logPath, `app_${Date.now()}.log`);
+    this.rendererLogger.transports.file.file = path.join(
+      this.logPath,
+      `mana_${Date.now()}.log`,
+    );
+    transports.file.level = 'debug';
+    this.rendererLogger.transports.file.level = 'debug';
+    this.rendererLogger.transports.file.format =
+      '{y}-{m}-{d} {h}:{i}:{s}:{ms} {z} | {level} | {text}';
+    transports.file.format =
+      '{y}-{m}-{d} {h}:{i}:{s}:{ms} {z} | {level} | {text}';
+    transports.file.appName = 'Symphony';
+    this.rendererLogger.transports.file.appName = 'Symphony';
 
     const logLevel = getCommandLineArgs(process.argv, '--logLevel=', false);
     if (logLevel) {
@@ -171,6 +178,37 @@ class Logger {
       }
       if (Object.keys(logMsgs).length) {
         this.loggerWindow.send('log', logMsgs);
+      }
+    }
+  }
+
+  /**
+   * Logger dedicated to web app logs
+   * @param logs
+   */
+  public uiLogger(logs: any[]) {
+    for (const log of logs) {
+      const { logName, logLevel, msg, args } = log;
+      const stringifiedArgs = JSON.stringify(args);
+      const logMessage = `${logName} - ${msg} - ${stringifiedArgs}`;
+      switch (logLevel) {
+        case 1:
+          this.rendererLogger.error(logMessage);
+        case 2:
+          this.rendererLogger.warn(logMessage);
+          break;
+        case 3:
+          this.rendererLogger.info(logMessage);
+          break;
+        case 4:
+          this.rendererLogger.debug(logMessage);
+          break;
+        case 5:
+          this.rendererLogger.silly(logMessage);
+          break;
+        default:
+          this.rendererLogger.info(logMessage);
+          break;
       }
     }
   }

@@ -679,6 +679,10 @@ const logApiCallParams = (arg: any) => {
         )}`,
       );
       break;
+    case apiCmds.persistLogs:
+      const logs = arg.log as any[];
+      logger.uiLogger(logs);
+      break;
     default:
       logger.info(
         `main-api-handler: - ${apiCmd} - Properties: ${JSON.stringify(
