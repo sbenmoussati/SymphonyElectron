@@ -2302,6 +2302,14 @@ export class WindowHandler {
   }
 
   /**
+   * Open tracing tool
+   */
+  public openTracingTool() {
+    const mediaInternalsWindow = new BrowserWindow();
+    mediaInternalsWindow.loadURL('chrome://tracing');
+  }
+
+  /**
    * Listens for app load timeouts and reloads if required
    */
   private listenForLoad() {

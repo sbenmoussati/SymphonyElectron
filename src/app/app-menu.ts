@@ -712,6 +712,10 @@ export class AppMenu {
                   label: i18n.t('Media internals')(),
                   click: windowHandler.openMediaInternals,
                 },
+                {
+                  label: i18n.t('Tracing tool')(),
+                  click: windowHandler.openTracingTool,
+                },
               ],
             },
           ],
