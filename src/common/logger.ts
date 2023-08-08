@@ -21,6 +21,8 @@ interface IClientLogMsg {
 }
 
 const MAX_LOG_QUEUE_LENGTH = 100;
+const DEFAULT_LOGS_FORMAT =
+  '{y}-{m}-{d} {h}:{i}:{s}:{ms} {z} | {level} | {text}';
 
 // Force log path to local path in Windows rather than roaming
 if (isWindowsOS && process.env.LOCALAPPDATA) {
@@ -58,8 +60,10 @@ class Logger {
       }
       app.setPath('logs', customLogsFolder);
     }
-
     this.logPath = app.getPath('logs');
+    this.createDefaultLogger();
+    this.createRendererLogger();
+
     this.rendererLogger = electronLog.create('c2-logger');
     transports.file.file = path.join(this.logPath, `app_${Date.now()}.log`);
     this.rendererLogger.transports.file.file = path.join(
@@ -322,6 +326,28 @@ class Logger {
         }
       }
     });
+  }
+
+  /**
+   * SDA logger
+   */
+  private createDefaultLogger(): void {
+    transports.file.file = path.join(this.logPath, `app_${Date.now()}.log`);
+    transports.file.level = 'debug';
+    transports.file.format = DEFAULT_LOGS_FORMAT;
+  }
+
+  /**
+   * mana logger
+   */
+  private createRendererLogger(): void {
+    this.rendererLogger = electronLog.create('c2-logger');
+    this.rendererLogger.transports.file.file = path.join(
+      this.logPath,
+      `mana_${Date.now()}.log`,
+    );
+    this.rendererLogger.transports.file.level = 'debug';
+    this.rendererLogger.transports.file.format = DEFAULT_LOGS_FORMAT;
   }
 }
 
