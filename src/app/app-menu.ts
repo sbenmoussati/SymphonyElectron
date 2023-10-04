@@ -132,7 +132,6 @@ export class AppMenu {
   private cloudConfig: IConfig | {};
 
   private readonly menuItemConfigFields: string[];
-  private disableGpu: boolean;
   private enableRendererLogs: boolean;
 
   constructor() {
@@ -142,7 +141,6 @@ export class AppMenu {
     this.cloudConfig = config.getFilteredCloudConfigFields(
       this.menuItemConfigFields,
     );
-    this.disableGpu = config.getConfigFields(['disableGpu']).disableGpu;
     this.enableRendererLogs = config.getConfigFields([
       'enableRendererLogs',
     ]).enableRendererLogs;
@@ -654,14 +652,6 @@ export class AppMenu {
                   }
                   return;
                 }
-              },
-            },
-            {
-              label: this.disableGpu
-                ? i18n.t('Enable GPU')()
-                : i18n.t('Disable GPU')(),
-              click: () => {
-                restartDialog({ disableGpu: !this.disableGpu });
               },
             },
             {
