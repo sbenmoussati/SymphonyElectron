@@ -1604,7 +1604,7 @@ export class WindowHandler {
         alwaysOnTop: true,
         autoHideMenuBar: true,
         frame: false,
-        modal: false,
+        modal: true,
         height: isMac ? 519 : 523,
         width: 580,
         show: false,
