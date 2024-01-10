@@ -61,7 +61,7 @@ exports[`about app should render correctly 1`] = `
     <p
       className="AboutApp-copyright-text"
     >
-      Copyright © 2023 Symphony
+      Copyright © 2024 Symphony
     </p>
   </div>
 </div>
