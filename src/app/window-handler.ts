@@ -189,7 +189,7 @@ export class WindowHandler {
   private currentWindow?: string = undefined;
   private shouldShowWelcomeScreen: boolean = true;
   private defaultUrl: string = 'my.symphony.com';
-  private didShowWelcomeScreen: boolean = false;
+  private didShowWelcomeScreen: boolean = true;
   private cmdUrl: string = '';
 
   constructor(opts?: Electron.BrowserViewConstructorOptions) {
@@ -283,10 +283,7 @@ export class WindowHandler {
       this.config.isCustomTitleBar === CloudConfigDataTypes.ENABLED;
     // Get url to load from cmd line or from global config file
     const urlFromCmd = getCommandLineArgs(process.argv, '--url=', false);
-    this.shouldShowWelcomeScreen =
-      (this.globalConfig.url.includes(this.defaultUrl) &&
-        config.isFirstTimeLaunch()) ||
-      !!this.config.enableBrowserLogin;
+    this.shouldShowWelcomeScreen = false;
 
     this.windowOpts = {
       ...this.getWindowOpts(
