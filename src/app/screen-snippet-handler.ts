@@ -186,8 +186,8 @@ class ScreenSnippet {
           currentWindowName,
           hideOnCapture,
         );
-        this.uploadSnippet(webContents, hideOnCapture);
-        this.closeSnippet(webContents);
+        this.uploadSnippet(currentWindowObj, webContents, hideOnCapture);
+        this.closeSnippet(currentWindowObj);
         this.copyToClipboard();
         this.saveAs();
         return;
@@ -335,9 +335,13 @@ class ScreenSnippet {
    * Uploads a screen snippet
    * @param webContents A browser window's web contents object
    */
-  private uploadSnippet(webContents: WebContents, hideOnCapture?: boolean) {
-    ipcMain.once(
-      'upload-snippet',
+  private uploadSnippet(
+    focusedWindow: BrowserWindow | null,
+    webContents: WebContents,
+    hideOnCapture?: boolean,
+  ) {
+    ipcMain.on(
+      ScreenShotAnnotation.UPLOAD,
       async (
         _event,
         snippetData: { screenSnippetPath: string; mergedImageData: string },
@@ -362,16 +366,22 @@ class ScreenSnippet {
             `screen-snippet-handler: upload of screen capture failed with error: ${error}!`,
           );
         }
-        webContents.focus();
+        if (focusedWindow && !focusedWindow.isDestroyed()) {
+          focusedWindow.webContents.focus();
+        } else {
+          logger.info(
+            'screen-snippet-handler: tried to focus a destroyed window on upload ',
+            (focusedWindow as ICustomBrowserWindow).winName,
+          );
+        }
       },
     );
   }
-
   /**
    * Close the current snippet
    */
-  private closeSnippet(webContents: WebContents) {
-    ipcMain.once(ScreenShotAnnotation.CLOSE, async (_event) => {
+  private closeSnippet(focusedWindow: BrowserWindow | null) {
+    ipcMain.on(ScreenShotAnnotation.CLOSE, async (_event) => {
       try {
         windowHandler.closeSnippingToolWindow();
         await this.verifyAndUpdateAlwaysOnTop();
@@ -381,8 +391,14 @@ class ScreenSnippet {
           `screen-snippet-handler: close window failed with error: ${error}!`,
         );
       }
-
-      webContents?.focus();
+      if (focusedWindow && !focusedWindow.isDestroyed()) {
+        focusedWindow.webContents.focus();
+      } else {
+        logger.warn(
+          'screen-snippet-handler: tried to focus a destroyed window on close ',
+          (focusedWindow as ICustomBrowserWindow).winName,
+        );
+      }
     });
   }
 
