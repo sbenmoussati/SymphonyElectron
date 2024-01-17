@@ -4,6 +4,8 @@ import Timeout = NodeJS.Timeout;
 import { logger } from '../common/logger';
 import { windowHandler } from './window-handler';
 
+//TODO: CLEAR COMMENT - FILE ALIGNED!
+
 class ActivityDetection {
   private idleThreshold: number;
   private window: WebContents | null;

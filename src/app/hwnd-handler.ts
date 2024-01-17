@@ -1,8 +1,10 @@
 import { execFile, ExecFileException } from 'child_process';
 import { app } from 'electron';
 import * as path from 'path';
-import { isDevEnv, isWindowsOS } from '../common/env';
+import { isWindowsOS } from '../common/env';
 import { logger } from '../common/logger';
+
+const isDevEnv = !app.isPackaged;
 
 /**
  * Translate the nativeWindowHandle of an Electron BrowserWindow to the handle
@@ -12,14 +14,14 @@ import { logger } from '../common/logger';
  * @returns translated window handle, or original handle if no applicable translation found
  */
 export const getContentWindowHandle = async (
-  nativeWindowHandle: Buffer,
+  nativeWindowHandle: Buffer
 ): Promise<any> => {
   const execCmd = (
     captureUtil: string,
-    captureUtilArgs: ReadonlyArray<string>,
+    captureUtilArgs: ReadonlyArray<string>
   ): Promise<any> => {
     logger.info(
-      `screen-snippet-handlers: execCmd ${captureUtil} ${captureUtilArgs}`,
+      `screen-snippet-handlers: execCmd ${captureUtil} ${captureUtilArgs}`
     );
     return new Promise<string>((resolve, reject) => {
       return execFile(
@@ -30,7 +32,7 @@ export const getContentWindowHandle = async (
             return reject(error);
           }
           resolve(stdout);
-        },
+        }
       );
     });
   };
@@ -60,17 +62,17 @@ export const getContentWindowHandle = async (
   const hwndExecPath = isDevEnv
     ? path.join(
         __dirname,
-        '../../../node_modules/symphony-native-window-handle-helper/SymphonyNativeWindowHandleHelper.exe',
+        '../../../node_modules/symphony-native-window-handle-helper/SymphonyNativeWindowHandleHelper.exe'
       )
     : path.join(
         path.dirname(app.getPath('exe')),
-        'SymphonyNativeWindowHandleHelper.exe',
+        'SymphonyNativeWindowHandleHelper.exe'
       );
   const hwndExecArgs = [dec.toString()];
   const output = await execCmd(hwndExecPath, hwndExecArgs);
   if (!output.length) {
     logger.error(
-      'hwnd-handler: cannot retrieve the right window handle. Returning default one',
+      'hwnd-handler: cannot retrieve the right window handle. Returning default one'
     );
     return nativeWindowHandle;
   }

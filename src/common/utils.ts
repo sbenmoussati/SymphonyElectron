@@ -114,11 +114,11 @@ export const compareVersions = (v1: string, v2: string): number => {
 export const getCommandLineArgs = (
   argv: string[],
   argName: string,
-  exactMatch: boolean,
+  exactMatch: boolean
 ): string | null => {
   if (!Array.isArray(argv)) {
     throw new Error(
-      `get-command-line-args: TypeError invalid func arg, must be an array: ${argv}`,
+      `get-command-line-args: TypeError invalid func arg, must be an array: ${argv}`
     );
   }
 
@@ -198,11 +198,11 @@ export const filterOutSelectedValues = (data: object, values): object => {
  */
 export const throttle = (
   func: (...args) => void,
-  wait: number,
+  wait: number
 ): ((...args) => void) => {
   if (wait <= 0) {
     throw Error(
-      'throttle: invalid throttleTime arg, must be a number: ' + wait,
+      'throttle: invalid throttleTime arg, must be a number: ' + wait
     );
   }
 
@@ -304,7 +304,7 @@ export const getRandomTime = (min: number, max: number): number => {
 export const getDifferenceInDays = (startDate: Date, endDate: Date): number => {
   const msInDay = 24 * 60 * 60 * 1000;
   return Math.round(
-    Math.abs(Number(endDate.getTime()) - Number(startDate.getTime())) / msInDay,
+    Math.abs(Number(endDate.getTime()) - Number(startDate.getTime())) / msInDay
   );
 };
 

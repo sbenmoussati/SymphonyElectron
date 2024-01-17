@@ -2,6 +2,25 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Electron: Main",
+      "type": "node",
+      "request": "launch",
+      "protocol": "inspector",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start"],
+      "env": {
+        "MAIN_ARGS": "--inspect=5858 --remote-debugging-port=9223 --remote-allow-origins=http://localhost:9223 --url=https://corporate.symphony.com"
+      }
+    },
+    {
+      "name": "Electron: Renderer",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223,
+      "webRoot": "${workspaceFolder}",
+      "timeout": 15000
+    },
+    {
       "name": "Corp",
       "type": "node",
       "request": "launch",
@@ -184,6 +203,12 @@
       "outputCapture": "std",
       "sourceMaps": true,
       "outFiles": ["${workspaceFolder}/lib/**/*.js"]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Electron: All",
+      "configurations": ["Electron: Main", "Electron: Renderer"]
     }
   ]
 }

@@ -759,7 +759,7 @@ export class AppMenu {
               visible: isCorp,
               type: 'checkbox',
               checked: updateChannel === Channels.Stable,
-              label: i18n.t('Stable')(),
+              label: i18n.t('Stable')()
             },
             {
               id: `${Target.SDA}-${Channels.Latest}`,
@@ -768,7 +768,7 @@ export class AppMenu {
               visible: isCorp,
               type: 'checkbox',
               checked: updateChannel === Channels.Latest,
-              label: i18n.t('Latest')(),
+              label: i18n.t('Latest')()
             },
             {
               id: `${Target.SDA}-${Channels.IV}`,
@@ -777,7 +777,7 @@ export class AppMenu {
               visible: isCorp && isWindowsOS,
               type: 'checkbox',
               checked: updateChannel === Channels.IV,
-              label: i18n.t('IV Dogfooding')(),
+              label: i18n.t('IV Dogfooding')()
             },
             {
               id: `${Target.SDA}-${Channels.Beta}`,
@@ -786,7 +786,7 @@ export class AppMenu {
               visible: isCorp,
               type: 'checkbox',
               checked: updateChannel === Channels.Beta,
-              label: i18n.t('Beta')(),
+              label: i18n.t('Beta')()
             },
             {
               id: `${Target.SDA}-${Channels.Daily}`,
@@ -795,7 +795,7 @@ export class AppMenu {
               visible: isCorp,
               type: 'checkbox',
               checked: updateChannel === Channels.Daily,
-              label: i18n.t('Daily')(),
+              label: i18n.t('Daily')()
             },
           ],
         },

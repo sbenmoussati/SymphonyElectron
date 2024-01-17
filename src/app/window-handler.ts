@@ -2,6 +2,7 @@ import { execFile, ExecFileException } from 'child_process';
 import {
   app,
   BrowserView,
+  BrowserViewConstructorOptions,
   BrowserWindow,
   BrowserWindowConstructorOptions,
   crashReporter,
@@ -27,9 +28,14 @@ import {
   Themes,
   WindowTypes,
 } from '../common/api-interface';
-import { isDevEnv, isLinux, isMac, isWindowsOS } from '../common/env';
+import { isLinux, isMac, isWindowsOS } from '../common/env';
 import { i18n, LocaleType } from '../common/i18n';
-import { ScreenShotAnnotation } from '../common/ipcEvent';
+import {
+  AboutAppEvents,
+  LoadingScreenEvents,
+  ScreenShareEvents,
+  ScreenShotAnnotationEvents,
+} from '../common/ipcEvent';
 import { logger } from '../common/logger';
 import {
   calculatePercentage,
@@ -37,7 +43,6 @@ import {
   getGuid,
   throttle,
 } from '../common/utils';
-import { notification } from '../renderer/notification';
 import { cleanAppCacheOnCrash } from './app-cache-handler';
 import { AppMenu } from './app-menu';
 import { analytics } from './bi/analytics-handler';
@@ -85,12 +90,16 @@ import {
   viewExists,
   windowExists,
 } from './window-utils';
+import { resolveHtmlPath } from './util';
+import { notification } from './notification';
 
 const windowSize: string | null = getCommandLineArgs(
   process.argv,
   '--window-size',
-  false,
+  false
 );
+
+const isDevEnv = !app.isPackaged;
 
 export enum ClientSwitchType {
   CLIENT_2_0 = 'CLIENT_2_0',
@@ -106,17 +115,17 @@ const MAIN_WEB_CONTENTS_EVENTS = ['enter-full-screen', 'leave-full-screen'];
 const SHORTCUT_KEY_THROTTLE = 1000; // 1sec
 
 export interface ICustomBrowserWindowConstructorOpts
-  extends Electron.BrowserWindowConstructorOptions {
+  extends BrowserWindowConstructorOptions {
   winKey: string;
 }
 
-export interface ICustomBrowserWindow extends Electron.BrowserWindow {
+export interface ICustomBrowserWindow extends BrowserWindow {
   winName: string;
   notificationData?: INotificationData | ICallNotificationData;
   origin?: string;
 }
 
-export interface ICustomBrowserView extends Electron.BrowserView {
+export interface ICustomBrowserView extends BrowserView {
   winName: string;
   notificationData?: object;
   origin?: string;
@@ -175,16 +184,16 @@ export class WindowHandler {
   private userConfig: IConfig = {} as IConfig;
   private loadFailError: string | undefined;
   private mainWindow: ICustomBrowserWindow | null = null;
-  private aboutAppWindow: Electron.BrowserWindow | null = null;
-  private screenPickerWindow: Electron.BrowserWindow | null = null;
-  private screenPickerPlaceholderWindow: Electron.BrowserWindow | null = null;
-  private screenSharingIndicatorWindow: Electron.BrowserWindow | null = null;
-  private screenSharingFrameWindow: Electron.BrowserWindow | null = null;
-  private basicAuthWindow: Electron.BrowserWindow | null = null;
-  private notificationSettingsWindow: Electron.BrowserWindow | null = null;
+  private aboutAppWindow: BrowserWindow | null = null;
+  private screenPickerWindow: BrowserWindow | null = null;
+  private screenPickerPlaceholderWindow: BrowserWindow | null = null;
+  private screenSharingIndicatorWindow: BrowserWindow | null = null;
+  private screenSharingFrameWindow: BrowserWindow | null = null;
+  private basicAuthWindow: BrowserWindow | null = null;
+  private notificationSettingsWindow: BrowserWindow | null = null;
   private snippingToolWindow: ICustomBrowserWindow | null = null;
   private finishedLoading: boolean = false;
-  private readonly opts: Electron.BrowserViewConstructorOptions | undefined;
+  private readonly opts: BrowserViewConstructorOptions | undefined;
   private hideOnCapture: boolean = false;
   private currentWindow?: string = undefined;
   private shouldShowWelcomeScreen: boolean = true;
@@ -192,39 +201,44 @@ export class WindowHandler {
   private didShowWelcomeScreen: boolean = false;
   private cmdUrl: string = '';
 
-  constructor(opts?: Electron.BrowserViewConstructorOptions) {
+  constructor(opts?: BrowserViewConstructorOptions) {
     this.opts = opts;
     this.screenShareIndicatorFrameUtil = '';
     if (isWindowsOS) {
       this.screenShareIndicatorFrameUtil = isDevEnv
         ? path.join(
             __dirname,
-            '../../../node_modules/screen-share-indicator-frame/ScreenShareIndicatorFrame.exe',
+            '../../../node_modules/screen-share-indicator-frame/ScreenShareIndicatorFrame.exe'
           )
         : path.join(
             path.dirname(app.getPath('exe')),
-            'ScreenShareIndicatorFrame.exe',
+            'ScreenShareIndicatorFrame.exe'
           );
     } else if (isMac) {
       this.screenShareIndicatorFrameUtil = isDevEnv
         ? path.join(
             __dirname,
-            '../../../node_modules/screen-share-indicator-frame/SymphonyScreenShareIndicator',
+            '../../../node_modules/screen-share-indicator-frame/SymphonyScreenShareIndicator'
           )
         : path.join(
             path.dirname(app.getPath('exe')),
-            '../node_modules/screen-share-indicator-frame/SymphonyScreenShareIndicator',
+            '../node_modules/screen-share-indicator-frame/SymphonyScreenShareIndicator'
           );
     }
     this.listenForLoad();
     // Handle uncaught exception and terminate application
     process.on('uncaughtException', async (error) => {
-      logger.error('window-handler: uncaught exception', error);
+      logger.error(
+        'window-handler: uncaught exception',
+        error.name,
+        error.message,
+        error.stack
+      );
       const messageBoxOptions: MessageBoxSyncOptions = {
         type: 'question',
         title: i18n.t('Relaunch Application')(),
         message: i18n.t(
-          `Error in Main Process. Would you like to restart the app?`,
+          `Error in Main Process. Would you like to restart the app?`
         )(),
         detail: error.message,
         buttons: [i18n.t('Relaunch')(), i18n.t('Cancel')()],
@@ -259,7 +273,7 @@ export class WindowHandler {
     ]);
     logger.info(
       `window-handler: main windows initialized with following config data`,
-      this.config,
+      this.config
     );
     this.globalConfig = config.getGlobalConfigFields([
       'url',
@@ -300,8 +314,10 @@ export class WindowHandler {
           show: false,
         },
         {
-          preload: path.join(__dirname, '../renderer/_preload-main.js'),
-        },
+          preload: app.isPackaged
+            ? path.join(__dirname, 'preload.js')
+            : path.join(__dirname, '../../.erb/dll/preload.js'),
+        }
       ),
       ...this.opts,
     };
@@ -318,12 +334,12 @@ export class WindowHandler {
     });
     this.spellchecker = new SpellChecker();
     logger.info(
-      `window-handler: initialized spellchecker module with locale ${this.spellchecker.locale}`,
+      `window-handler: initialized spellchecker module with locale ${this.spellchecker.locale}`
     );
 
     logger.info(
       'window-handler: createApplication mainWinPos: ' +
-        JSON.stringify(this.config.mainWinPos),
+        JSON.stringify(this.config.mainWinPos)
     );
 
     const { isFullScreen, isMaximized } = this.config.mainWinPos
@@ -331,7 +347,7 @@ export class WindowHandler {
       : { isFullScreen: false, isMaximized: false };
 
     this.url = WindowHandler.getValidUrl(
-      this.userConfig.url ? this.userConfig.url : this.globalConfig.url,
+      this.userConfig.url ? this.userConfig.url : this.globalConfig.url
     );
     logger.info(`window-handler: setting url ${this.url} from config file!`);
 
@@ -349,7 +365,7 @@ export class WindowHandler {
       const sizes = args[1].split(',');
       logger.info('window-handler: windowSize: args: ' + JSON.stringify(args));
       logger.info(
-        'window-handler: windowSize: sizes: ' + JSON.stringify(sizes),
+        'window-handler: windowSize: sizes: ' + JSON.stringify(sizes)
       );
       if (this.mainWindow && windowExists(this.mainWindow)) {
         this.mainWindow.setSize(Number(sizes[0]), Number(sizes[1]));
@@ -363,7 +379,7 @@ export class WindowHandler {
 
     logger.info(
       'window-handler: this.mainWindow.getBounds: ' +
-        JSON.stringify(this.mainWindow.getBounds()),
+        JSON.stringify(this.mainWindow.getBounds())
     );
 
     this.mainWindow.winName = apiName.mainWindowName;
@@ -371,31 +387,31 @@ export class WindowHandler {
     if (urlFromCmd) {
       const commandLineUrl = urlFromCmd.substr(6);
       logger.info(
-        `window-handler: trying to set url ${commandLineUrl} from command line.`,
+        `window-handler: trying to set url ${commandLineUrl} from command line.`
       );
       const { podWhitelist } = config.getConfigFields(['podWhitelist']);
       logger.info(`window-handler: checking pod whitelist.`);
       if (podWhitelist.length > 0) {
         logger.info(
-          `window-handler: pod whitelist is not empty ${podWhitelist}`,
+          `window-handler: pod whitelist is not empty ${podWhitelist}`
         );
         if (podWhitelist.includes(commandLineUrl)) {
           logger.info(
-            `window-handler: url from command line is whitelisted in the config file.`,
+            `window-handler: url from command line is whitelisted in the config file.`
           );
           logger.info(
-            `window-handler: setting ${commandLineUrl} from the command line as the main window url.`,
+            `window-handler: setting ${commandLineUrl} from the command line as the main window url.`
           );
           this.cmdUrl = commandLineUrl;
           this.url = commandLineUrl;
         } else {
           logger.info(
-            `window-handler: url ${commandLineUrl} from command line is NOT WHITELISTED in the config file.`,
+            `window-handler: url ${commandLineUrl} from command line is NOT WHITELISTED in the config file.`
           );
         }
       } else {
         logger.info(
-          `window-handler: setting ${commandLineUrl} from the command line as the main window url since pod whitelist is empty.`,
+          `window-handler: setting ${commandLineUrl} from the command line as the main window url since pod whitelist is empty.`
         );
         this.cmdUrl = commandLineUrl;
         this.url = commandLineUrl;
@@ -406,7 +422,7 @@ export class WindowHandler {
     const isMaximizedFlag = getCommandLineArgs(
       process.argv,
       '--maximized',
-      true,
+      true
     );
 
     if (isFullScreen) {
@@ -422,16 +438,7 @@ export class WindowHandler {
 
     // Displays welcome screen instead of starting the main application
     if (this.shouldShowWelcomeScreen) {
-      this.url = format({
-        pathname: require.resolve('../renderer/welcome.html'),
-        protocol: 'file',
-        query: {
-          componentName: 'welcome',
-          locale: i18n.getLocale(),
-          title: i18n.t('WelcomeText', 'Welcome')(),
-        },
-        slashes: true,
-      });
+      this.url = resolveHtmlPath('welcome');
     }
 
     if (
@@ -500,9 +507,9 @@ export class WindowHandler {
       logger.info(
         `window-handler: window is maximized!`,
         isMaximized,
-        isMaximizedFlag,
+        isMaximizedFlag
       );
-      mainEvents.publish('maximize');
+      mainEvents.publish(TitleBarEvents.MAXIMIZE);
     }
     this.mainWindow.show();
     initSysTray();
@@ -522,14 +529,14 @@ export class WindowHandler {
     // Event needed to hide native menu bar on Windows 10 as we use custom menu bar
     this.mainWebContents.once('did-start-loading', () => {
       logger.info(
-        `window-handler: main window web contents started loading for url ${this.mainView?.webContents.getURL()}!`,
+        `window-handler: main window web contents started loading for url ${this.mainView?.webContents.getURL()}!`
       );
       this.finishedLoading = false;
       this.listenForLoad();
       // monitors network connection and
       // displays error banner on failure
       monitorNetworkInterception(
-        this.url || this.userConfig.url || this.globalConfig.url,
+        this.url || this.userConfig.url || this.globalConfig.url
       );
     });
 
@@ -547,7 +554,7 @@ export class WindowHandler {
     logEvents.forEach((windowEvent: any) => {
       this.mainWindow?.webContents.on(windowEvent, () => {
         logger.info(
-          `window-handler: Main Window Event Occurred: ${windowEvent}`,
+          `window-handler: Main Window Event Occurred: ${windowEvent}`
         );
       });
     });
@@ -560,9 +567,9 @@ export class WindowHandler {
       'did-fail-load',
       (_, errorCode: number, errorDescription: string) => {
         logger.error(
-          `window-handler: Fail loading - Error code: ${errorCode}. Error desscription: ${errorDescription}`,
+          `window-handler: Fail loading - Error code: ${errorCode}. Error desscription: ${errorDescription}`
         );
-      },
+      }
     );
 
     this.mainWebContents.on('did-finish-load', async () => {
@@ -574,15 +581,16 @@ export class WindowHandler {
       // early exit if the window has already been destroyed
       if (!this.mainWebContents || this.mainWebContents.isDestroyed()) {
         logger.info(
-          `window-handler: main window web contents destroyed already! exiting`,
+          `window-handler: main window web contents destroyed already! exiting`
         );
         return;
       }
       this.finishedLoading = true;
-      this.url = this.mainWebContents?.getURL();
+      // TODO: this.url shouldn't be overriden like that
+      // this.url = this.mainWebContents?.getURL();
       if (this.url?.indexOf('about:blank') === 0) {
         logger.info(
-          `Looks like about:blank got loaded which may lead to blank screen`,
+          `Looks like about:blank got loaded which may lead to blank screen`
         );
         logger.info(`Reloading the app to check if it resolves the issue`);
         const url = this.userConfig.url || this.globalConfig.url;
@@ -591,7 +599,7 @@ export class WindowHandler {
         return;
       }
 
-      logger.info('window-handler: did-finish-load, url: ' + this.url);
+      logger.info(`window-handler: did-finish-load, url: ${this.url}`);
 
       if (this.mainWebContents && !this.mainWebContents.isDestroyed()) {
         // Load welcome screen
@@ -630,12 +638,15 @@ export class WindowHandler {
         this.appMenu = new AppMenu();
 
         const { permissions } = config.getConfigFields(['permissions']);
-        this.mainWebContents.send('is-screen-share-enabled', permissions.media);
+        this.mainWebContents.send(
+          ScreenShareEvents.IS_ENABLED,
+          permissions.media
+        );
 
         // Subscribe events for main view - snack bar
         mainEvents.subscribeMultipleEvents(
           MAIN_WEB_CONTENTS_EVENTS,
-          this.mainWebContents,
+          this.mainWebContents
         );
       }
     });
@@ -658,10 +669,10 @@ export class WindowHandler {
       'did-fail-load',
       (_event, errorCode, errorDesc, validatedURL) => {
         logger.error(
-          `window-handler: Failed to load ${validatedURL}, with an error: ${errorCode}::${errorDesc}`,
+          `window-handler: Failed to load ${validatedURL}, with an error: ${errorCode}::${errorDesc}`
         );
         this.loadFailError = errorDesc;
-      },
+      }
     );
 
     this.mainWebContents.on('did-stop-loading', async () => {
@@ -671,7 +682,7 @@ export class WindowHandler {
           resources: i18n.loadedResources,
         });
         const href = await this.mainWebContents?.executeJavaScript(
-          'document.location.href',
+          'document.location.href'
         );
         try {
           if (
@@ -685,25 +696,25 @@ export class WindowHandler {
                     path.join(
                       __dirname,
                       '..',
-                      '/renderer/styles/network-error.css',
+                      '/renderer/styles/network-error.css'
                     ),
-                    'utf8',
+                    'utf8'
                   )
-                  .toString(),
+                  .toString()
               );
               this.mainWebContents?.send('network-error', {
                 error: this.loadFailError,
               });
               isSymphonyReachable(
                 this.mainWindow,
-                this.url || this.userConfig.url || this.globalConfig.url,
+                this.url || this.userConfig.url || this.globalConfig.url
               );
             }
           }
         } catch (error) {
           logger.error(
             `window-handler: Could not read document.location`,
-            error,
+            error
           );
         }
       }
@@ -720,14 +731,14 @@ export class WindowHandler {
           `window-handler: main window crashed! Details:  ${JSON.stringify(
             details,
             null,
-            2,
-          )}`,
+            2
+          )}`
         );
         const { response } = await dialog.showMessageBox({
           type: 'error',
           title: i18n.t('Renderer Process Crashed')(),
           message: i18n.t(
-            'Oops! Looks like we have had a crash. Please reload or close this window.',
+            'Oops! Looks like we have had a crash. Please reload or close this window.'
           )(),
           buttons: ['Reload', 'Close'],
         });
@@ -735,7 +746,7 @@ export class WindowHandler {
           return;
         }
         response === 0 ? this.mainWindow.reload() : this.mainWindow.close();
-      },
+      }
     );
 
     // When uninstalling Symphony, the installer needs to tell the app to close down
@@ -798,7 +809,7 @@ export class WindowHandler {
 
     this.mainWindow.once('closed', () => {
       logger.info(
-        `window-handler: main window closed, destroying all windows!`,
+        `window-handler: main window closed, destroying all windows!`
       );
       if (isWindowsOS || isMac) {
         this.closeScreenSharingIndicator();
@@ -816,13 +827,13 @@ export class WindowHandler {
     crashHandler.handleRendererCrash(this.mainWindow);
 
     // Reloads the Symphony
-    ipcMain.on('reload-symphony', () => {
+    ipcMain.on(LoadingScreenEvents.RELOAD, () => {
       this.reloadSymphony();
     });
 
     // Certificate verification proxy
     this.mainWebContents.session.setCertificateVerifyProc(
-      handleCertificateProxyVerification,
+      handleCertificateProxyVerification
     );
 
     // Validate window navigation
@@ -870,7 +881,7 @@ export class WindowHandler {
       },
       {
         devTools: isDevEnv,
-      },
+      }
     );
 
     this.welcomeScreenWindow = createComponentWindow('welcome', opts);
@@ -940,7 +951,7 @@ export class WindowHandler {
         this.userConfig.url.indexOf('/login/sso/initsso') > -1
           ? this.userConfig.url.slice(
               0,
-              this.userConfig.url.indexOf('/login/sso/initsso'),
+              this.userConfig.url.indexOf('/login/sso/initsso')
             )
           : this.userConfig.url;
       this.welcomeScreenWindow.webContents.send('welcome', {
@@ -1034,7 +1045,7 @@ export class WindowHandler {
    */
   public closeWindow(windowType: WindowTypes, winKey?: string): void {
     logger.info(
-      `window-handler: closing window type ${windowType} with key ${winKey}!`,
+      `window-handler: closing window type ${windowType} with key ${winKey}!`
     );
     switch (windowType) {
       case 'screen-picker':
@@ -1059,13 +1070,11 @@ export class WindowHandler {
         if (isWindowsOS || isMac) {
           const timeoutValue = 300;
           setTimeout(() => this.closeScreenSharingIndicator(), timeoutValue);
-        } else {
-          if (
-            this.screenSharingFrameWindow &&
-            windowExists(this.screenSharingFrameWindow)
-          ) {
-            this.screenSharingFrameWindow.close();
-          }
+        } else if (
+          this.screenSharingFrameWindow &&
+          windowExists(this.screenSharingFrameWindow)
+        ) {
+          this.screenSharingFrameWindow.close();
         }
         break;
       case 'notification-settings':
@@ -1146,7 +1155,7 @@ export class WindowHandler {
   public moveWindow(
     windowToMove: BrowserWindow,
     fixedYPosition?: number,
-    parentWindow?: BrowserWindow,
+    parentWindow?: BrowserWindow
   ) {
     if (this.mainWindow && windowExists(this.mainWindow)) {
       let display = screen.getDisplayMatching(this.mainWindow.getBounds());
@@ -1155,32 +1164,34 @@ export class WindowHandler {
       }
 
       logger.info(
-        'window-handler: moveWindow, display: ' +
-          JSON.stringify(display.workArea),
+        `window-handler: moveWindow, display: ${JSON.stringify(
+          display.workArea
+        )}`
       );
       logger.info(
-        'window-handler: moveWindow, windowToMove: ' +
-          JSON.stringify(windowToMove.getBounds()),
+        `window-handler: moveWindow, windowToMove: ${JSON.stringify(
+          windowToMove.getBounds()
+        )}`
       );
 
       if (display.workArea.width < windowToMove.getBounds().width) {
         windowToMove.setSize(
           display.workArea.width,
-          windowToMove.getBounds().height,
+          windowToMove.getBounds().height
         );
       }
 
       if (display.workArea.height < windowToMove.getBounds().height) {
         windowToMove.setSize(
           windowToMove.getBounds().width,
-          display.workArea.height,
+          display.workArea.height
         );
       }
 
       let positionX = Math.trunc(
         display.workArea.x +
           display.workArea.width / 2 -
-          windowToMove.getBounds().width / 2,
+          windowToMove.getBounds().width / 2
       );
       if (positionX < display.workArea.x) {
         positionX = display.workArea.x;
@@ -1194,7 +1205,7 @@ export class WindowHandler {
         positionY = Math.trunc(
           display.workArea.y +
             display.workArea.height / 2 -
-            windowToMove.getBounds().height / 2,
+            windowToMove.getBounds().height / 2
         );
       }
 
@@ -1202,8 +1213,8 @@ export class WindowHandler {
         positionY = display.workArea.y;
       }
 
-      logger.info('window-handler: moveWindow, positionX: ' + positionX);
-      logger.info('window-handler: moveWindow, positionY: ' + positionY);
+      logger.info(`window-handler: moveWindow, positionX: ${positionX}`);
+      logger.info(`window-handler: moveWindow, positionY: ${positionY}`);
 
       windowToMove.setPosition(positionX, positionY);
       // Because of a bug for windows10 we need to call setPosition twice
@@ -1236,7 +1247,7 @@ export class WindowHandler {
       },
       {
         devTools: isDevEnv,
-      },
+      }
     );
 
     const closeAboutApp = () => {
@@ -1248,7 +1259,7 @@ export class WindowHandler {
         this.aboutAppWindow = null;
       }
     };
-    const handleUserPodUpdate = async (_event, hostname) => {
+    const handleUserPodUpdate = async (_event: any, hostname: string) => {
       logger.info('window-handler: user updated pod url', hostname);
       const url = new URL(`https://${hostname}`).toString();
       await config.updateUserConfig({ url });
@@ -1269,16 +1280,16 @@ export class WindowHandler {
       opts.parent = selectedParentWindow;
     }
 
-    this.aboutAppWindow = createComponentWindow('about-app', opts);
+    this.aboutAppWindow = createComponentWindow('about', opts);
     this.moveWindow(this.aboutAppWindow);
     this.aboutAppWindow.setVisibleOnAllWorkspaces(true);
 
     this.aboutAppWindow.once('close', () => {
-      ipcMain.removeListener('close-about-app', closeAboutApp);
+      ipcMain.removeListener(AboutAppEvents.CLOSE, closeAboutApp);
     });
 
-    ipcMain.once('close-about-app', closeAboutApp);
-    ipcMain.once('user-pod-updated', handleUserPodUpdate);
+    ipcMain.once(AboutAppEvents.CLOSE, closeAboutApp);
+    ipcMain.once(AboutAppEvents.POD_UPDATED, handleUserPodUpdate);
 
     this.aboutAppWindow.webContents.once('did-finish-load', async () => {
       let client = '';
@@ -1287,9 +1298,8 @@ export class WindowHandler {
       }
       const ABOUT_SYMPHONY_NAMESPACE = 'AboutSymphony';
       const versionLocalised = i18n.t('Version', ABOUT_SYMPHONY_NAMESPACE)();
-      const userConfig = config.userConfig;
-      const globalConfig = config.globalConfig;
-      const cloudConfig = config.cloudConfig;
+      const { hostname } = parse(this.userConfig.url || this.globalConfig.url);
+      const { userConfig, globalConfig, cloudConfig } = config;
       const filteredConfig = config.filteredCloudConfig;
       const finalConfig = {
         ...globalConfig,
@@ -1299,7 +1309,7 @@ export class WindowHandler {
       const host = parse(
         this.url
           ? this.url
-          : (userConfig as IConfig).url || (globalConfig as IConfig).url,
+          : (userConfig as IConfig).url || (globalConfig as IConfig).url
       );
       const aboutInfo = {
         userConfig,
@@ -1312,7 +1322,7 @@ export class WindowHandler {
         hostname: host.hostname,
       };
       if (this.aboutAppWindow && windowExists(this.aboutAppWindow)) {
-        this.aboutAppWindow.webContents.send('about-app-data', aboutInfo);
+        this.aboutAppWindow.webContents.send(AboutAppEvents.DATA, aboutInfo);
       }
     });
   }
@@ -1327,7 +1337,7 @@ export class WindowHandler {
       width: number;
     },
     currentWindow?: string,
-    hideOnCapture?: boolean,
+    hideOnCapture?: boolean
   ): void {
     // Prevents creating multiple instances
     if (didVerifyAndRestoreWindow(this.snippingToolWindow)) {
@@ -1338,17 +1348,19 @@ export class WindowHandler {
     this.hideOnCapture = !!hideOnCapture;
 
     logger.info(
-      'window-handler: createSnippingToolWindow: Receiving snippet props: ' +
-        JSON.stringify({
+      `window-handler: createSnippingToolWindow: Receiving snippet props: ${JSON.stringify(
+        {
           snipImage,
           snipDimensions,
-        }),
+        }
+      )}`
     );
 
     const allDisplays = screen.getAllDisplays();
     logger.info(
-      'window-handler: createSnippingToolWindow: User has these displays: ' +
-        JSON.stringify(allDisplays),
+      `window-handler: createSnippingToolWindow: User has these displays: ${JSON.stringify(
+        allDisplays
+      )}`
     );
 
     if (!this.mainWindow) {
@@ -1365,23 +1377,24 @@ export class WindowHandler {
 
     const focusedWindow = BrowserWindow.getFocusedWindow();
     const display = screen.getDisplayMatching(
-      focusedWindow ? focusedWindow.getBounds() : this.mainWindow.getBounds(),
+      focusedWindow ? focusedWindow.getBounds() : this.mainWindow.getBounds()
     );
-    const workAreaSize = display.workAreaSize;
+    const { workAreaSize } = display;
     // Snipping tool height shouldn't be greater than min of screen width and height (screen orientation can be portrait or landscape)
     const minSize = Math.min(workAreaSize.width, workAreaSize.height);
     const maxToolHeight = Math.floor(calculatePercentage(minSize, 90));
     const maxToolWidth = Math.floor(calculatePercentage(minSize, 90));
     const availableAnnotateAreaHeight = maxToolHeight - BUTTON_BARS_HEIGHT;
     const availableAnnotateAreaWidth = maxToolWidth;
-    const scaleFactor = display.scaleFactor;
+    const { scaleFactor } = display;
     const scaledImageDimensions = {
       height: Math.floor(snipDimensions.height / scaleFactor),
       width: Math.floor(snipDimensions.width / scaleFactor),
     };
     logger.info(
-      'window-handler: createSnippingToolWindow: Image will open with scaled dimensions: ' +
-        JSON.stringify(scaledImageDimensions),
+      `window-handler: createSnippingToolWindow: Image will open with scaled dimensions: ${JSON.stringify(
+        scaledImageDimensions
+      )}`
     );
 
     const annotateAreaHeight =
@@ -1429,7 +1442,7 @@ export class WindowHandler {
       },
       {
         devTools: true,
-      },
+      }
     );
 
     if (
@@ -1449,7 +1462,7 @@ export class WindowHandler {
 
     this.snippingToolWindow = createComponentWindow(
       'snipping-tool',
-      opts,
+      opts
     ) as ICustomBrowserWindow;
     this.snippingToolWindow.winName = apiName.snippingToolWindowName;
     this.moveWindow(this.snippingToolWindow, undefined, parentWindow);
@@ -1467,29 +1480,32 @@ export class WindowHandler {
         this.snippingToolWindow.webContents.setZoomFactor(1);
         const windowBounds = this.snippingToolWindow.getBounds();
         logger.info(
-          'window-handler: Opening snipping tool window on display: ' +
-            JSON.stringify(display),
+          `window-handler: Opening snipping tool window on display: ${JSON.stringify(
+            display
+          )}`
         );
         logger.info(
-          'window-handler: Opening snipping tool window with size: ' +
-            JSON.stringify({
+          `window-handler: Opening snipping tool window with size: ${JSON.stringify(
+            {
               toolHeight,
               toolWidth,
-            }),
+            }
+          )}`
         );
         logger.info(
-          'window-handler: Opening snipping tool content with metadata: ' +
-            JSON.stringify(snippingToolInfo),
+          `window-handler: Opening snipping tool content with metadata: ${JSON.stringify(
+            snippingToolInfo
+          )}`
         );
         logger.info(
-          'window-handler: Actual window size: ' + JSON.stringify(windowBounds),
+          `window-handler: Actual window size: ${JSON.stringify(windowBounds)}`
         );
         if (
           windowBounds.height !== toolHeight ||
           windowBounds.width !== toolWidth
         ) {
           logger.info(
-            'window-handler: Could not create window with correct size, resizing with setBounds and centering with center',
+            'window-handler: Could not create window with correct size, resizing with setBounds and centering with center'
           );
           this.snippingToolWindow.setBounds({
             height: toolHeight,
@@ -1497,26 +1513,27 @@ export class WindowHandler {
           });
           this.snippingToolWindow.center();
           logger.info(
-            'window-handler: window bounds after resizing: ' +
-              JSON.stringify(this.snippingToolWindow.getBounds()),
+            `window-handler: window bounds after resizing: ${JSON.stringify(
+              this.snippingToolWindow.getBounds()
+            )}`
           );
         }
         this.snippingToolWindow.webContents.send(
-          'snipping-tool-data',
-          snippingToolInfo,
+          ScreenShotAnnotationEvents.DATA,
+          snippingToolInfo
         );
       }
     });
     this.snippingToolWindow.once('close', () => {
       logger.info(
-        'window-handler: createSnippingToolWindow: Closing snipping window, attempting to delete temp snip image',
+        'window-handler: createSnippingToolWindow: Closing snipping window, attempting to delete temp snip image'
       );
-      ipcMain.removeAllListeners(ScreenShotAnnotation.CLOSE);
-      ipcMain.removeAllListeners(ScreenShotAnnotation.UPLOAD);
-      ipcMain.removeAllListeners(ScreenShotAnnotation.COPY_TO_CLIPBOARD);
-      ipcMain.removeAllListeners(ScreenShotAnnotation.SAVE_AS);
+      ipcMain.removeAllListeners(ScreenShotAnnotationEvents.CLOSE);
+      ipcMain.removeAllListeners(ScreenShotAnnotationEvents.UPLOAD);
+      ipcMain.removeAllListeners(ScreenShotAnnotationEvents.COPY_TO_CLIPBOARD);
+      ipcMain.removeAllListeners(ScreenShotAnnotationEvents.SAVE_AS);
       this.snippingToolWindow?.close();
-      this.deleteFile(snipImage);
+      WindowHandler.deleteFile(snipImage);
       this.removeWindow(opts.winKey);
       this.screenPickerWindow = null;
     });
@@ -1538,10 +1555,10 @@ export class WindowHandler {
    */
   public drawScreenShareIndicatorFrame(source) {
     const displays = screen.getAllDisplays();
-    logger.info('window-utils: displays.length: ' + displays.length);
+    logger.info(`window-utils: displays.length: ${displays.length}`);
     for (let i = 0, len = displays.length; i < len; i++) {
       logger.info(
-        'window-utils: display[' + i + ']: ' + JSON.stringify(displays[i]),
+        `window-utils: display[${i}]: ${JSON.stringify(displays[i])}`
       );
     }
 
@@ -1558,7 +1575,7 @@ export class WindowHandler {
           this.execCmd(this.screenShareIndicatorFrameUtil, [dispId]);
         } else if (isWindowsOS && type === 'screen') {
           logger.info(
-            'window-handler: source.display_id: ' + source.display_id,
+            `window-handler: source.display_id: ${source.display_id}`
           );
           if (source.display_id !== '') {
             this.execCmd(this.screenShareIndicatorFrameUtil, [
@@ -1568,13 +1585,10 @@ export class WindowHandler {
             const dispId = source.id.split(':')[1];
             const clampedDispId = Math.min(dispId, displays.length - 1);
             const keyId = 'id';
-            logger.info('window-utils: dispId: ' + dispId);
-            logger.info('window-utils: clampedDispId: ' + clampedDispId);
+            logger.info(`window-utils: dispId: ${dispId}`);
+            logger.info(`window-utils: clampedDispId: ${clampedDispId}`);
             logger.info(
-              'window-utils: displays [' +
-                clampedDispId +
-                '] [id]: ' +
-                displays[clampedDispId][keyId],
+              `window-utils: displays [${clampedDispId}] [id]: ${displays[clampedDispId][keyId]}`
             );
             this.execCmd(this.screenShareIndicatorFrameUtil, [
               displays[clampedDispId][keyId].toString(),
@@ -1595,7 +1609,7 @@ export class WindowHandler {
   public createScreenPickerWindow(
     window: WebContents,
     sources: DesktopCapturerSource[],
-    id: number,
+    id: number
   ): void {
     if (this.screenPickerWindow && windowExists(this.screenPickerWindow)) {
       this.screenPickerWindow.close();
@@ -1614,10 +1628,11 @@ export class WindowHandler {
       },
       {
         devTools: isDevEnv,
-      },
+      }
     );
 
     this.screenPickerWindow = createComponentWindow('screen-picker', opts);
+    this.addWindow(opts.winKey, this.screenPickerWindow);
     this.moveWindow(this.screenPickerWindow);
     this.screenPickerWindow.webContents.once('did-finish-load', () => {
       if (!this.screenPickerWindow || !windowExists(this.screenPickerWindow)) {
@@ -1627,11 +1642,10 @@ export class WindowHandler {
       this.screenPickerWindow.webContents.setZoomFactor(1);
       this.screenPickerWindow.webContents.setVisualZoomLevelLimits(1, 1);
 
-      this.screenPickerWindow.webContents.send('screen-picker-data', {
+      this.screenPickerWindow.webContents.send(ScreenPickerEvents.DATA, {
         sources,
         id,
       });
-      this.addWindow(opts.winKey, this.screenPickerWindow);
     });
 
     const screenSourceSelect = (_event, source) => {
@@ -1654,9 +1668,9 @@ export class WindowHandler {
       }
     };
 
-    ipcMain.on('screen-source-select', screenSourceSelect);
+    ipcMain.on(ScreenPickerEvents.SOURCE_SELECT, screenSourceSelect);
 
-    ipcMain.once('screen-source-selected', (_event, source) => {
+    ipcMain.once(ScreenPickerEvents.SOURCE_SELECTED, (_event, source) => {
       logger.info(`window-handler: screen-source-selected`, source, id);
       if (source == null) {
         this.closeScreenSharingIndicator();
@@ -1686,14 +1700,17 @@ export class WindowHandler {
         this.screenPickerPlaceholderWindow.show();
       }
 
-      window.send('start-share' + id, source);
+      window.send(`${ScreenShareEvents.START}${id}`, source);
       if (this.screenPickerWindow && windowExists(this.screenPickerWindow)) {
         // SDA-3635 hack
         setTimeout(() => this.screenPickerWindow?.close(), 500);
       }
     });
     this.screenPickerWindow.once('closed', () => {
-      ipcMain.removeListener('screen-source-select', screenSourceSelect);
+      ipcMain.removeListener(
+        ScreenPickerEvents.SOURCE_SELECT,
+        screenSourceSelect
+      );
       this.removeWindow(opts.winKey);
       this.screenPickerWindow = null;
       if (isWindowsOS) {
@@ -1742,8 +1759,8 @@ export class WindowHandler {
     window: ICustomBrowserWindow,
     hostname: string,
     isMultipleTries: boolean,
-    clearSettings,
-    callback,
+    clearSettings: any,
+    callback: any
   ): void {
     if (this.basicAuthWindow && windowExists(this.basicAuthWindow)) {
       this.basicAuthWindow.close();
@@ -1766,7 +1783,7 @@ export class WindowHandler {
         sandbox: IS_SAND_BOXED,
         nodeIntegration: IS_NODE_INTEGRATION_ENABLED,
         devTools: true,
-      },
+      }
     );
     opts.parent = window;
     this.basicAuthWindow = createComponentWindow('basic-auth', opts);
@@ -1776,7 +1793,7 @@ export class WindowHandler {
       if (!this.basicAuthWindow || !windowExists(this.basicAuthWindow)) {
         return;
       }
-      this.basicAuthWindow.webContents.send('basic-auth-data', {
+      this.basicAuthWindow.webContents.send(BasicAuthEvents.DATA, {
         hostname,
         isValidCredentials: isMultipleTries,
       });
@@ -1799,12 +1816,12 @@ export class WindowHandler {
 
     this.basicAuthWindow.once('close', () => {
       this.basicAuthWindow = null;
-      ipcMain.removeListener('basic-auth-closed', closeBasicAuth);
-      ipcMain.removeListener('basic-auth-login', login);
+      ipcMain.removeListener(BasicAuthEvents.CLOSED, closeBasicAuth);
+      ipcMain.removeListener(BasicAuthEvents.LOGIN, login);
     });
 
-    ipcMain.once('basic-auth-closed', closeBasicAuth);
-    ipcMain.once('basic-auth-login', login);
+    ipcMain.once(BasicAuthEvents.CLOSED, closeBasicAuth);
+    ipcMain.once(BasicAuthEvents.LOGIN, login);
   }
 
   /**
@@ -1814,7 +1831,7 @@ export class WindowHandler {
    */
   public createNotificationSettingsWindow(
     windowName: string,
-    theme: Themes,
+    theme: Themes
   ): void {
     const opts = this.getWindowOpts(
       {
@@ -1829,7 +1846,7 @@ export class WindowHandler {
       },
       {
         devTools: isDevEnv,
-      },
+      }
     );
     // This prevents creating multiple instances of the
     // notification configuration window
@@ -1844,7 +1861,7 @@ export class WindowHandler {
 
     this.notificationSettingsWindow = createComponentWindow(
       'notification-settings',
-      opts,
+      opts
     );
     this.moveWindow(this.notificationSettingsWindow);
     this.notificationSettingsWindow.setVisibleOnAllWorkspaces(true);
@@ -1862,7 +1879,7 @@ export class WindowHandler {
         ]).notificationSettings;
         this.notificationSettingsWindow.webContents.send(
           'notification-settings-data',
-          { screens, position, display, theme },
+          { screens, position, display, theme }
         );
       }
     });
@@ -1878,7 +1895,7 @@ export class WindowHandler {
       } catch (e) {
         logger.error(
           `NotificationSettings: Could not update user config file error`,
-          e,
+          e
         );
       }
       if (
@@ -1910,7 +1927,7 @@ export class WindowHandler {
     screenSharingWebContents: WebContents,
     displayId: string,
     id: number,
-    streamId: string,
+    streamId: string
   ): void {
     const indicatorScreen =
       (displayId &&
@@ -1946,7 +1963,7 @@ export class WindowHandler {
         },
         {
           devTools: isDevEnv,
-        },
+        }
       ),
       ...{ winKey: streamId },
     };
@@ -1961,15 +1978,14 @@ export class WindowHandler {
     }
 
     logger.info(
-      'window-handler: createScreenSharingIndicatorWindow, displayId: ' +
-        displayId,
+      `window-handler: createScreenSharingIndicatorWindow, displayId: ${displayId}`
     );
     if (displayId !== '') {
       if (isLinux) {
         const displays = screen.getAllDisplays();
         displays.forEach((element) => {
           logger.info(
-            'window-handler: element.id.toString(): ' + element.id.toString(),
+            `window-handler: element.id.toString(): ${element.id.toString()}`
           );
           if (displayId === element.id.toString()) {
             logger.info(`window-handler: element:`, element);
@@ -1978,7 +1994,7 @@ export class WindowHandler {
               element.workArea.width,
               element.workArea.height,
               element.workArea.x,
-              element.workArea.y,
+              element.workArea.y
             );
           }
         });
@@ -1987,11 +2003,12 @@ export class WindowHandler {
 
     this.screenSharingIndicatorWindow = createComponentWindow(
       'screen-sharing-indicator',
-      opts,
+      opts
     );
+    this.addWindow(opts.winKey, this.screenSharingIndicatorWindow);
     this.moveWindow(
       this.screenSharingIndicatorWindow,
-      topPositionOfIndicatorScreen,
+      topPositionOfIndicatorScreen
     );
     this.screenSharingIndicatorWindow.setVisibleOnAllWorkspaces(true);
     this.screenSharingIndicatorWindow.setSkipTaskbar(true);
@@ -2008,17 +2025,17 @@ export class WindowHandler {
         this.screenSharingIndicatorWindow.webContents.setZoomFactor(1);
         this.screenSharingIndicatorWindow.webContents.setVisualZoomLevelLimits(
           1,
-          1,
+          1
         );
         this.screenSharingIndicatorWindow.webContents.send(
-          'screen-sharing-indicator-data',
-          { id, streamId },
+          ScreenShareIndicatorEvents.DATA,
+          { id, streamId }
         );
-      },
+      }
     );
-    const stopScreenSharing = (_event, indicatorId) => {
+    const stopScreenSharing = (event: any, indicatorId: number) => {
       if (id === indicatorId) {
-        screenSharingWebContents.send('screen-sharing-stopped', id);
+        screenSharingWebContents.send(ScreenShareEvents.STOPPED, id);
       }
     };
 
@@ -2026,10 +2043,10 @@ export class WindowHandler {
 
     this.screenSharingIndicatorWindow.once('close', () => {
       this.removeWindow(streamId);
-      ipcMain.removeListener('stop-screen-sharing', stopScreenSharing);
+      ipcMain.removeListener(ScreenShareEvents.STOP, stopScreenSharing);
     });
 
-    ipcMain.once('stop-screen-sharing', stopScreenSharing);
+    ipcMain.once(ScreenShareEvents.STOP, stopScreenSharing);
   }
 
   /**
@@ -2040,7 +2057,7 @@ export class WindowHandler {
     frameWidth: number,
     frameHeight: number,
     framePositionX: number,
-    framePositionY: number,
+    framePositionY: number
   ): void {
     // This prevents creating multiple instances of the
     // about window
@@ -2061,7 +2078,7 @@ export class WindowHandler {
       },
       {
         devTools: isDevEnv,
-      },
+      }
     );
 
     if (
@@ -2078,7 +2095,7 @@ export class WindowHandler {
 
     this.screenSharingFrameWindow = createComponentWindow(
       'screen-sharing-frame',
-      opts,
+      opts
     );
 
     const area = this.screenSharingFrameWindow.getBounds();
@@ -2103,11 +2120,11 @@ export class WindowHandler {
    *
    * @param urlToOpen
    */
-  public openUrlInDefaultBrowser(urlToOpen) {
+  public openUrlInDefaultBrowser(urlToOpen: string) {
     if (urlToOpen) {
       shell.openExternal(urlToOpen);
       logger.info(
-        `window-handler: opened url ${urlToOpen} in the default browser!`,
+        `window-handler: opened url ${urlToOpen} in the default browser!`
       );
     }
   }
@@ -2160,11 +2177,11 @@ export class WindowHandler {
   public deleteFile(filePath: string) {
     fs.unlink(filePath, (removeErr) => {
       logger.info(
-        `window-handler: cleaning up temp snippet file: ${filePath}!`,
+        `window-handler: cleaning up temp snippet file: ${filePath}!`
       );
       if (removeErr) {
         logger.info(
-          `window-handler: error removing temp snippet file, is probably already removed: ${filePath}, err: ${removeErr}`,
+          `window-handler: error removing temp snippet file, is probably already removed: ${filePath}, err: ${removeErr}`
         );
       }
     });
@@ -2178,24 +2195,24 @@ export class WindowHandler {
       // If the client is fully loaded, upon network interruption, load that
       if (this.isLoggedIn) {
         logger.info(
-          `window-utils: user has logged in, getting back to Symphony app`,
+          `window-utils: user has logged in, getting back to Symphony app`
         );
         const userAgent = this.getUserAgent(this.mainWebContents);
         await this.mainWebContents.loadURL(
           this.url || this.userConfig.url || this.globalConfig.url,
-          { userAgent },
+          { userAgent }
         );
         return;
       }
       // If not, revert to loading the starting pod url
       logger.info(
-        `window-utils: user hasn't logged in yet, loading login page again`,
+        `window-utils: user hasn't logged in yet, loading login page again`
       );
       const userAgent = this.getUserAgent(this.mainWebContents);
       const urlFromConfig = config.getUserConfigFields(['url']);
       const isPodUrlValid =
         isValidUrl(urlFromConfig.url || '') ||
-        urlFromConfig.url.includes('https://local-dev.symphony.com');
+        urlFromConfig.url?.includes('https://local-dev.symphony.com');
 
       await this.mainWebContents.loadURL(
         this.cmdUrl
@@ -2205,7 +2222,7 @@ export class WindowHandler {
           : this.globalConfig.url,
         {
           userAgent,
-        },
+        }
       );
     }
   }
@@ -2274,7 +2291,7 @@ export class WindowHandler {
     }
     focusedWindow.webContents.closeDevTools();
     logger.info(
-      `window-handler: dev tools disabled by admin, not opening it for the user!`,
+      `window-handler: dev tools disabled by admin, not opening it for the user!`
     );
   }
 
@@ -2287,7 +2304,7 @@ export class WindowHandler {
 
     if (!this.mainWebContents || this.mainWebContents.isDestroyed()) {
       logger.info(
-        `window-handler: switch client - main window web contents destroyed already! exiting`,
+        `window-handler: switch client - main window web contents destroyed already! exiting`
       );
       return;
     }
@@ -2297,7 +2314,7 @@ export class WindowHandler {
       }
       const parsedUrl = parse(this.url);
       const csrfToken = await this.mainWebContents?.executeJavaScript(
-        `localStorage.getItem('x-km-csrf-token')`,
+        `localStorage.getItem('x-km-csrf-token')`
       );
 
       switch (clientSwitch) {
@@ -2321,7 +2338,7 @@ export class WindowHandler {
       await this.mainWebContents.loadURL(this.url, { userAgent });
     } catch (e) {
       logger.error(
-        `window-handler: failed to switch client because of error ${e}`,
+        `window-handler: failed to switch client because of error ${e}`
       );
     }
   }
@@ -2369,7 +2386,7 @@ export class WindowHandler {
   public exitApplication = async (shouldRelaunch: boolean = true) => {
     await appStats.sendAnalytics(
       SDAUserSessionActionTypes.End,
-      shouldRelaunch ? SDAEndReasonTypes.Reboot : SDAEndReasonTypes.Closed,
+      shouldRelaunch ? SDAEndReasonTypes.Reboot : SDAEndReasonTypes.Closed
     );
     analytics.writeAnalyticFile();
     config.writeUserConfig();
@@ -2390,7 +2407,7 @@ export class WindowHandler {
         if (this.mainWebContents && !this.mainWebContents.isDestroyed()) {
           const webContentsUrl = this.mainWebContents?.getURL();
           logger.info(
-            `window-handler: Current main window url is ${webContentsUrl}.`,
+            `window-handler: Current main window url is ${webContentsUrl}.`
           );
           const reloadUrl = this.userConfig.url || this.globalConfig.url;
           logger.info(`window-handler: Trying to reload ${reloadUrl}.`);
@@ -2399,7 +2416,7 @@ export class WindowHandler {
           return;
         }
         logger.error(
-          `window-handler: Cannot reload as main window does not exist`,
+          `window-handler: Cannot reload as main window does not exist`
         );
       }
     }, LISTEN_TIMEOUT);
@@ -2428,8 +2445,7 @@ export class WindowHandler {
   private destroyAllWindows(): void {
     for (const key in this.windows) {
       if (Object.prototype.hasOwnProperty.call(this.windows, key)) {
-        const winKey = this.windows[key];
-        this.removeWindow(winKey);
+        this.removeWindow(key);
       }
     }
     this.mainWindow = null;
@@ -2441,7 +2457,7 @@ export class WindowHandler {
    */
   private async checkExpiry(browserWindow: BrowserWindow) {
     logger.info(
-      `window handler: calling ttl handler to check for build expiry!`,
+      `window handler: calling ttl handler to check for build expiry!`
     );
     const buildExpired = checkIfBuildExpired();
     if (!buildExpired) {
@@ -2449,14 +2465,14 @@ export class WindowHandler {
       return;
     }
     logger.info(
-      `window handler: build expired, will inform the user and quit the app!`,
+      `window handler: build expired, will inform the user and quit the app!`
     );
 
     const options: Electron.MessageBoxOptions = {
       type: 'error',
       title: i18n.t('Build expired')(),
       message: i18n.t(
-        'Sorry, this is a test build and it has expired. Please contact your administrator to get a production build.',
+        'Sorry, this is a test build and it has expired. Please contact your administrator to get a production build.'
       )(),
       buttons: [i18n.t('Quit')()],
       cancelId: 0,
@@ -2476,7 +2492,7 @@ export class WindowHandler {
    */
   private getWindowOpts(
     windowOpts: Electron.BrowserWindowConstructorOptions,
-    webPreferences: Electron.WebPreferences,
+    webPreferences: Electron.WebPreferences
   ): ICustomBrowserWindowConstructorOpts {
     const defaultPreferencesOpts = {
       ...{

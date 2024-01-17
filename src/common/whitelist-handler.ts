@@ -97,7 +97,7 @@ export class WhitelistHandler {
    */
   private matchDomains(
     parsedUrl: IURLObject,
-    parsedWhitelist: IURLObject,
+    parsedWhitelist: IURLObject
   ): boolean {
     if (!parsedUrl || !parsedWhitelist) {
       return false;
@@ -134,7 +134,7 @@ export class WhitelistHandler {
    */
   private matchSubDomains(
     subDomainUrl: string,
-    subDomainWhitelist: string,
+    subDomainWhitelist: string
   ): boolean {
     if (subDomainUrl === subDomainWhitelist) {
       return true;

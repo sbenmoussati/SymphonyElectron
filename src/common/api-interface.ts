@@ -1,5 +1,5 @@
 import { NativeImage, Size, Tray } from 'electron';
-import { AutoUpdateTrigger } from '../app/auto-update-handler';
+import { AutoUpdateTrigger } from 'app/auto-update-handler';
 
 export enum apiCmds {
   isOnline = 'is-online',
@@ -12,7 +12,6 @@ export enum apiCmds {
   registerProtocolHandler = 'register-protocol-handler',
   registerLogRetriever = 'register-log-retriever',
   sendLogs = 'send-logs',
-  addLogs = 'add-logs',
   registerAnalyticsHandler = 'register-analytics-handler',
   registerActivityDetection = 'register-activity-detection',
   showNotificationSettings = 'show-notification-settings',
@@ -26,6 +25,7 @@ export enum apiCmds {
   setLocale = 'set-locale',
   openScreenSnippet = 'open-screen-snippet',
   closeScreenSnippet = 'close-screen-snippet',
+  screenSnippetAnalyticsData = 'snippet-analytics-data',
   keyPress = 'key-press',
   closeWindow = 'close-window',
   openScreenSharingIndicator = 'open-screen-sharing-indicator',
@@ -93,11 +93,6 @@ export enum apiName {
 
 export const NOTIFICATION_WINDOW_TITLE = 'Notification - Symphony';
 
-enum ScreenTypes {
-  Screen = 'screen',
-  Window = 'window',
-}
-
 export interface IApiArgs {
   memoryInfo: Electron.ProcessMemoryInfo;
   word: string;
@@ -139,7 +134,7 @@ export interface IApiArgs {
   isBrowserLoginEnabled: boolean;
   browserLoginAutoConnect: boolean;
   swiftSearchData: any;
-  types: ScreenTypes[];
+  types: string[];
   thumbnailSize: Size;
   pipe: string;
   data: Uint8Array;
@@ -313,12 +308,10 @@ export enum NotificationActions {
  * Screen sharing Indicator
  */
 export interface IScreenSharingIndicatorOptions {
-  // id of the display that is being shared
   displayId: string;
-
   requestId: number;
-
   streamId: string;
+  stream?: MediaStream;
 }
 
 export interface IVersionInfo {
@@ -378,7 +371,6 @@ export interface ILogFile {
 export interface ILogs {
   logName: string;
   logFiles: ILogFile[];
-  shouldExportLogs?: boolean;
 }
 
 export interface IRestartFloaterData {
@@ -390,7 +382,7 @@ export type Reply = string;
 export type ElectronNotificationData = Reply | object;
 export type NotificationActionCallback = (
   event: NotificationActions,
-  data: INotificationData,
+  data: INotificationData
 ) => void;
 
 export type ConfigUpdateType = 'restart' | 'reload';

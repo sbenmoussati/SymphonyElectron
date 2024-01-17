@@ -1,10 +1,10 @@
+import { notification } from '../notification';
 import {
   ElectronNotificationData,
   INotificationData,
   NotificationActions,
 } from '../../common/api-interface';
 import { isWindowsOS } from '../../common/env';
-import { notification } from '../../renderer/notification';
 import { windowHandler } from '../window-handler';
 import { ElectronNotification } from './electron-notification';
 
@@ -31,7 +31,7 @@ class NotificationHelper {
       // This is replace notification with same tag
       if (this.activeElectronNotification.has(options.tag)) {
         const electronNotification = this.activeElectronNotification.get(
-          options.tag,
+          options.tag
         );
         if (electronNotification) {
           electronNotification.close();
@@ -41,7 +41,7 @@ class NotificationHelper {
 
       const electronToast = new ElectronNotification(
         options,
-        this.notificationCallback,
+        this.notificationCallback
       );
       this.electronNotification.set(options.id, electronToast);
       this.activeElectronNotification.set(options.tag, electronToast);
@@ -77,7 +77,7 @@ class NotificationHelper {
   public notificationCallback(
     event: NotificationActions,
     data: ElectronNotificationData,
-    notificationData: ElectronNotificationData,
+    notificationData: ElectronNotificationData
   ) {
     const mainWebContents = windowHandler.getMainWebContents();
     if (mainWebContents && !mainWebContents.isDestroyed()) {

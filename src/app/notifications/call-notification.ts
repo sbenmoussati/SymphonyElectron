@@ -1,13 +1,12 @@
-import { ipcMain } from 'electron';
+import { app, ipcMain } from 'electron';
 import {
   apiName,
   ElectronNotificationData,
   ICallNotificationData,
   NotificationActions,
 } from '../../common/api-interface';
-import { isDevEnv, isMac } from '../../common/env';
+import { isMac } from '../../common/env';
 import { logger } from '../../common/logger';
-import { notification } from '../../renderer/notification';
 import {
   AUX_CLICK,
   ICustomBrowserWindow,
@@ -15,28 +14,32 @@ import {
   IS_SAND_BOXED,
 } from '../window-handler';
 import { createComponentWindow, windowExists } from '../window-utils';
+import { CallNotificationEvents, NotificationSettingsEvents } from '../../common/ipcEvent';
+import { notification } from '../notification';
 
 const CALL_NOTIFICATION_WIDTH = 264;
 const CALL_NOTIFICATION_HEIGHT = 290;
+const isDevEnv = !app.isPackaged;
 
 class CallNotification {
   private callNotificationWindow: ICustomBrowserWindow | undefined;
+
   private notificationCallbacks: Map<
     number,
     (event: NotificationActions, data: ElectronNotificationData) => void
   > = new Map();
 
   constructor() {
-    ipcMain.on('call-notification-clicked', (_event, windowId) => {
+    ipcMain.on(CallNotificationEvents.CLICKED, (_event, windowId) => {
       this.notificationClicked(windowId);
     });
-    ipcMain.on('call-notification-on-accept', (_event, windowId) => {
+    ipcMain.on(CallNotificationEvents.ON_ACCEPT, (_event, windowId) => {
       this.onCallNotificationOnAccept(windowId);
     });
-    ipcMain.on('call-notification-on-reject', (_event, windowId) => {
+    ipcMain.on(CallNotificationEvents.ON_REJECT, (_event, windowId) => {
       this.onCallNotificationOnReject(windowId);
     });
-    ipcMain.on('notification-settings-update', async (_event) => {
+    ipcMain.on(NotificationSettingsEvents.UPDATE_SETTINGS, async (_event) => {
       setTimeout(() => {
         const { x, y } = notification.getCallNotificationPosition();
         if (
@@ -46,11 +49,11 @@ class CallNotification {
           try {
             this.callNotificationWindow.setPosition(
               parseInt(String(x), 10),
-              parseInt(String(y), 10),
+              parseInt(String(y), 10)
             );
           } catch (err) {
             logger.info(
-              `Failed to set window position. x: ${x} y: ${y}. Contact the developers for more details`,
+              `Failed to set window position. x: ${x} y: ${y}. Contact the developers for more details`
             );
           }
         }
@@ -60,7 +63,7 @@ class CallNotification {
 
   public createCallNotificationWindow = (
     callNotificationData: ICallNotificationData,
-    callback,
+    callback
   ) => {
     if (
       this.callNotificationWindow &&
@@ -70,8 +73,8 @@ class CallNotification {
       this.callNotificationWindow.winName = apiName.notificationWindowName;
       this.notificationCallbacks.set(callNotificationData.id, callback);
       this.callNotificationWindow.webContents.send(
-        'call-notification-data',
-        callNotificationData,
+        CallNotificationEvents.DATA,
+        callNotificationData
       );
       return;
     }
@@ -80,7 +83,7 @@ class CallNotification {
     this.callNotificationWindow = createComponentWindow(
       'call-notification',
       this.getCallNotificationOpts(),
-      false,
+      false
     ) as ICustomBrowserWindow;
 
     this.callNotificationWindow.notificationData = callNotificationData;
@@ -94,11 +97,11 @@ class CallNotification {
     try {
       this.callNotificationWindow.setPosition(
         parseInt(String(x), 10),
-        parseInt(String(y), 10),
+        parseInt(String(y), 10)
       );
     } catch (err) {
       logger.info(
-        `Failed to set window position. x: ${x} y: ${y}. Contact the developers for more details`,
+        `Failed to set window position. x: ${x} y: ${y}. Contact the developers for more details`
       );
     }
     this.callNotificationWindow.webContents.once('did-finish-load', () => {
@@ -111,8 +114,8 @@ class CallNotification {
       this.callNotificationWindow.webContents.setZoomFactor(1);
       this.callNotificationWindow.webContents.setVisualZoomLevelLimits(1, 1);
       this.callNotificationWindow.webContents.send(
-        'call-notification-data',
-        callNotificationData,
+        CallNotificationEvents.DATA,
+        callNotificationData
       );
       this.callNotificationWindow.showInactive();
     });
@@ -127,7 +130,7 @@ class CallNotification {
    *
    * @param clientId {number}
    */
-  public notificationClicked(clientId): void {
+  public notificationClicked(clientId: number): void {
     const browserWindow = this.callNotificationWindow;
     if (
       browserWindow &&
@@ -195,14 +198,14 @@ class CallNotification {
       ) {
         logger.info(
           'call-notification',
-          `notification with the id ${browserWindow.notificationData.id} does match with clientID ${clientId}`,
+          `notification with the id ${browserWindow.notificationData.id} does match with clientID ${clientId}`
         );
         return;
       }
       browserWindow.close();
       logger.info(
         'call-notification',
-        'successfully closed call notification window',
+        'successfully closed call notification window'
       );
     }
     return;

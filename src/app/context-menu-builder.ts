@@ -1,6 +1,7 @@
-import { BrowserWindow, clipboard, Menu, MenuItem, shell } from 'electron';
-import { isDevEnv } from '../common/env';
+import { app, BrowserWindow, clipboard, Menu, MenuItem, shell } from 'electron';
 import { logger } from '../common/logger';
+
+const isDevEnv = !app.isPackaged;
 
 interface IContextMenuStringTable {
   copyMail: () => string;
@@ -74,7 +75,7 @@ export class ContextMenuBuilder {
 
   private processMenu: (
     menu: Electron.Menu,
-    menuInfo: Electron.ContextMenuParams,
+    menuInfo: Electron.ContextMenuParams
   ) => any;
   private stringTable: IContextMenuStringTable;
   private getWebContents: () => Electron.WebContents;
@@ -204,7 +205,7 @@ export class ContextMenuBuilder {
         clipboard.writeText(
           isEmailAddress
             ? menuInfo.linkURL.substr(mailToProtocol.length)
-            : menuInfo.linkURL,
+            : menuInfo.linkURL
         );
       },
     });
@@ -271,7 +272,7 @@ export class ContextMenuBuilder {
    */
   public async addSpellingItems(
     menu: Electron.Menu,
-    menuInfo: Electron.ContextMenuParams,
+    menuInfo: Electron.ContextMenuParams
   ) {
     const target = this.getWebContents();
     if (!menuInfo.misspelledWord || menuInfo.misspelledWord.length < 1) {
@@ -306,7 +307,7 @@ export class ContextMenuBuilder {
 
           try {
             this.getWebContents().session.addWordToSpellCheckerDictionary(
-              menuInfo.misspelledWord,
+              menuInfo.misspelledWord
             );
           } catch (e: any) {
             logger.error(`Failed to add entry to dictionary: ${e.message}`);
@@ -350,7 +351,7 @@ export class ContextMenuBuilder {
       label: this.stringTable.searchGoogle(),
       click: () => {
         const url = `https://www.google.com/search?q=${encodeURIComponent(
-          menuInfo.selectionText,
+          menuInfo.selectionText
         )}`;
 
         shell.openExternal(url);
@@ -397,7 +398,7 @@ export class ContextMenuBuilder {
         accelerator: 'CommandOrControl+X',
         enabled: menuInfo.editFlags.canCut,
         click: () => target.cut(),
-      }),
+      })
     );
 
     return menu;
@@ -414,7 +415,7 @@ export class ContextMenuBuilder {
         accelerator: 'CommandOrControl+C',
         enabled: menuInfo.editFlags.canCopy,
         click: () => target.copy(),
-      }),
+      })
     );
 
     return menu;
@@ -431,7 +432,7 @@ export class ContextMenuBuilder {
         accelerator: 'CommandOrControl+V',
         enabled: menuInfo.editFlags.canPaste,
         click: () => target.paste(),
-      }),
+      })
     );
 
     return menu;
@@ -447,7 +448,7 @@ export class ContextMenuBuilder {
         accelerator: 'CommandOrControl+Shift+V',
         enabled: menuInfo.editFlags.canPaste,
         role: 'pasteAndMatchStyle',
-      }),
+      })
     );
     return menu;
   }

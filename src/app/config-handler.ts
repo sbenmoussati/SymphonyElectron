@@ -4,7 +4,7 @@ import * as path from 'path';
 
 import * as util from 'util';
 import { buildNumber } from '../../package.json';
-import { isDevEnv, isElectronQA, isLinux, isMac } from '../common/env';
+import { isElectronQA, isLinux, isMac } from '../common/env';
 import { logger } from '../common/logger';
 import { arrayEquals, filterOutSelectedValues, pick } from '../common/utils';
 import { analytics } from './bi/analytics-handler';
@@ -19,6 +19,8 @@ import { terminateC9Shell } from './c9-shell-handler';
 import { appStats } from './stats';
 
 const writeFile = util.promisify(fs.writeFile);
+
+const isDevEnv = !app.isPackaged;
 
 export enum CloudConfigDataTypes {
   NOT_SET = 'NOT_SET',

@@ -28,8 +28,6 @@ interface IVersionInfo {
   uvVersion: string;
   aresVersion: string;
   httpParserVersion: string;
-  swiftSearchVersion: string;
-  swiftSearchSupportedVersion: string;
 }
 
 class VersionHandler {
@@ -55,8 +53,6 @@ class VersionHandler {
       uvVersion: process.versions.uv,
       aresVersion: process.versions.ares,
       httpParserVersion: process.versions.http_parser,
-      swiftSearchVersion: optionalDependencies['swift-search'],
-      swiftSearchSupportedVersion: searchAPIVersion,
     };
     this.mainUrl = null;
   }
@@ -66,7 +62,7 @@ class VersionHandler {
    */
   public getClientVersion(
     fetchFromServer: boolean = false,
-    mainUrl?: string,
+    mainUrl?: string
   ): Promise<IVersionInfo> {
     return new Promise((resolve) => {
       if (this.serverVersionInfo && !fetchFromServer) {
@@ -94,12 +90,12 @@ class VersionHandler {
 
       if (!this.mainUrl) {
         logger.error(
-          `version-handler: Unable to get pod url for getting version data from server! Setting defaults!`,
+          `version-handler: Unable to get pod url for getting version data from server! Setting defaults!`
         );
         logger.info(
           `version-handler: Setting defaults -> ${JSON.stringify(
-            this.versionInfo,
-          )}`,
+            this.versionInfo
+          )}`
         );
         resolve(this.versionInfo);
         return;
@@ -116,7 +112,7 @@ class VersionHandler {
 
       const url = `${protocol}//${hostname}${versionApiPath}`;
       logger.info(
-        `version-handler: Trying to get version info for the URL: ${url}`,
+        `version-handler: Trying to get version info for the URL: ${url}`
       );
 
       const request = net.request(url);
@@ -137,13 +133,13 @@ class VersionHandler {
               this.versionInfo.buildNumber;
             logger.info(
               `version-handler: Updated version info from server! ${JSON.stringify(
-                this.versionInfo,
-              )}`,
+                this.versionInfo
+              )}`
             );
             resolve(this.versionInfo);
           } catch (error) {
             logger.error(
-              `version-handler: Error getting version data from the server! ${error}`,
+              `version-handler: Error getting version data from the server! ${error}`
             );
             resolve(this.versionInfo);
             return;
@@ -152,7 +148,7 @@ class VersionHandler {
 
         res.on('error', (error: Error) => {
           logger.error(
-            `version-handler: Error getting version data from the server! ${error}`,
+            `version-handler: Error getting version data from the server! ${error}`
           );
           resolve(this.versionInfo);
           return;
@@ -161,7 +157,7 @@ class VersionHandler {
 
       request.on('error', (error: Error) => {
         logger.error(
-          `version-handler: Error getting version data from the server! ${error}`,
+          `version-handler: Error getting version data from the server! ${error}`
         );
         resolve(this.versionInfo);
         return;
@@ -177,8 +173,8 @@ class VersionHandler {
 
       request.end();
 
-      logger.info('version-handler: mainUrl: ' + mainUrl);
-      logger.info('version-handler: hostname: ' + hostname);
+      logger.info(`version-handler: mainUrl: ${mainUrl}`);
+      logger.info(`version-handler: hostname: ${hostname}`);
 
       /* Get SFE version */
       let urlSfeVersion: string;
@@ -194,7 +190,7 @@ class VersionHandler {
         : urlSfeVersion;
       this.versionInfo.sfeClientType = '2.0';
       logger.info(
-        `version-handler: Trying to get SFE version info for the URL: ${sfeVersionInfo}`,
+        `version-handler: Trying to get SFE version info for the URL: ${sfeVersionInfo}`
       );
 
       const requestSfeVersion = net.request(sfeVersionInfo);
@@ -212,20 +208,20 @@ class VersionHandler {
             this.versionInfo.sfeVersion = this.sfeVersionInfo[key];
 
             logger.info(
-              'version-handler: SFE-version: ' + this.sfeVersionInfo[key],
+              `version-handler: SFE-version: ${this.sfeVersionInfo[key]}`
             );
 
             logger.info(
               `version-handler: Updated SFE version info from server! ${JSON.stringify(
                 this.versionInfo,
                 null,
-                3,
-              )}`,
+                3
+              )}`
             );
             resolve(this.versionInfo);
           } catch (error) {
             logger.error(
-              `version-handler: Error getting SFE version data from the server! ${error}`,
+              `version-handler: Error getting SFE version data from the server! ${error}`
             );
             resolve(this.versionInfo);
             return;
@@ -234,7 +230,7 @@ class VersionHandler {
 
         res.on('error', (error: Error) => {
           logger.error(
-            `version-handler: Error getting SFE version data from the server! ${error}`,
+            `version-handler: Error getting SFE version data from the server! ${error}`
           );
           resolve(this.versionInfo);
           return;
@@ -243,7 +239,7 @@ class VersionHandler {
 
       requestSfeVersion.on('error', (error: Error) => {
         logger.error(
-          `version-handler: Error getting SFE version data from the server! ${error}`,
+          `version-handler: Error getting SFE version data from the server! ${error}`
         );
         resolve(this.versionInfo);
         return;

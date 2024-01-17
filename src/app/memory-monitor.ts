@@ -33,11 +33,11 @@ class MemoryMonitor {
    * @param memoryInfo {Electron.ProcessMemoryInfo}
    */
   public async setMemoryInfo(
-    memoryInfo: Electron.ProcessMemoryInfo,
+    memoryInfo: Electron.ProcessMemoryInfo
   ): Promise<void> {
     this.memoryInfo = memoryInfo;
     logger.info(
-      `memory-monitor: setting memory info to ${JSON.stringify(memoryInfo)}`,
+      `memory-monitor: setting memory info to ${JSON.stringify(memoryInfo)}`
     );
     await this.validateMemory();
   }
@@ -69,7 +69,7 @@ class MemoryMonitor {
     const { memoryRefresh } = config.getConfigFields(['memoryRefresh']);
     if (memoryRefresh !== CloudConfigDataTypes.ENABLED) {
       logger.info(
-        'memory-monitor: memory reload is disabled in the config, not going to refresh!',
+        'memory-monitor: memory reload is disabled in the config, not going to refresh!'
       );
       return;
     }
@@ -81,7 +81,7 @@ class MemoryMonitor {
       ? this.memoryInfo && this.memoryInfo.private
       : this.memoryInfo && this.memoryInfo.residentSet;
     logger.info(
-      'memory-monitor: Checking different conditions to see if we should auto reload the app',
+      'memory-monitor: Checking different conditions to see if we should auto reload the app'
     );
 
     logger.info('memory-monitor: Is in meeting: ', this.isInMeeting);
@@ -92,7 +92,7 @@ class MemoryMonitor {
     if (this.isInMeeting) {
       logger.info(
         'memory-monitor: NOT RELOADING -> User is currently in a meeting. Meeting status from client: ',
-        this.isInMeeting,
+        this.isInMeeting
       );
       return;
     }
@@ -100,14 +100,14 @@ class MemoryMonitor {
     if (!windowHandler.isOnline) {
       logger.info(
         'memory-monitor: NOT RELOADING -> Not connected to network. Network status: ',
-        windowHandler.isOnline,
+        windowHandler.isOnline
       );
       return;
     }
 
     if (!(memoryConsumption && memoryConsumption > this.memoryThreshold)) {
       logger.info(
-        `memory-monitor: NOT RELOADING -> Memory consumption ${memoryConsumption} is lesser than the threshold ${this.memoryThreshold}`,
+        `memory-monitor: NOT RELOADING -> Memory consumption ${memoryConsumption} is lesser than the threshold ${this.memoryThreshold}`
       );
       return;
     }
@@ -115,7 +115,7 @@ class MemoryMonitor {
     if (!(idleTime > this.maxIdleTime)) {
       logger.info(
         'memory-monitor: NOT RELOADING -> User is not idle for: ',
-        idleTime,
+        idleTime
       );
       return;
     }
@@ -123,7 +123,7 @@ class MemoryMonitor {
     if (!this.canReload) {
       logger.info(
         'memory-monitor: NOT RELOADING -> Already refreshed at: ',
-        this.lastReloadTime,
+        this.lastReloadTime
       );
       return;
     }
@@ -131,13 +131,13 @@ class MemoryMonitor {
     const mainWindow = windowHandler.getMainWindow();
     if (!(mainWindow && windowExists(mainWindow))) {
       logger.info(
-        "memory-monitor: NOT RELOADING -> Main window doesn't exist!",
+        "memory-monitor: NOT RELOADING -> Main window doesn't exist!"
       );
       return;
     }
 
     logger.info(
-      'memory-monitor: RELOADING -> auto reloading the app as all the conditions are satisfied',
+      'memory-monitor: RELOADING -> auto reloading the app as all the conditions are satisfied'
     );
     await appStats.sendAnalytics(SDAUserSessionActionTypes.ForceReload);
     this.reloadMainWindow();
@@ -159,7 +159,7 @@ class MemoryMonitor {
       mainWebContents.reloadIgnoringCache();
     } else {
       logger.error(
-        'memory-monitor: Unable to reload, no main window webContents found.',
+        'memory-monitor: Unable to reload, no main window webContents found.'
       );
     }
   }

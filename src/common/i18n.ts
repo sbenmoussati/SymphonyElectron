@@ -20,17 +20,20 @@ class Translation {
   private static translate(
     value: string,
     resource: JSON | null,
-    namespace: string | undefined,
+    namespace: string | undefined
   ): string {
     return resource
       ? Translation.getResource(resource, namespace)[value] || value
       : value;
   }
+
   private static getResource = (
     resource: JSON,
-    namespace: string | undefined,
+    namespace: string | undefined
   ): JSON => (namespace ? resource[namespace] : resource);
+
   public loadedResources: object = {};
+
   private locale: LocaleType = 'en-US';
 
   /**
@@ -86,15 +89,15 @@ class Translation {
           Translation.translate(
             value,
             this.loadedResources[this.locale],
-            namespace,
+            namespace
           ),
-          args,
+          args
         );
       }
       const resource = this.loadResource(this.locale);
       return formatString(
         Translation.translate(value, resource, namespace) || value,
-        args,
+        args
       );
     };
   }

@@ -36,6 +36,7 @@ import {
   injectStyles,
   preventWindowNavigation,
 } from './window-utils';
+import { ScreenShareEvents } from '../common/ipcEvent';
 
 const DEFAULT_POP_OUT_WIDTH = 300;
 const DEFAULT_POP_OUT_HEIGHT = 600;
@@ -338,7 +339,7 @@ export const handleChildWindow = (webContents: WebContents): void => {
           // Updates media permissions for preload context
           const { permissions } = config.getConfigFields(['permissions']);
           browserWin.webContents.send(
-            'is-screen-share-enabled',
+            ScreenShareEvents.IS_ENABLED,
             permissions.media,
           );
         }

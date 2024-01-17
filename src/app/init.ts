@@ -1,16 +1,17 @@
 import { app, crashReporter } from 'electron';
 import * as path from 'path';
 
-import { isDevEnv } from '../common/env';
 import { logger } from '../common/logger';
 import { getCommandLineArgs } from '../common/utils';
 import { appStats } from './stats';
+
+const isDevEnv = !app.isPackaged;
 
 // Handle custom user data path from process.argv
 const userDataPathArg: string | null = getCommandLineArgs(
   process.argv,
   '--userDataPath=',
-  false,
+  false
 );
 const userDataPath =
   userDataPathArg &&

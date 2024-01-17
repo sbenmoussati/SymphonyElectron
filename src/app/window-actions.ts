@@ -11,11 +11,11 @@ import { isLinux, isMac, isWindowsOS } from '../common/env';
 import { i18n } from '../common/i18n';
 import { logger } from '../common/logger';
 import { throttle } from '../common/utils';
-import { notification } from '../renderer/notification';
 import { CloudConfigDataTypes, config } from './config-handler';
 import { mainEvents } from './main-event-handler';
 import { ICustomBrowserWindow, windowHandler } from './window-handler';
 import { showPopupMenu, windowExists } from './window-utils';
+import { notification } from './notification';
 
 enum Permissions {
   MEDIA = 'media',
@@ -138,7 +138,7 @@ export const sendInitialBoundChanges = (childWindow: BrowserWindow): void => {
 
   if (!childWindow || !windowExists(childWindow)) {
     logger.error(
-      `window-actions: child window has already been destroyed - not sending bound change`,
+      `window-actions: child window has already been destroyed - not sending bound change`
     );
     return;
   }
@@ -156,7 +156,7 @@ export const sendInitialBoundChanges = (childWindow: BrowserWindow): void => {
     `window-actions: Initial bounds sent for ${
       (childWindow as ICustomBrowserWindow).winName
     }`,
-    { x, y, width, height },
+    { x, y, width, height }
   );
 };
 
@@ -171,7 +171,7 @@ export const sendInitialBoundChanges = (childWindow: BrowserWindow): void => {
  */
 export const activate = (
   windowName: string,
-  shouldFocus: boolean = true,
+  shouldFocus: boolean = true
 ): void => {
   // Electron-136: don't activate when the app is reloaded programmatically
   if (windowHandler.isAutoReload) {
@@ -213,10 +213,10 @@ export const activate = (
 export const updateAlwaysOnTop = async (
   shouldSetAlwaysOnTop: boolean,
   shouldActivateMainWindow: boolean = true,
-  shouldUpdateUserConfig: boolean = true,
+  shouldUpdateUserConfig: boolean = true
 ): Promise<void> => {
   logger.info(
-    `window-actions: Should we set always on top? ${shouldSetAlwaysOnTop}!`,
+    `window-actions: Should we set always on top? ${shouldSetAlwaysOnTop}!`
   );
   const browserWins: ICustomBrowserWindow[] =
     BrowserWindow.getAllWindows() as ICustomBrowserWindow[];
@@ -299,7 +299,7 @@ const setSpecificAlwaysOnTop = () => {
     // Set the focused window's always on top level based on fullscreen state
     browserWindow.setAlwaysOnTop(
       true,
-      browserWindow.isFullScreen() ? 'modal-panel' : 'floating',
+      browserWindow.isFullScreen() ? 'modal-panel' : 'floating'
     );
   }
 };
@@ -321,12 +321,12 @@ export const monitorWindowActions = (window: BrowserWindow): void => {
     }
   });
   window.on('enter-full-screen', () =>
-    throttledWindowChanges('enter-full-screen', window),
+    throttledWindowChanges('enter-full-screen', window)
   );
   window.on('maximize', () => throttledWindowChanges('maximize', window));
 
   window.on('leave-full-screen', () =>
-    throttledWindowChanges('leave-full-screen', window),
+    throttledWindowChanges('leave-full-screen', window)
   );
   window.on('unmaximize', () => throttledWindowChanges('unmaximize', window));
 
@@ -383,7 +383,7 @@ export const removeWindowEventListener = (window: BrowserWindow): void => {
 export const handleSessionPermissions = async (
   permission: boolean,
   message: string,
-  callback: (permission: boolean) => void,
+  callback: (permission: boolean) => void
 ): Promise<void> => {
   logger.info(`window-action: permission is ->`, { type: message, permission });
 
@@ -397,7 +397,7 @@ export const handleSessionPermissions = async (
       });
       logger.error(
         `window-actions: permissions message box closed with response`,
-        response,
+        response
       );
     }
   }
@@ -420,14 +420,14 @@ const handleMediaPermissions = async (
   permission: boolean,
   message: string,
   callback: (permission: boolean) => void,
-  details: PermissionRequestHandlerHandlerDetails,
+  details: PermissionRequestHandlerHandlerDetails
 ): Promise<void> => {
   logger.info('window-action: permission is ->', permission);
   let systemAudioPermission;
   let systemVideoPermission;
   if (isMac) {
     systemAudioPermission = await systemPreferences.askForMediaAccess(
-      'microphone',
+      'microphone'
     );
     systemVideoPermission = await systemPreferences.askForMediaAccess('camera');
   } else {
@@ -445,7 +445,7 @@ const handleMediaPermissions = async (
       });
       logger.error(
         `window-actions: permissions message box closed with response`,
-        response,
+        response
       );
     }
   }
@@ -476,7 +476,7 @@ export const handlePermissionRequests = (webContents: WebContents): void => {
   const { permissions } = config.getConfigFields(['permissions']);
   if (!permissions) {
     logger.error(
-      'permissions configuration is invalid, so, everything will be true by default!',
+      'permissions configuration is invalid, so, everything will be true by default!'
     );
     return;
   }
@@ -494,55 +494,55 @@ export const handlePermissionRequests = (webContents: WebContents): void => {
             permissions.media,
             i18n.t(
               'Your administrator has disabled sharing your camera, microphone, and speakers. Please contact your admin for help',
-              PERMISSIONS_NAMESPACE,
+              PERMISSIONS_NAMESPACE
             )(),
             callback,
-            details,
+            details
           );
         case Permissions.LOCATION:
           return handleSessionPermissions(
             permissions.geolocation,
             i18n.t(
               'Your administrator has disabled sharing your location. Please contact your admin for help',
-              PERMISSIONS_NAMESPACE,
+              PERMISSIONS_NAMESPACE
             )(),
-            callback,
+            callback
           );
         case Permissions.NOTIFICATIONS:
           return handleSessionPermissions(
             permissions.notifications,
             i18n.t(
               'Your administrator has disabled notifications. Please contact your admin for help',
-              PERMISSIONS_NAMESPACE,
+              PERMISSIONS_NAMESPACE
             )(),
-            callback,
+            callback
           );
         case Permissions.MIDI_SYSEX:
           return handleSessionPermissions(
             permissions.midiSysex,
             i18n.t(
               'Your administrator has disabled MIDI Sysex. Please contact your admin for help',
-              PERMISSIONS_NAMESPACE,
+              PERMISSIONS_NAMESPACE
             )(),
-            callback,
+            callback
           );
         case Permissions.POINTER_LOCK:
           return handleSessionPermissions(
             permissions.pointerLock,
             i18n.t(
               'Your administrator has disabled Pointer Lock. Please contact your admin for help',
-              PERMISSIONS_NAMESPACE,
+              PERMISSIONS_NAMESPACE
             )(),
-            callback,
+            callback
           );
         case Permissions.FULL_SCREEN:
           return handleSessionPermissions(
             permissions.fullscreen,
             i18n.t(
               'Your administrator has disabled Full Screen. Please contact your admin for help',
-              PERMISSIONS_NAMESPACE,
+              PERMISSIONS_NAMESPACE
             )(),
-            callback,
+            callback
           );
         case Permissions.OPEN_EXTERNAL:
           if (
@@ -556,14 +556,14 @@ export const handlePermissionRequests = (webContents: WebContents): void => {
             permissions.openExternal,
             i18n.t(
               'Your administrator has disabled Opening External App. Please contact your admin for help',
-              PERMISSIONS_NAMESPACE,
+              PERMISSIONS_NAMESPACE
             )(),
-            callback,
+            callback
           );
         default:
           return callback(allowedPermissions.has(permission));
       }
-    },
+    }
   );
 };
 
@@ -600,7 +600,7 @@ export const unregisterConsoleMessages = () => {
     }
     browserWindow.webContents.removeListener(
       'console-message',
-      onConsoleMessages,
+      onConsoleMessages
     );
   }
 };

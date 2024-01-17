@@ -1,6 +1,5 @@
 import { app } from 'electron';
 import { isMac, isWindowsOS } from '../../common/env';
-import { analytics } from './analytics-handler';
 import {
   AnalyticsElements,
   IInstallData,
@@ -8,6 +7,7 @@ import {
   InstallLocationTypes,
   InstallTypes,
 } from './interface';
+import { analytics } from './analytics-handler';
 
 /**
  * Sends auto update analytics event

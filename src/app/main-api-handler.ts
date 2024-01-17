@@ -55,7 +55,7 @@ import {
 } from './window-utils';
 
 import { getCommandLineArgs } from '../common/utils';
-import callNotificationHelper from '../renderer/call-notification-helper';
+import callNotificationHelper from './call-notification-helper';
 import { autoUpdate, AutoUpdateTrigger } from './auto-update-handler';
 import { SDAUserSessionActionTypes } from './bi/interface';
 import { presenceStatus } from './presence-status-handler';
@@ -71,7 +71,7 @@ try {
   swiftSearchInstance = new SSAPIBridge();
 } catch (e) {
   console.warn(
-    "Failed to initialize swift search. You'll need to include the search dependency. Contact the developers for more details",
+    "Failed to initialize swift search. You'll need to include the search dependency. Contact the developers for more details"
   );
 }
 const broadcastMessage = (method, data) => {
@@ -117,14 +117,14 @@ ipcMain.on(
     ) {
       logger.error(
         `main-api-handler: invalid window try to perform action, ignoring action`,
-        arg.cmd,
+        arg.cmd
       );
       return;
     }
 
     if (!arg) {
       logger.error(
-        'main-api-handler: no args received. Unable to handle API call.',
+        'main-api-handler: no args received. Unable to handle API call.'
       );
       return;
     }
@@ -215,13 +215,13 @@ ipcMain.on(
           windowHandler.createScreenPickerWindow(
             event.sender,
             arg.sources,
-            arg.id,
+            arg.id
           );
         }
         break;
       case apiCmds.popupMenu: {
         const browserWin = BrowserWindow.fromWebContents(
-          event.sender,
+          event.sender
         ) as ICustomBrowserWindow;
         if (
           browserWin &&
@@ -268,7 +268,7 @@ ipcMain.on(
             event.sender,
             displayId,
             id,
-            streamId,
+            streamId
           );
         }
         break;
@@ -388,7 +388,7 @@ ipcMain.on(
         if (arg.clipboard && arg.clipboardType) {
           clipboard.write(
             { text: JSON.stringify(arg.clipboard, null, 4) },
-            arg.clipboardType,
+            arg.clipboardType
           );
         }
         break;
@@ -460,21 +460,21 @@ ipcMain.on(
         logger.info(
           'main-api-handler:',
           'check if sso is enabled for the pod',
-          formattedPodUrl,
+          formattedPodUrl
         );
 
         if (localConfig.enableBrowserLogin) {
           logger.info(
             'main-api-handler:',
             'check if sso is enabled for the pod',
-            formattedPodUrl,
+            formattedPodUrl
           );
           loadPodUrl(false);
         } else {
           logger.info(
             'main-api-handler:',
             'browser login is not enabled - loading main window with',
-            formattedPodUrl,
+            formattedPodUrl
           );
           const mainWebContents = windowHandler.getMainWebContents();
           if (mainWebContents && !mainWebContents.isDestroyed()) {
@@ -533,7 +533,7 @@ ipcMain.on(
       default:
         break;
     }
-  },
+  }
 );
 
 ipcMain.handle(
@@ -547,7 +547,7 @@ ipcMain.handle(
     ) {
       logger.error(
         `main-api-handler: invalid window try to perform action, ignoring action`,
-        arg.cmd,
+        arg.cmd
       );
       return;
     }
@@ -567,7 +567,7 @@ ipcMain.handle(
           await dialog.showMessageBox(focusedWindow, {
             message: `${i18n.t(
               'Your administrator has disabled sharing your screen. Please contact your admin for help',
-              'Permissions',
+              'Permissions'
             )()}`,
             title: `${i18n.t('Permission Denied')()}!`,
             type: 'error',
@@ -604,7 +604,7 @@ ipcMain.handle(
         break;
     }
     return;
-  },
+  }
 );
 
 /**
@@ -627,8 +627,8 @@ const logApiCallParams = (arg: any) => {
         `main-api-handler: - ${apiCmd} - Properties: ${JSON.stringify(
           notificationDetails,
           null,
-          2,
-        )}`,
+          2
+        )}`
       );
       break;
     case apiCmds.badgeDataUrl:
@@ -641,8 +641,8 @@ const logApiCallParams = (arg: any) => {
         `main-api-handler: - ${apiCmd} - Properties: ${JSON.stringify(
           badgeDataUrlDetails,
           null,
-          2,
-        )}`,
+          2
+        )}`
       );
       break;
     case apiCmds.openScreenPickerWindow:
@@ -663,8 +663,8 @@ const logApiCallParams = (arg: any) => {
         `main-api-handler: - ${apiCmd} - Properties: ${JSON.stringify(
           openScreenPickerDetails,
           null,
-          2,
-        )}`,
+          2
+        )}`
       );
       break;
     case apiCmds.sendLogs:
@@ -677,8 +677,8 @@ const logApiCallParams = (arg: any) => {
         `main-api-handler: - ${apiCmd} - Properties: ${JSON.stringify(
           logDetails,
           null,
-          2,
-        )}`,
+          2
+        )}`
       );
       break;
     case apiCmds.addLogs:
@@ -691,8 +691,8 @@ const logApiCallParams = (arg: any) => {
         `main-api-handler: - ${apiCmd} - Properties: ${JSON.stringify(
           ld,
           null,
-          2,
-        )}`,
+          2
+        )}`
       );
       break;
     case apiCmds.writeCloud9Pipe:
@@ -704,8 +704,8 @@ const logApiCallParams = (arg: any) => {
         `main-api-handler: - ${apiCmd} - Properties: ${JSON.stringify(
           compressedData,
           null,
-          2,
-        )}`,
+          2
+        )}`
       );
       break;
     default:
@@ -713,8 +713,8 @@ const logApiCallParams = (arg: any) => {
         `main-api-handler: - ${apiCmd} - Properties: ${JSON.stringify(
           arg,
           null,
-          2,
-        )}`,
+          2
+        )}`
       );
       break;
   }
@@ -743,13 +743,13 @@ const loadPodUrl = (proxyLogin = false) => {
       if (authResponse.authenticationType === 'sso') {
         logger.info(
           'main-api-handler: browser login is enabled - logging in',
-          loginUrl,
+          loginUrl
         );
         await shell.openExternal(loginUrl);
       } else {
         logger.info(
           'main-api-handler: no SSO - loading main window with',
-          formattedPodUrl,
+          formattedPodUrl
         );
         const mainWebContents = windowHandler.getMainWebContents();
         if (mainWebContents && !mainWebContents.isDestroyed()) {
@@ -778,14 +778,14 @@ const loadPodUrl = (proxyLogin = false) => {
             proxyDetails.password = password;
             credentialsPromiseRefHolder.resolutionCallback(true);
             loadPodUrl(true);
-          },
+          }
         );
         proxyDetails.retries += 1;
       }
       logger.error(
         'main-api-handler: browser login error. Details: ',
         error.type,
-        error.code,
+        error.code
       );
     });
 };

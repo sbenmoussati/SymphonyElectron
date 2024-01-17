@@ -16,14 +16,13 @@ import { ChildProcess, execFile, ExecFileException } from 'child_process';
 import * as util from 'util';
 import { apiName, IScreenSnippet } from '../common/api-interface';
 import {
-  isDevEnv,
   isElectronQA,
   isLinux,
   isMac,
   isWindowsOS,
 } from '../common/env';
 import { i18n } from '../common/i18n';
-import { ScreenShotAnnotation } from '../common/ipcEvent';
+import { ScreenShotAnnotationEvents } from '../common/ipcEvent';
 import { logger } from '../common/logger';
 import { analytics } from './bi/analytics-handler';
 import { AnalyticsElements, ScreenSnippetActionTypes } from './bi/interface';
@@ -41,6 +40,8 @@ export interface IListItem {
   dataTestId: string;
   onClick: (eventName: string) => Promise<void>;
 }
+
+const isDevEnv = !app.isPackaged;
 
 class ScreenSnippet {
   private readonly tempDir: string;
@@ -71,13 +72,13 @@ class ScreenSnippet {
         eventData: {
           element: AnalyticsElements;
           type: ScreenSnippetActionTypes;
-        },
+        }
       ) => {
         analytics.track({
           element: eventData.element,
           action_type: eventData.type,
         });
-      },
+      }
     );
   }
 
@@ -106,7 +107,7 @@ class ScreenSnippet {
     logger.info(`screen-snippet-handler: Starting screen capture!`);
     this.outputFilePath = path.join(
       this.tempDir,
-      'symphonyImage-' + Date.now() + '.png',
+      `symphonyImage-${Date.now()}.png`
     );
 
     if (isMac) {
@@ -120,7 +121,7 @@ class ScreenSnippet {
         this.captureUtil = isDevEnv
           ? path.join(
               __dirname,
-              '../../../node_modules/screen-snippet/ScreenSnippet.exe',
+              '../../../node_modules/screen-snippet/ScreenSnippet.exe'
             )
           : path.join(path.dirname(app.getPath('exe')), 'ScreenSnippet.exe');
         this.captureUtilArgs = [
@@ -132,7 +133,7 @@ class ScreenSnippet {
         this.captureUtil = isDevEnv
           ? path.join(
               __dirname,
-              '../../../node_modules/screen-snippet/ScreenSnippet.exe',
+              '../../../node_modules/screen-snippet/ScreenSnippet.exe'
             )
           : path.join(path.dirname(app.getPath('exe')), 'ScreenSnippet.exe');
         this.captureUtilArgs = [this.outputFilePath, i18n.getLocale()];
@@ -145,13 +146,13 @@ class ScreenSnippet {
     this.focusedWindow = BrowserWindow.getFocusedWindow();
 
     logger.info(
-      `screen-snippet-handler: Capturing snippet with file ${this.outputFilePath} and args ${this.captureUtilArgs}!`,
+      `screen-snippet-handler: Capturing snippet with file ${this.outputFilePath} and args ${this.captureUtilArgs}!`
     );
 
     // only allow one screen capture at a time.
     if (this.child) {
       logger.info(
-        `screen-snippet-handler: Child screen capture exists, killing it and keeping only 1 instance!`,
+        `screen-snippet-handler: Child screen capture exists, killing it and keeping only 1 instance!`
       );
       this.killChildProcess();
     }
@@ -161,13 +162,13 @@ class ScreenSnippet {
       if (windowHandler.isMana) {
         winStore.restoreWindows(hideOnCapture);
         logger.info(
-          'screen-snippet-handler: Attempting to extract image dimensions from: ' +
-            this.outputFilePath,
+          `screen-snippet-handler: Attempting to extract image dimensions from: ${this.outputFilePath}`
         );
         const dimensions = this.getImageDimensions(this.outputFilePath);
         logger.info(
-          'screen-snippet-handler: Extracted dimensions from image: ' +
-            JSON.stringify(dimensions),
+          `screen-snippet-handler: Extracted dimensions from image: ${JSON.stringify(
+            dimensions
+          )}`
         );
         if (!dimensions) {
           logger.error('screen-snippet-handler: Could not get image size');
@@ -184,7 +185,7 @@ class ScreenSnippet {
           this.outputFilePath,
           dimensions,
           currentWindowName,
-          hideOnCapture,
+          hideOnCapture
         );
         this.uploadSnippet(currentWindowObj, webContents, hideOnCapture);
         this.closeSnippet(currentWindowObj);
@@ -195,14 +196,14 @@ class ScreenSnippet {
       const { message, data, type }: IScreenSnippet =
         await this.convertFileToData();
       logger.info(
-        `screen-snippet-handler: Snippet captured! Sending data straight to SFE without opening annotate tool`,
+        `screen-snippet-handler: Snippet captured! Sending data straight to SFE without opening annotate tool`
       );
       webContents.send('screen-snippet-data', { message, data, type });
       await this.verifyAndUpdateAlwaysOnTop();
     } catch (error) {
       await this.verifyAndUpdateAlwaysOnTop();
       logger.error(
-        `screen-snippet-handler: screen capture failed, user probably escaped the capture. Error: ${error}!`,
+        `screen-snippet-handler: screen capture failed, user probably escaped the capture. Error: ${error}!`
       );
     }
   }
@@ -222,7 +223,7 @@ class ScreenSnippet {
     } catch (error) {
       await this.verifyAndUpdateAlwaysOnTop();
       logger.error(
-        `screen-snippet-handler: screen capture cancel failed with error: ${error}!`,
+        `screen-snippet-handler: screen capture cancel failed with error: ${error}!`
       );
     }
   }
@@ -249,10 +250,10 @@ class ScreenSnippet {
    */
   private execCmd(
     captureUtil: string,
-    captureUtilArgs: ReadonlyArray<string>,
+    captureUtilArgs: ReadonlyArray<string>
   ): Promise<void> {
     logger.info(
-      `screen-snippet-handlers: execCmd ${captureUtil} ${captureUtilArgs}`,
+      `screen-snippet-handlers: execCmd ${captureUtil} ${captureUtilArgs}`
     );
     return new Promise<void>((resolve, reject) => {
       return (this.child = execFile(
@@ -264,7 +265,7 @@ class ScreenSnippet {
             return reject(error);
           }
           resolve();
-        },
+        }
       ));
     });
   }
@@ -279,14 +280,14 @@ class ScreenSnippet {
     try {
       if (!this.outputFilePath) {
         logger.info(
-          `screen-snippet-handler: screen capture failed! output file doesn't exist!`,
+          `screen-snippet-handler: screen capture failed! output file doesn't exist!`
         );
         return { message: 'output file name is required', type: 'ERROR' };
       }
       const data = await readFile(this.outputFilePath);
       if (!data) {
         logger.info(
-          `screen-snippet-handler: screen capture failed! data doesn't exist!`,
+          `screen-snippet-handler: screen capture failed! data doesn't exist!`
         );
         return { message: `no file data provided`, type: 'ERROR' };
       }
@@ -338,13 +339,13 @@ class ScreenSnippet {
   private uploadSnippet(
     focusedWindow: BrowserWindow | null,
     webContents: WebContents,
-    hideOnCapture?: boolean,
+    hideOnCapture?: boolean
   ) {
     ipcMain.on(
-      ScreenShotAnnotation.UPLOAD,
+      ScreenShotAnnotationEvents.UPLOAD_SNIPPET,
       async (
         _event,
-        snippetData: { screenSnippetPath: string; mergedImageData: string },
+        snippetData: { screenSnippetPath: string; mergedImageData: string }
       ) => {
         try {
           windowHandler.closeSnippingToolWindow();
@@ -355,7 +356,7 @@ class ScreenSnippet {
             type,
           };
           logger.info(
-            'screen-snippet-handler: Snippet uploaded correctly, sending payload to SFE',
+            'screen-snippet-handler: Snippet uploaded correctly, sending payload to SFE'
           );
           webContents.send('screen-snippet-data', payload);
           winStore.restoreWindows(hideOnCapture);
@@ -363,7 +364,7 @@ class ScreenSnippet {
         } catch (error) {
           await this.verifyAndUpdateAlwaysOnTop();
           logger.error(
-            `screen-snippet-handler: upload of screen capture failed with error: ${error}!`,
+            `screen-snippet-handler: upload of screen capture failed with error: ${error}!`
           );
         }
         if (focusedWindow && !focusedWindow.isDestroyed()) {
@@ -371,10 +372,10 @@ class ScreenSnippet {
         } else {
           logger.info(
             'screen-snippet-handler: tried to focus a destroyed window on upload ',
-            (focusedWindow as ICustomBrowserWindow).winName,
+            (focusedWindow as ICustomBrowserWindow).winName
           );
         }
-      },
+      }
     );
   }
   /**
@@ -388,7 +389,7 @@ class ScreenSnippet {
       } catch (error) {
         await this.verifyAndUpdateAlwaysOnTop();
         logger.error(
-          `screen-snippet-handler: close window failed with error: ${error}!`,
+          `screen-snippet-handler: close window failed with error: ${error}!`
         );
       }
       if (focusedWindow && !focusedWindow.isDestroyed()) {
@@ -396,7 +397,7 @@ class ScreenSnippet {
       } else {
         logger.warn(
           'screen-snippet-handler: tried to focus a destroyed window on close ',
-          (focusedWindow as ICustomBrowserWindow).winName,
+          (focusedWindow as ICustomBrowserWindow).winName
         );
       }
     });
@@ -413,7 +414,7 @@ class ScreenSnippet {
         copyToClipboardData: {
           action: string;
           clipboard: string;
-        },
+        }
       ) => {
         logger.info(`screen-snippet-handler: Copied!`);
         this.focusedWindow = BrowserWindow.getFocusedWindow();
@@ -430,10 +431,10 @@ class ScreenSnippet {
         } catch (error) {
           await this.verifyAndUpdateAlwaysOnTop();
           logger.error(
-            `screen-snippet-handler: cannot copy, failed with error: ${error}!`,
+            `screen-snippet-handler: cannot copy, failed with error: ${error}!`
           );
         }
-      },
+      }
     );
   }
 
@@ -447,14 +448,14 @@ class ScreenSnippet {
         _event,
         saveAsData: {
           clipboard: string;
-        },
+        }
       ) => {
         if (isMac) {
           windowHandler.closeSnippingToolWindow();
         }
         const filePath = path.join(
           app.getPath('downloads'),
-          'symphonyImage-' + Date.now() + '.png',
+          `symphonyImage-${Date.now()}.png`
         );
         const [, data] = saveAsData.clipboard.split(',');
         const buffer = Buffer.from(data, 'base64');
@@ -462,12 +463,12 @@ class ScreenSnippet {
         const dialogResult = await this.saveFile(
           filePath,
           img,
-          BrowserWindow.getFocusedWindow(),
+          BrowserWindow.getFocusedWindow()
         );
         if (dialogResult?.filePath) {
           windowHandler.closeSnippingToolWindow();
         }
-      },
+      }
     );
   }
 
@@ -476,7 +477,7 @@ class ScreenSnippet {
    */
   private storeWindowsState = (
     mainWindow: ICustomBrowserWindow | null,
-    currentWindowObj: BrowserWindow | null,
+    currentWindowObj: BrowserWindow | null
   ) => {
     const windowObj = winStore.getWindowStore();
     const currentWindowName = (currentWindowObj as ICustomBrowserWindow)
@@ -540,7 +541,7 @@ class ScreenSnippet {
   private saveFile = (
     filePath: string,
     img: NativeImage,
-    parentWindow: BrowserWindow | null,
+    parentWindow: BrowserWindow | null
   ) => {
     const saveOptions = {
       title: 'Select place to store your file',
@@ -568,7 +569,7 @@ class ScreenSnippet {
           fs.writeFile(file.filePath.toString(), img.toPNG(), (err) => {
             if (err) {
               throw logger.error(
-                `screen-snippet-handler: cannot save file, failed with error: ${err}!`,
+                `screen-snippet-handler: cannot save file, failed with error: ${err}!`
               );
             }
 
@@ -580,7 +581,7 @@ class ScreenSnippet {
       })
       .catch((err) => {
         logger.error(
-          `screen-snippet-handler: cannot save file, failed with error: ${err}!`,
+          `screen-snippet-handler: cannot save file, failed with error: ${err}!`
         );
 
         return undefined;

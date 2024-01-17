@@ -1,6 +1,6 @@
 import { app, powerMonitor, WebContents } from 'electron';
 import { logger } from '../common/c9-logger';
-import { isDevEnv, isWindowsOS } from '../common/env';
+import { isWindowsOS } from '../common/env';
 
 import { ChildProcess, spawn } from 'child_process';
 import * as path from 'path';
@@ -16,6 +16,8 @@ export interface IShellStatus {
 }
 
 type StatusCallback = (status: IShellStatus) => void;
+
+const isDevEnv = !app.isPackaged;
 
 class C9ShellHandler {
   private _c9shell: ChildProcess | undefined;
@@ -176,7 +178,7 @@ class C9ShellHandler {
     const c9ShellPath = isDevEnv
       ? path.join(
           __dirname,
-          '../../../node_modules/@symphony/symphony-c9-shell/shell/c9shell.exe',
+          '../../node_modules/@symphony/symphony-c9-shell/shell/c9shell.exe'
         )
       : path.join(path.dirname(app.getPath('exe')), 'cloud9/shell/c9shell.exe');
 

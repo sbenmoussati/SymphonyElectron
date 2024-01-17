@@ -1,7 +1,7 @@
 import { app, systemPreferences } from 'electron';
-import * as electronDownloader from 'electron-dl';
+import electronDownloader from 'electron-dl';
 
-import { isDevEnv, isLinux, isMac } from '../common/env';
+import { isLinux, isMac } from '../common/env';
 import { logger } from '../common/logger';
 import { getCommandLineArgs } from '../common/utils';
 import { cleanUpAppCache, createAppCacheFile } from './app-cache-handler';
@@ -16,13 +16,30 @@ import { ICustomBrowserWindow, windowHandler } from './window-handler';
 import { autoLaunchInstance } from './auto-launch-controller';
 import { presenceStatusStore } from './stores';
 
+const isDevEnv = !app.isPackaged;
+
+const installExtensions = async () => {
+  const installer = require('electron-devtools-installer');
+  const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
+  const extensions = ['REACT_DEVELOPER_TOOLS'];
+
+  return installer
+    .default(
+      extensions.map((name) => installer[name]),
+      forceDownload
+    )
+    .catch((err: any) => {
+      logger.error('Error while installing ext: ', err);
+    });
+};
+
 // Set automatic period substitution to false because of a bug in draft js on the client app
 // See https://perzoinc.atlassian.net/browse/SDA-2215 for more details
 if (isMac) {
   systemPreferences.setUserDefault(
     'NSAutomaticPeriodSubstitutionEnabled',
     'string',
-    'false',
+    'false'
   );
 }
 
@@ -86,7 +103,7 @@ const startApplication = async () => {
   const isFirstTimeLaunch = config.isFirstTimeLaunch();
   if (isFirstTimeLaunch) {
     logger.info(
-      `main: This is a first time launch! will update config and handle auto launch`,
+      `main: This is a first time launch! will update config and handle auto launch`
     );
     await config.setUpFirstTimeLaunch();
     if (!isLinux) {
@@ -95,12 +112,15 @@ const startApplication = async () => {
     config.writeUserConfig();
   }
   await app.whenReady();
+  if (isDevEnv) {
+    installExtensions();
+  }
   if (oneStart) {
     return;
   }
 
   logger.info(
-    'main: app is ready, performing initial checks oneStart: ' + oneStart,
+    `main: app is ready, performing initial checks oneStart: ${oneStart}`
   );
   oneStart = true;
   createAppCacheFile();
@@ -129,7 +149,7 @@ if (!allowMultiInstance) {
     app.on('second-instance', (_event, argv) => {
       // Someone tried to run a second instance, we should focus our window.
       logger.info(
-        `main: We've got a second instance of the app, will check if it's allowed and exit if not`,
+        `main: We've got a second instance of the app, will check if it's allowed and exit if not`
       );
       const mainWindow = windowHandler.getMainWindow();
       const mainWebContents = windowHandler.getMainWebContents();
@@ -192,7 +212,7 @@ app.on('activate', () => {
   const mainWindow: ICustomBrowserWindow | null = windowHandler.getMainWindow();
   if (!mainWindow || mainWindow.isDestroyed()) {
     logger.info(
-      `main: main window not existing or destroyed, creating a new instance of the main window!`,
+      `main: main window not existing or destroyed, creating a new instance of the main window!`
     );
     startApplication();
     return;
@@ -208,7 +228,7 @@ app.on('activate', () => {
  */
 app.on('open-url', (_event, url) => {
   logger.info(
-    `main: we got a protocol request with url ${url}! processing the request!`,
+    `main: we got a protocol request with url ${url}! processing the request!`
   );
   protocolHandler.sendProtocol(url);
 });

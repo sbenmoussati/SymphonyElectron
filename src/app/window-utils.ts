@@ -17,10 +17,10 @@ import fetch from 'electron-fetch';
 import { filesize } from 'filesize';
 import * as fs from 'fs';
 import * as path from 'path';
-import { format, parse } from 'url';
+import { parse } from 'url';
 import { apiName, EPresenceStatusGroup } from '../common/api-interface';
 
-import { isDevEnv, isLinux, isMac, isWindowsOS } from '../common/env';
+import { isLinux, isMac, isWindowsOS } from '../common/env';
 import { i18n, LocaleType } from '../common/i18n';
 import { logger } from '../common/logger';
 import { getDifferenceInDays, getGuid, getRandomTime } from '../common/utils';
@@ -49,12 +49,14 @@ import {
   windowHandler,
 } from './window-handler';
 
-import { notification } from '../renderer/notification';
 import { autoLaunchInstance } from './auto-launch-controller';
 import { autoUpdate, AutoUpdateTrigger } from './auto-update-handler';
 import { mainEvents } from './main-event-handler';
 import { presenceStatus } from './presence-status-handler';
 import { presenceStatusStore } from './stores';
+import { TitleBarEvents } from '../common/ipcEvent';
+import { notification } from './notification';
+import { resolveHtmlPath } from './util';
 
 interface IStyles {
   name: styleNames;
@@ -67,16 +69,18 @@ enum styleNames {
   messageBanner = 'message-banner',
 }
 
+const isDevEnv = !app.isPackaged;
+
 const checkValidWindow = true;
 const { ctWhitelist } = config.getConfigFields(['ctWhitelist']);
 
 // Network status check variables
 const networkStatusCheckInterval = 10 * 1000;
-let networkStatusCheckIntervalId;
+let networkStatusCheckIntervalId: NodeJS.Timer | null;
 
 const MAX_AUTO_UPDATE_CHECK_INTERVAL = 4 * 60 * 60 * 1000; // 4hrs
 const MIN_AUTO_UPDATE_CHECK_INTERVAL = 2 * 60 * 60 * 1000; // 2hrs
-let autoUpdateIntervalId;
+let autoUpdateIntervalId: NodeJS.Timer | null;
 
 let isNetworkMonitorInitialized = false;
 
@@ -84,9 +88,9 @@ const styles: IStyles[] = [];
 const DOWNLOAD_MANAGER_NAMESPACE = 'DownloadManager';
 
 const TITLE_BAR_EVENTS = [
-  'maximize',
-  'unmaximize',
-  'move',
+  TitleBarEvents.MAXIMIZE,
+  TitleBarEvents.UNMAXIMIZE,
+  TitleBarEvents.MOVE,
   'enter-full-screen',
   'leave-full-screen',
 ];
@@ -119,20 +123,20 @@ export const viewExists = (view: BrowserView): boolean =>
  */
 export const preventWindowNavigation = (
   browserWindow: BrowserWindow,
-  isPopOutWindow: boolean = false,
+  isPopOutWindow: boolean = false
 ): void => {
   if (!browserWindow || !windowExists(browserWindow)) {
     return;
   }
   logger.info(
     `window-utils: preventing window from navigating!`,
-    isPopOutWindow,
+    isPopOutWindow
   );
 
   const listener = async (e: Electron.Event, winUrl: string) => {
     if (!winUrl.startsWith('https')) {
       logger.error(
-        `window-utils: ${winUrl} doesn't start with https, so, not navigating!`,
+        `window-utils: ${winUrl} doesn't start with https, so, not navigating!`
       );
       e.preventDefault();
       return;
@@ -148,13 +152,13 @@ export const preventWindowNavigation = (
             buttons: ['OK'],
             title: i18n.t('Not Allowed')(),
             message: `${i18n.t(
-              `Sorry, you are not allowed to access this website`,
+              `Sorry, you are not allowed to access this website`
             )()} (${winUrl}), ${i18n.t(
-              'please contact your administrator for more details',
+              'please contact your administrator for more details'
             )()}`,
           });
           logger.info(
-            `window-utils: received ${response} response from dialog`,
+            `window-utils: received ${response} response from dialog`
           );
         }
       }
@@ -195,7 +199,7 @@ export const preventWindowNavigation = (
 export const createComponentWindow = (
   componentName: string,
   opts?: Electron.BrowserWindowConstructorOptions,
-  shouldFocus: boolean = true,
+  shouldFocus: boolean = true
 ): BrowserWindow => {
   const options: Electron.BrowserWindowConstructorOptions = {
     center: true,
@@ -209,14 +213,16 @@ export const createComponentWindow = (
     webPreferences: {
       sandbox: IS_SAND_BOXED,
       nodeIntegration: IS_NODE_INTEGRATION_ENABLED,
-      preload: path.join(__dirname, '../renderer/_preload-component.js'),
+      preload: app.isPackaged
+        ? path.join(__dirname, 'preload.js')
+        : path.join(__dirname, '../../.erb/dll/preload.js'),
       devTools: isDevEnv,
       disableBlinkFeatures: AUX_CLICK,
     },
   };
 
   const browserWindow: ICustomBrowserWindow = new BrowserWindow(
-    options,
+    options
   ) as ICustomBrowserWindow;
   if (shouldFocus) {
     browserWindow.once('ready-to-show', () => {
@@ -237,17 +243,7 @@ export const createComponentWindow = (
   });
   browserWindow.setMenu(null as any);
 
-  const targetUrl = format({
-    pathname: require.resolve(`../renderer/${componentName}.html`),
-    protocol: 'file',
-    query: {
-      componentName,
-      locale: i18n.getLocale(),
-    },
-    slashes: true,
-  });
-
-  browserWindow.loadURL(targetUrl);
+  browserWindow.loadURL(resolveHtmlPath(`${componentName}`));
   preventWindowNavigation(browserWindow);
   return browserWindow;
 };
@@ -260,7 +256,7 @@ export const createComponentWindow = (
 export const showBadgeCount = (count: number): void => {
   if (typeof count !== 'number') {
     logger.warn(
-      `window-utils: badgeCount: invalid func arg, must be a number: ${count}`,
+      `window-utils: badgeCount: invalid func arg, must be a number: ${count}`
     );
     return;
   }
@@ -284,11 +280,10 @@ export const showBadgeCount = (count: number): void => {
   const status = presenceStatusStore.getPresence();
   if (count > 0 && status.statusGroup !== EPresenceStatusGroup.OFFLINE) {
     mainWebContents.send('create-badge-data-url', { count });
-    return;
   } else {
     const backgroundImage = presenceStatusStore.generateImagePath(
       status.statusGroup,
-      'taskbar',
+      'taskbar'
     );
 
     if (backgroundImage) {
@@ -309,7 +304,7 @@ export const initSysTray = () => {
   const assetsPath = `renderer/assets/presence-status/${os}/${theme}`;
   const defaultSysTrayIconPath = path.join(
     __dirname,
-    `../${assetsPath}/${defaultSysTrayIcon}.${defaultSysTrayIconExtension}`,
+    `../${assetsPath}/${defaultSysTrayIcon}.${defaultSysTrayIconExtension}`
   );
   const backgroundImage = nativeImage.createFromPath(defaultSysTrayIconPath);
   const tray = new Tray(backgroundImage);
@@ -333,7 +328,7 @@ export const initSysTray = () => {
  */
 export const setStatusBadge = (
   path: string,
-  statusGroup?: EPresenceStatusGroup,
+  statusGroup?: EPresenceStatusGroup
 ): void => {
   const mainWindow = windowHandler.getMainWindow();
   if (mainWindow && path && statusGroup) {
@@ -341,7 +336,7 @@ export const setStatusBadge = (
     // for accessibility screen readers
     const desc = `Your current status group is ${i18n.t(
       statusGroup,
-      'PresenceStatus',
+      'PresenceStatus'
     )()}`;
     mainWindow.setOverlayIcon(img, desc);
     logger.info('window-utils: Taskbar Presence Updated');
@@ -353,7 +348,7 @@ export const setDataUrl = (dataUrl: string, count: number): void => {
   if (mainWindow && dataUrl && count) {
     const img = nativeImage.createFromDataURL(dataUrl);
     // for accessibility screen readers
-    const desc = 'Symphony has ' + count + ' unread messages';
+    const desc = `Symphony has ${count} unread messages`;
     mainWindow.setOverlayIcon(img, desc);
   }
 };
@@ -365,7 +360,7 @@ export const setDataUrl = (dataUrl: string, count: number): void => {
  * @return {Boolean} returns true if exists otherwise false
  */
 export const isValidWindow = (
-  browserWin: Electron.BrowserWindow | null,
+  browserWin: Electron.BrowserWindow | null
 ): boolean => {
   if (!checkValidWindow) {
     return true;
@@ -377,7 +372,7 @@ export const isValidWindow = (
 
   if (!result) {
     logger.warn(
-      `window-utils: invalid window try to perform action, ignoring action`,
+      `window-utils: invalid window try to perform action, ignoring action`
     );
   }
 
@@ -401,7 +396,7 @@ export const isValidView = (webContents: WebContents): boolean => {
 
   if (!result) {
     logger.warn(
-      `window-utils: invalid window try to perform action, ignoring action`,
+      `window-utils: invalid window try to perform action, ignoring action`
     );
   }
 
@@ -417,7 +412,7 @@ export const updateLocale = async (locale: LocaleType): Promise<void> => {
   logger.info(`window-utils: updating locale to ${locale}!`);
   // sets the new locale
   i18n.setLocale(locale);
-  const appMenu = windowHandler.appMenu;
+  const { appMenu } = windowHandler;
   if (appMenu) {
     logger.info(`window-utils: updating app menu with locale ${locale}!`);
     appMenu.update(locale);
@@ -449,7 +444,7 @@ export const showPopupMenu = (opts: Electron.PopupOptions): void => {
       ? { x: 0, y: 0 }
       : coordinates;
     const popupOpts = { window: browserWindow, x, y };
-    const appMenu = windowHandler.appMenu;
+    const { appMenu } = windowHandler;
     if (appMenu) {
       appMenu.popupMenu({ ...popupOpts, ...opts });
     }
@@ -472,7 +467,7 @@ export const sanitize = (windowName: string): void => {
     // Terminates the screen snippet process and screen share indicator frame on reload
     if (!isMac || !isLinux) {
       logger.info(
-        'window-utils: Terminating screen snippet and screen share indicator frame utils',
+        'window-utils: Terminating screen snippet and screen share indicator frame utils'
       );
       screenSnippet.killChildProcess();
       windowHandler.execCmd(windowHandler.screenShareIndicatorFrameUtil, []);
@@ -495,9 +490,9 @@ export const sanitize = (windowName: string): void => {
 export const getBounds = (
   winPos: ICustomRectangle | Electron.Rectangle | undefined,
   defaultWidth: number,
-  defaultHeight: number,
+  defaultHeight: number
 ): Partial<Electron.Rectangle> => {
-  logger.info('window-utils: getBounds, winPos: ' + JSON.stringify(winPos));
+  logger.info(`window-utils: getBounds, winPos: ${JSON.stringify(winPos)}`);
 
   if (!winPos || !winPos.x || !winPos.y || !winPos.width || !winPos.height) {
     return { width: defaultWidth, height: defaultHeight };
@@ -505,8 +500,8 @@ export const getBounds = (
   const displays = screen.getAllDisplays();
 
   for (let i = 0, len = displays.length; i < len; i++) {
-    const bounds = displays[i].bounds;
-    logger.info('window-utils: getBounds, bounds: ' + JSON.stringify(bounds));
+    const { bounds } = displays[i];
+    logger.info(`window-utils: getBounds, bounds: ${JSON.stringify(bounds)}`);
     if (
       winPos.x >= bounds.x &&
       winPos.y >= bounds.y &&
@@ -549,11 +544,11 @@ export const getBounds = (
  * @param type
  * @param filePath
  */
-export const downloadManagerAction = async (type, filePath): Promise<void> => {
+export const downloadManagerAction = async (type: string, filePath: string): Promise<void> => {
   const focusedWindow = BrowserWindow.getFocusedWindow();
   const message = i18n.t(
     'The file you are trying to open cannot be found in the specified path.',
-    DOWNLOAD_MANAGER_NAMESPACE,
+    DOWNLOAD_MANAGER_NAMESPACE
   )();
   const title = i18n.t('File not Found', DOWNLOAD_MANAGER_NAMESPACE)();
 
@@ -602,7 +597,7 @@ export const downloadManagerAction = async (type, filePath): Promise<void> => {
 export const handleDownloadManager = (
   _event,
   item: Electron.DownloadItem,
-  webContents: WebContents,
+  webContents: WebContents
 ) => {
   // Send file path when download is complete
   item.once('done', (_e, state) => {
@@ -618,7 +613,7 @@ export const handleDownloadManager = (
         fileName: savePathSplit[savePathSplit.length - 1] || 'No name',
       };
       logger.info(
-        'window-utils: Download completed, informing download manager',
+        'window-utils: Download completed, informing download manager'
       );
       webContents.send('downloadCompleted', data);
       downloadHandler.onDownloadSuccess(data);
@@ -642,24 +637,14 @@ export const handleDownloadManager = (
 };
 
 /**
- * Inserts css in to the window
- *
- * @param mainWebContents {WebContents}
- */
-const readAndInsertCSS = async (mainWebContents): Promise<IStyles[] | void> => {
-  if (mainWebContents && !mainWebContents.isDestroyed()) {
-    return styles.map(({ content }) => mainWebContents.insertCSS(content));
-  }
-};
-
-/**
  * Inserts all the required css on to the specified windows
  *
  * @param mainView {WebContents}
  * @param isCustomTitleBar {boolean} - whether custom title bar enabled
  */
 export const injectStyles = async (
-  mainView: WebContents,
+  // TODO: delete method - deprecated
+  _mainView: WebContents,
   isCustomTitleBar: boolean,
 ): Promise<IStyles[] | void> => {
   if (isCustomTitleBar) {
@@ -683,7 +668,7 @@ export const injectStyles = async (
         const stylePath = path.join(
           __dirname,
           '..',
-          '/renderer/styles/title-bar.css',
+          '/renderer/styles/title-bar.css'
         );
         styles.push({
           name: styleNames.titleBar,
@@ -693,34 +678,36 @@ export const injectStyles = async (
     }
   }
   // Snack bar styles
-  if (styles.findIndex(({ name }) => name === styleNames.snackBar) === -1) {
-    styles.push({
-      name: styleNames.snackBar,
-      content: fs
-        .readFileSync(
-          path.join(__dirname, '..', '/renderer/styles/snack-bar.css'),
-          'utf8',
-        )
-        .toString(),
-    });
-  }
+  // TODO review why having a snackbar here
+  // if (styles.findIndex(({ name }) => name === styleNames.snackBar) === -1) {
+  //   styles.push({
+  //     name: styleNames.snackBar,
+  //     content: fs
+  //       .readFileSync(
+  //         path.join(__dirname, '..', '/renderer/styles/snack-bar.css'),
+  //         'utf8'
+  //       )
+  //       .toString(),
+  //   });
+  // }
 
   // Banner styles
-  if (
-    styles.findIndex(({ name }) => name === styleNames.messageBanner) === -1
-  ) {
-    styles.push({
-      name: styleNames.messageBanner,
-      content: fs
-        .readFileSync(
-          path.join(__dirname, '..', '/renderer/styles/message-banner.css'),
-          'utf8',
-        )
-        .toString(),
-    });
-  }
+  // TODO : check this part if style injection is still needed
+  // if (
+  //   styles.findIndex(({ name }) => name === styleNames.messageBanner) === -1
+  // ) {
+  //   styles.push({
+  //     name: styleNames.messageBanner,
+  //     content: fs
+  //       .readFileSync(
+  //         path.join(__dirname, '..', '/renderer/styles/message-banner.css'),
+  //         'utf8'
+  //       )
+  //       .toString(),
+  //   });
+  // }
 
-  await readAndInsertCSS(mainView);
+  // await readAndInsertCSS(mainView);
   return;
 };
 
@@ -732,7 +719,7 @@ export const injectStyles = async (
  */
 export const handleCertificateProxyVerification = (
   request: any,
-  callback: (verificationResult: number) => void,
+  callback: (verificationResult: number) => void
 ): void => {
   const { hostname: hostUrl, errorCode } = request;
 
@@ -764,7 +751,7 @@ export const handleCertificateProxyVerification = (
  */
 export const isSymphonyReachable = (
   window: ICustomBrowserWindow | null,
-  url: string,
+  url: string
 ) => {
   if (networkStatusCheckIntervalId) {
     return;
@@ -783,7 +770,7 @@ export const isSymphonyReachable = (
       .then(async (rsp) => {
         if (rsp.status === 200 && windowHandler.isOnline) {
           logger.info(
-            `window-utils: pod ${podUrl} is reachable, loading main window!`,
+            `window-utils: pod ${podUrl} is reachable, loading main window!`
           );
           await windowHandler.reloadSymphony();
           if (networkStatusCheckIntervalId) {
@@ -793,12 +780,12 @@ export const isSymphonyReachable = (
           return;
         }
         logger.warn(
-          `window-utils: POD is down! statusCode: ${rsp.status}, is online: ${windowHandler.isOnline}`,
+          `window-utils: POD is down! statusCode: ${rsp.status}, is online: ${windowHandler.isOnline}`
         );
       })
       .catch((error) => {
         logger.error(
-          `window-utils: Network status check: No active network connection ${error}`,
+          `window-utils: Network status check: No active network connection ${error}`
         );
       });
   }, networkStatusCheckInterval);
@@ -999,7 +986,7 @@ export const resetZoomLevel = () => {
  * @param browserWindow {ICustomBrowserWindow}
  */
 export const didVerifyAndRestoreWindow = (
-  browserWindow: BrowserWindow | null,
+  browserWindow: BrowserWindow | null
 ): boolean => {
   if (!browserWindow || !windowExists(browserWindow)) {
     return false;
@@ -1020,7 +1007,7 @@ export const didVerifyAndRestoreWindow = (
  * @param windowName {String}
  */
 export const getWindowByName = (
-  windowName: string,
+  windowName: string
 ): BrowserWindow | undefined => {
   const allWindows = BrowserWindow.getAllWindows();
   return allWindows.find((window) => {
@@ -1029,7 +1016,7 @@ export const getWindowByName = (
 };
 
 export const updateFeaturesForCloudConfig = async (
-  cloudConfig: ICloudConfig,
+  cloudConfig: ICloudConfig
 ): Promise<void> => {
   const {
     podLevelEntitlements,
@@ -1056,7 +1043,7 @@ export const updateFeaturesForCloudConfig = async (
 
   logger.info(
     'window-utils: filtered SDA cloudConfig',
-    config.getMergedConfig(config.cloudConfig as ICloudConfig) as IConfig,
+    config.getMergedConfig(config.cloudConfig as ICloudConfig) as IConfig
   );
   logger.info(
     'window-utils: filtered SFE cloud config',
@@ -1064,7 +1051,7 @@ export const updateFeaturesForCloudConfig = async (
       podLevelEntitlements,
       acpFeatureLevelEntitlements,
       pmpEntitlements,
-    }) as IConfig,
+    }) as IConfig
   );
   const updatedCloudConfigFields = config.compareCloudConfig(
     config.getMergedConfig(config.cloudConfig as ICloudConfig) as IConfig,
@@ -1072,7 +1059,7 @@ export const updateFeaturesForCloudConfig = async (
       podLevelEntitlements,
       acpFeatureLevelEntitlements,
       pmpEntitlements,
-    }) as IConfig,
+    }) as IConfig
   );
 
   logger.info('window-utils: ignored other values from SFE', rest);
@@ -1106,7 +1093,7 @@ export const updateFeaturesForCloudConfig = async (
   await updateAlwaysOnTop(
     isAlwaysOnTop === CloudConfigDataTypes.ENABLED,
     false,
-    false,
+    false
   );
 
   // Update launch on start up
@@ -1118,7 +1105,7 @@ export const updateFeaturesForCloudConfig = async (
     if (memoryRefresh && memoryRefresh === CloudConfigDataTypes.ENABLED) {
       logger.info(
         `window-utils: updating the memory threshold`,
-        memoryThreshold,
+        memoryThreshold
       );
       memoryMonitor.setMemoryThreshold(parseInt(memoryThreshold, 10));
       mainWebContents.send('initialize-memory-refresh');
@@ -1127,16 +1114,16 @@ export const updateFeaturesForCloudConfig = async (
 
   logger.info(
     `window-utils: Updated cloud config fields`,
-    updatedCloudConfigFields,
+    updatedCloudConfigFields
   );
   if (updatedCloudConfigFields && updatedCloudConfigFields.length) {
     if (mainWebContents && !mainWebContents.isDestroyed()) {
       const shouldRestart = updatedCloudConfigFields.some((field) =>
-        ConfigFieldsToRestart.has(field),
+        ConfigFieldsToRestart.has(field)
       );
       logger.info(
         `window-utils: should restart for updated cloud config field?`,
-        shouldRestart,
+        shouldRestart
       );
       if (shouldRestart) {
         mainWebContents.send('display-client-banner', {
@@ -1160,7 +1147,7 @@ export const updateFeaturesForCloudConfig = async (
           logger.info(
             `window-utils: lastAutoUpdateCheckDate is not set in user config file so checking for updates`,
             lastAutoUpdateCheckDate,
-            autoUpdateCheckInterval,
+            autoUpdateCheckInterval
           );
           await config.updateUserConfig({
             lastAutoUpdateCheckDate: new Date().toISOString(),
@@ -1171,7 +1158,7 @@ export const updateFeaturesForCloudConfig = async (
         logger.info(
           `window-utils: is last check date > auto update check interval?`,
           lastAutoUpdateCheckDate,
-          autoUpdateCheckInterval,
+          autoUpdateCheckInterval
         );
         // Compare the current date and user config last auto update checked date
         // and if it is greater that autoUpdateCheckInterval we check for new updates
@@ -1208,7 +1195,7 @@ export const monitorNetworkInterception = (url: string) => {
   logger.info('window-utils: monitoring network interception for url', podUrl);
 
   // Filter applied w.r.t pod url
-  const filter = { urls: [podUrl + '*'] };
+  const filter = { urls: [`${podUrl}*`] };
 
   if (mainWebContents && !mainWebContents.isDestroyed()) {
     isNetworkMonitorInitialized = true;
@@ -1232,13 +1219,13 @@ export const monitorNetworkInterception = (url: string) => {
             url: podUrl,
           });
         }
-      },
+      }
     );
   }
 };
 
 export const loadBrowserViews = async (
-  mainWindow: BrowserWindow,
+  mainWindow: BrowserWindow
 ): Promise<WebContents> => {
   mainWindow.setMenuBarVisibility(false);
 
@@ -1246,7 +1233,9 @@ export const loadBrowserViews = async (
     webPreferences: {
       sandbox: IS_SAND_BOXED,
       nodeIntegration: IS_NODE_INTEGRATION_ENABLED,
-      preload: path.join(__dirname, '../renderer/_preload-component.js'),
+      preload: app.isPackaged
+        ? path.join(__dirname, 'preload.js')
+        : path.join(__dirname, '../../.erb/dll/preload.js'),
       devTools: isDevEnv,
       disableBlinkFeatures: AUX_CLICK,
     },
@@ -1264,16 +1253,7 @@ export const loadBrowserViews = async (
 
   mainWindow.addBrowserView(titleBarView);
   mainWindow.addBrowserView(mainView);
-
-  const titleBarWindowUrl = format({
-    pathname: require.resolve('../renderer/windows-title-bar.html'),
-    protocol: 'file',
-    query: {
-      componentName: 'windows-title-bar',
-      locale: i18n.getLocale(),
-    },
-    slashes: true,
-  });
+  const titleBarWindowUrl = resolveHtmlPath('windows-title-bar');
   titleBarView.webContents.once('did-finish-load', () => {
     if (!titleBarView || titleBarView.webContents.isDestroyed()) {
       return;
@@ -1286,7 +1266,7 @@ export const loadBrowserViews = async (
     });
     mainEvents.subscribeMultipleEvents(
       TITLE_BAR_EVENTS,
-      titleBarView.webContents,
+      titleBarView.webContents
     );
 
     mainWindow?.on('enter-full-screen', () => {
@@ -1316,7 +1296,6 @@ export const loadBrowserViews = async (
       mainEvents.publish('enter-full-screen');
     });
     mainWindow?.on('leave-full-screen', () => {
-      logger.info('EVENT leave-full-screen!!');
       if (
         !titleBarView ||
         !viewExists(titleBarView) ||
@@ -1407,7 +1386,7 @@ export const loadBrowserViews = async (
     });
 
     if (mainWindow?.isMaximized()) {
-      mainEvents.publish('maximize');
+      mainEvents.publish(TitleBarEvents.MAXIMIZE);
     }
     if (mainWindow?.isFullScreen()) {
       mainEvents.publish('enter-full-screen');

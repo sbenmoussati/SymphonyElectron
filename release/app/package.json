@@ -1,0 +1,19 @@
+{
+  "name": "symphony",
+  "productName": "Symphony",
+  "version": "24.2.0",
+  "description": "Symphony desktop app (Foundation ODP)",
+  "license": "MIT",
+  "author": {
+    "name": "Symphony",
+    "email": "help@finos.org",
+    "url": "https://github.com/finos/SymphonyElectron"
+  },
+  "main": "./dist/app/init.js",
+  "scripts": {
+    "rebuild": "node -r ts-node/register ../../.erb/scripts/electron-rebuild.js",
+    "postinstall": "npm run rebuild && npm run link-modules",
+    "link-modules": "node -r ts-node/register ../../.erb/scripts/link-modules.ts"
+  },
+  "dependencies": {}
+}

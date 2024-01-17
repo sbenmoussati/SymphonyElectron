@@ -1,8 +1,10 @@
 import { app } from 'electron';
 import * as path from 'path';
 import { PhoneNumberProtocol } from '../common/api-interface';
-import { isDevEnv, isMac, isWindowsOS } from '../common/env';
+import {  isMac, isWindowsOS } from '../common/env';
 import { logger } from '../common/logger';
+
+const isDevEnv = !app.isPackaged;
 
 enum REGISTRY_PATHS {
   Classes = '\\Software\\Classes',
@@ -72,7 +74,7 @@ class VoiceHandler {
         if (error) {
           logger.error(
             'voice-handler: error while creating voice registry keys: ',
-            error,
+            error
           );
         }
       };
@@ -85,51 +87,51 @@ class VoiceHandler {
         '',
         Registry.REG_SZ,
         `URL:${protocol}`,
-        errorCallback,
+        errorCallback
       );
 
       await protocolClassRegKey.set(
         'URL Protocol',
         Registry.REG_SZ,
         '',
-        errorCallback,
+        errorCallback
       );
 
       await applicationCapabilitiesRegKey.set(
         'ApplicationName',
         Registry.REG_SZ,
         'Symphony',
-        errorCallback,
+        errorCallback
       );
       await applicationCapabilitiesRegKey.set(
         'ApplicationDescription',
         Registry.REG_SZ,
         'Symphony',
-        errorCallback,
+        errorCallback
       );
       await symURLAssociationRegKey.set(
         protocol,
         Registry.REG_SZ,
         `Symphony.${protocol}`,
-        errorCallback,
+        errorCallback
       );
       await symDefaultIconRegKey.set(
         '',
         Registry.REG_SZ,
         appPath,
-        errorCallback,
+        errorCallback
       );
       await symCommandRegKey.set(
         '',
         Registry.REG_SZ,
         `"${appPath}" "%1"`,
-        errorCallback,
+        errorCallback
       );
       await symAppRegistrationRegKey.set(
         'Symphony',
         Registry.REG_SZ,
         'Software\\Symphony\\Capabilities',
-        errorCallback,
+        errorCallback
       );
     }
   }
@@ -172,7 +174,7 @@ class VoiceHandler {
       if (error) {
         logger.error(
           'voice-handler: error while removing voice registry keys: ',
-          error,
+          error
         );
       }
     };
@@ -180,7 +182,7 @@ class VoiceHandler {
       if (error) {
         logger.error(
           'voice-handler: error while destroying voice registry keys: ',
-          error,
+          error
         );
       }
     };
