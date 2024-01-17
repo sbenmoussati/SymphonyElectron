@@ -52,12 +52,12 @@ export class PresenceStatus {
 
   public generateImagePath = (
     statusGroup: EPresenceStatusGroup,
-    place: string,
+    place: string
   ) => {
     let backgroundImage: string = '';
     const os = isWindowsOS ? 'windows' : isMac ? 'macOS' : 'linux';
     const theme = nativeTheme.shouldUseDarkColors ? 'light' : 'dark';
-    const assetsPath = `src/renderer/assets/presence-status/${os}/${theme}`;
+    const assetsPath = `assets/presence-status/${os}/${theme}`;
     let fileExtension = 'png';
     let iconPlace = '';
     switch (place) {

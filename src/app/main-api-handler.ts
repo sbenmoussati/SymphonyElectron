@@ -591,6 +591,9 @@ ipcMain.handle(
           types,
           thumbnailSize,
         });
+      case apiCmds.isMediaEnabled:
+        const { permissions } = config.getConfigFields(['permissions']);
+        return !!permissions.media;
       case apiCmds.getNativeWindowHandle:
         const browserWin = getWindowByName(arg.windowName);
         if (browserWin && windowExists(browserWin)) {

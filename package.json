@@ -27,7 +27,7 @@
   },
   "build": {
     "appId": "com.symphony.electron-desktop",
-    "compression": "store",
+    "compression": "maximum",
     "artifactName": "${productName}-${version}-${os}.${ext}",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",

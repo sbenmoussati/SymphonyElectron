@@ -32,9 +32,13 @@ import { isLinux, isMac, isWindowsOS } from '../common/env';
 import { i18n, LocaleType } from '../common/i18n';
 import {
   AboutAppEvents,
+  BasicAuthEvents,
   LoadingScreenEvents,
+  ScreenPickerEvents,
   ScreenShareEvents,
+  ScreenShareIndicatorEvents,
   ScreenShotAnnotationEvents,
+  TitleBarEvents,
 } from '../common/ipcEvent';
 import { logger } from '../common/logger';
 import {
@@ -637,11 +641,11 @@ export class WindowHandler {
 
         this.appMenu = new AppMenu();
 
-        const { permissions } = config.getConfigFields(['permissions']);
-        this.mainWebContents.send(
-          ScreenShareEvents.IS_ENABLED,
-          permissions.media
-        );
+        // const { permissions } = config.getConfigFields(['permissions']);
+        // this.mainWebContents.send(
+        //   ScreenShareEvents.IS_ENABLED,
+        //   permissions.media
+        // );
 
         // Subscribe events for main view - snack bar
         mainEvents.subscribeMultipleEvents(
@@ -1529,7 +1533,7 @@ export class WindowHandler {
         'window-handler: createSnippingToolWindow: Closing snipping window, attempting to delete temp snip image'
       );
       ipcMain.removeAllListeners(ScreenShotAnnotationEvents.CLOSE);
-      ipcMain.removeAllListeners(ScreenShotAnnotationEvents.UPLOAD);
+      ipcMain.removeAllListeners(ScreenShotAnnotationEvents.UPLOAD_SNIPPET);
       ipcMain.removeAllListeners(ScreenShotAnnotationEvents.COPY_TO_CLIPBOARD);
       ipcMain.removeAllListeners(ScreenShotAnnotationEvents.SAVE_AS);
       this.snippingToolWindow?.close();

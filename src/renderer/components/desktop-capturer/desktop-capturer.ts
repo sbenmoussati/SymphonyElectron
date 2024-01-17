@@ -1,9 +1,11 @@
-import { NOTIFICATION_WINDOW_TITLE, apiCmds, apiName } from 'common/api-interface';
+import {
+  NOTIFICATION_WINDOW_TITLE,
+  apiCmds,
+  apiName,
+} from 'common/api-interface';
 import { isWindowsOS } from 'common/env';
 import { ScreenShareEvents } from 'common/ipcEvent';
 import { DesktopCapturerSource, SourcesOptions, ipcRenderer } from 'electron';
-
-
 
 const includes = [''].includes;
 
@@ -27,7 +29,7 @@ export interface IScreenSourceError {
 
 export type CallbackType = (
   error: IScreenSourceError | null,
-  source?: ICustomDesktopCapturerSource,
+  source?: ICustomDesktopCapturerSource
 ) => void;
 const getNextId = () => ++nextId;
 
@@ -52,7 +54,7 @@ const isValid = (options: ICustomSourcesOptions) => {
  */
 export const getSource = async (
   options: ICustomSourcesOptions,
-  callback: CallbackType,
+  callback: CallbackType
 ) => {
   let captureWindow;
   let captureScreen;
@@ -85,7 +87,7 @@ export const getSource = async (
      * Setting captureWindow to false returns only screen sources
      * @type {boolean}
      */
-    captureWindow = await window.electron.ipcRenderer.invoke(apiName.symphonyApi, {
+    captureWindow = await ipcRenderer.invoke(apiName.symphonyApi, {
       cmd: apiCmds.isAeroGlassEnabled,
     });
   }
@@ -96,9 +98,12 @@ export const getSource = async (
   if (captureScreen) {
     sourcesOpts.push('screen');
   }
+  const isEnabled: boolean = await ipcRenderer.invoke(apiName.symphonyApi, {
+    cmd: apiCmds.isMediaEnabled,
+  });
 
   // displays a dialog if media permissions are disable
-  if (!isScreenShareEnabled) {
+  if (!isEnabled) {
     await ipcRenderer.invoke(apiName.symphonyApi, {
       cmd: apiCmds.showScreenSharePermissionDialog,
     });
@@ -117,13 +122,13 @@ export const getSource = async (
       cmd: apiCmds.getSources,
       types: sourcesOpts,
       thumbnailSize: updatedOptions.thumbnailSize,
-    },
+    }
   );
   // Auto select screen source based on args for testing only
   if (screenShareArgv) {
     const title = screenShareArgv.substr(screenShareArgv.indexOf('=') + 1);
     const filteredSource: DesktopCapturerSource[] = sources.filter(
-      (source) => source.name === title,
+      (source) => source.name === title
     );
 
     if (Array.isArray(filteredSource) && filteredSource.length > 0) {
@@ -148,7 +153,7 @@ export const getSource = async (
       };
     });
 
-    ipcRenderer.send(apiName.symphonyApi, {
+  ipcRenderer.send(apiName.symphonyApi, {
     cmd: apiCmds.openScreenPickerWindow,
     id,
     sources: updatedSources,
@@ -177,9 +182,10 @@ ipcRenderer.once(ScreenShareEvents.ARGV, (_event, arg) => {
   }
 });
 
-// event that updates screen share permission
-ipcRenderer.on(ScreenShareEvents.IS_ENABLED, (_event, canShareScreen) => {
-  if (typeof canShareScreen === 'boolean' && canShareScreen) {
-    isScreenShareEnabled = canShareScreen;
-  }
-});
+// // event that updates screen share permission
+// ipcRenderer.on(ScreenShareEvents.IS_ENABLED, (event, canShareScreen) => {
+//   console.log(event, canShareScreen);
+//   if (typeof canShareScreen === 'boolean' && canShareScreen) {
+//     isScreenShareEnabled = canShareScreen;
+//   }
+// });

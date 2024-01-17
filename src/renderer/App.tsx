@@ -58,11 +58,7 @@ export default function App() {
  *TODO: remaining tasks
  *
  * Handle listeners removal on component unmount
- * Components: DONE
- * APP:
- *  BI: DONE
- *  NOTIFICATIONS: DONE
- *  STORES: DONE
- *  
- *    window-utils: done
+ * Components: 
+ *  - Call notifications
+ * Presence status in sys tray / task bar
  */

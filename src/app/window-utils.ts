@@ -448,6 +448,8 @@ export const showPopupMenu = (opts: Electron.PopupOptions): void => {
     if (appMenu) {
       appMenu.popupMenu({ ...popupOpts, ...opts });
     }
+  } else {
+    logger.info('not valid window');
   }
 };
 
@@ -544,7 +546,10 @@ export const getBounds = (
  * @param type
  * @param filePath
  */
-export const downloadManagerAction = async (type: string, filePath: string): Promise<void> => {
+export const downloadManagerAction = async (
+  type: string,
+  filePath: string
+): Promise<void> => {
   const focusedWindow = BrowserWindow.getFocusedWindow();
   const message = i18n.t(
     'The file you are trying to open cannot be found in the specified path.',
@@ -645,7 +650,7 @@ export const handleDownloadManager = (
 export const injectStyles = async (
   // TODO: delete method - deprecated
   _mainView: WebContents,
-  isCustomTitleBar: boolean,
+  isCustomTitleBar: boolean
 ): Promise<IStyles[] | void> => {
   if (isCustomTitleBar) {
     const index = styles.findIndex(({ name }) => name === styleNames.titleBar);

@@ -81,6 +81,7 @@ export enum apiCmds {
   updateSymphonyTray = 'update-system-tray',
   registerPhoneNumberServices = 'register-phone-numbers-services',
   unregisterPhoneNumberServices = 'unregister-phone-numbers-services',
+  isMediaEnabled = 'is-media-enabled',
 }
 
 export enum apiName {

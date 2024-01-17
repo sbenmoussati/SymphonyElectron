@@ -62,6 +62,7 @@ export interface ILocalObject {
   // c9MessageCallback?: (status: IShellStatus) => void;
   updateMyPresenceCallback?: (presence: EPresenceStatusCategory) => void;
   phoneNumberCallback?: (arg: string) => void;
+  ipcRenderer: IpcRenderer
 }
 
 const local: ILocalObject = {
