@@ -82,8 +82,8 @@ snyk test --file=package-lock.json --org="$SNYK_ORG"
 snyk monitor --file=package-lock.json --org="$SNYK_ORG" --project-name="$SNYK_PROJECT_NAME"
 
 # Replace url in config
-echo "Setting default pod url to https://my.symphony.com"
-sed -i -e 's/\"url\"[[:space:]]*\:[[:space:]]*\".*\"/\"url\":\"https:\/\/my.symphony.com\"/g' config/Symphony.config
+# echo "Setting default pod url to https://my.symphony.com"
+# sed -i -e 's/\"url\"[[:space:]]*\:[[:space:]]*\".*\"/\"url\":\"https:\/\/my.symphony.com\"/g' config/Symphony.config
 
 # Setup the build version
 echo "Setting build version to ${PARENT_BUILD_VERSION}"
