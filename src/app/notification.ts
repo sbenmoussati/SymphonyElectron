@@ -3,8 +3,10 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import { config } from './config-handler';
 import {
   AUX_CLICK,
+  ICustomBrowserWindowConstructorOpts,
   IS_NODE_INTEGRATION_ENABLED,
   IS_SAND_BOXED,
+  windowHandler,
 } from './window-handler';
 import { createComponentWindow, windowExists } from './window-utils';
 import { AnimationQueue } from '../common/animation-queue';
@@ -19,6 +21,7 @@ import NotificationHandler, { ICorner } from './notification-handler';
 import { NotificationEvents } from '../common/ipcEvent';
 import { analytics } from './bi/analytics-handler';
 import { AnalyticsElements, ToastNotificationActionTypes } from './bi/interface';
+import { getGuid } from '../common/utils';
 
 const CLEAN_UP_INTERVAL = 60 * 1000; // Closes inactive notification
 const animationQueue = new AnimationQueue();
@@ -190,15 +193,17 @@ class Notification extends NotificationHandler {
         return;
       }
     }
-
+    const opts = this.getNotificationOpts();
     const notificationWindow = createComponentWindow(
       'notification',
-      this.getNotificationOpts(),
+      opts,
       false,
     ) as ICustomBrowserWindow;
+    windowHandler.addWindow(opts.winKey, notificationWindow);
     notificationWindow.notificationData = data;
     notificationWindow.winName = apiName.notificationWindowName;
     notificationWindow.once('closed', () => {
+      windowHandler.removeWindow(opts.winKey);
       const activeWindowIndex =
         this.activeNotifications.indexOf(notificationWindow);
       const inactiveWindowIndex =
@@ -218,8 +223,10 @@ class Notification extends NotificationHandler {
     notificationWindow.on('resize', (event) => {
       event.preventDefault();
     });
-
-    await this.didFinishLoad(notificationWindow, data);
+    ipcMain.once(NotificationEvents.READY, (() => {
+      this.renderNotification(notificationWindow, data);
+    }));
+    // await this.didFinishLoad(notificationWindow, data);
     return;
   }
 
@@ -640,8 +647,8 @@ class Notification extends NotificationHandler {
   /**
    * notification window opts
    */
-  private getNotificationOpts(): Electron.BrowserWindowConstructorOptions {
-    const toastNotificationOpts: Electron.BrowserWindowConstructorOptions = {
+  private getNotificationOpts(): ICustomBrowserWindowConstructorOpts {
+    const toastNotificationOpts: ICustomBrowserWindowConstructorOpts = {
       width: CONTAINER_WIDTH,
       height: CONTAINER_HEIGHT,
       alwaysOnTop: true,
@@ -659,6 +666,7 @@ class Notification extends NotificationHandler {
         devTools: true,
         disableBlinkFeatures: AUX_CLICK,
       },
+      winKey: getGuid(),
     };
     // if (isMac) {
     //   toastNotificationOpts.type = 'panel';

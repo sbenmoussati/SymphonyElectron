@@ -26,7 +26,8 @@ export enum NotificationEvents {
   MOUSE_LEAVE = 'notification-mouseleave',
   ON_IGNORE = 'notification-on-ignore',
   ON_REPLY = 'notification-on-reply',
-  SHOW_REPLY = 'show-reply'
+  SHOW_REPLY = 'show-reply',
+  READY = 'notification-ready'
 }
 
 export enum ScreenShareIndicatorEvents {

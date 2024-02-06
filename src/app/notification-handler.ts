@@ -1,5 +1,6 @@
 import { app, screen } from 'electron';
 
+import * as asyncMap from 'async.map';
 import { isLinux, isMac } from '../common/env';
 import { ICustomBrowserWindow } from './window-handler';
 import { windowExists } from './window-utils';
@@ -210,7 +211,7 @@ export default class NotificationHandler {
     for (let i = startPos; i < activeNotifications.length; i++) {
       notificationPosArray.push(i);
     }
-    async.map(notificationPosArray, (i, done) => {
+    asyncMap(notificationPosArray, (i, done) => {
       // Get notification to move
       const notificationWindow = activeNotifications[i];
       if (!windowExists(notificationWindow)) {
@@ -261,7 +262,7 @@ export default class NotificationHandler {
     for (let i = startPos; i < activeNotifications.length; i++) {
       notificationPosArray.push(i);
     }
-    async.map(notificationPosArray, (i: number, done) => {
+    asyncMap(notificationPosArray, (i: number, done) => {
       // Get notification to move
       const notificationWindow = activeNotifications[i];
       if (!windowExists(notificationWindow)) {

@@ -109,6 +109,7 @@ export default class NotificationComp extends React.Component<
     window.electron.ipcRenderer.on(NotificationEvents.DATA, (data) => {
       this.updateState(data);
     });
+    window.electron.ipcRenderer.sendMessage(NotificationEvents.READY);
   }
 
   /**
