@@ -34,6 +34,7 @@ import {
   AboutAppEvents,
   BasicAuthEvents,
   LoadingScreenEvents,
+  NotificationSettingsEvents,
   ScreenPickerEvents,
   ScreenShareEvents,
   ScreenShareIndicatorEvents,
@@ -1284,7 +1285,7 @@ export class WindowHandler {
       opts.parent = selectedParentWindow;
     }
 
-    this.aboutAppWindow = createComponentWindow('about', opts);
+    this.aboutAppWindow = createComponentWindow('about', opts, false);
     this.moveWindow(this.aboutAppWindow);
     this.aboutAppWindow.setVisibleOnAllWorkspaces(true);
 
@@ -1296,38 +1297,43 @@ export class WindowHandler {
     ipcMain.once(AboutAppEvents.POD_UPDATED, handleUserPodUpdate);
 
     this.aboutAppWindow.webContents.once('did-finish-load', async () => {
-      let client = '';
-      if (this.url && this.url.startsWith('https://corporate.symphony.com')) {
-        client = this.url.includes('daily') ? '- Daily' : '';
-      }
-      const ABOUT_SYMPHONY_NAMESPACE = 'AboutSymphony';
-      const versionLocalised = i18n.t('Version', ABOUT_SYMPHONY_NAMESPACE)();
-      const { hostname } = parse(this.userConfig.url || this.globalConfig.url);
-      const { userConfig, globalConfig, cloudConfig } = config;
-      const filteredConfig = config.filteredCloudConfig;
-      const finalConfig = {
-        ...globalConfig,
-        ...userConfig,
-        ...filteredConfig,
-      };
-      const host = parse(
-        this.url
-          ? this.url
-          : (userConfig as IConfig).url || (globalConfig as IConfig).url
-      );
-      const aboutInfo = {
-        userConfig,
-        globalConfig,
-        cloudConfig,
-        finalConfig,
-        versionLocalised,
-        ...versionHandler.versionInfo,
-        client,
-        hostname: host.hostname,
-      };
-      if (this.aboutAppWindow && windowExists(this.aboutAppWindow)) {
-        this.aboutAppWindow.webContents.send(AboutAppEvents.DATA, aboutInfo);
-      }
+      ipcMain.once(AboutAppEvents.READY, () => {
+        let client = '';
+        if (this.url && this.url.startsWith('https://corporate.symphony.com')) {
+          client = this.url.includes('daily') ? '- Daily' : '';
+        }
+        const ABOUT_SYMPHONY_NAMESPACE = 'AboutSymphony';
+        const versionLocalised = i18n.t('Version', ABOUT_SYMPHONY_NAMESPACE)();
+        const { hostname } = parse(
+          this.userConfig.url || this.globalConfig.url
+        );
+        const { userConfig, globalConfig, cloudConfig } = config;
+        const filteredConfig = config.filteredCloudConfig;
+        const finalConfig = {
+          ...globalConfig,
+          ...userConfig,
+          ...filteredConfig,
+        };
+        const host = parse(
+          this.url
+            ? this.url
+            : (userConfig as IConfig).url || (globalConfig as IConfig).url
+        );
+        const aboutInfo = {
+          userConfig,
+          globalConfig,
+          cloudConfig,
+          finalConfig,
+          versionLocalised,
+          ...versionHandler.versionInfo,
+          client,
+          hostname: host.hostname,
+        };
+        if (this.aboutAppWindow && windowExists(this.aboutAppWindow)) {
+          this.aboutAppWindow.webContents.send(AboutAppEvents.DATA, aboutInfo);
+          this.aboutAppWindow.show();
+        }
+      });
     });
   }
 
@@ -1635,7 +1641,11 @@ export class WindowHandler {
       }
     );
 
-    this.screenPickerWindow = createComponentWindow('screen-picker', opts);
+    this.screenPickerWindow = createComponentWindow(
+      'screen-picker',
+      opts,
+      false
+    );
     this.addWindow(opts.winKey, this.screenPickerWindow);
     this.moveWindow(this.screenPickerWindow);
     this.screenPickerWindow.webContents.once('did-finish-load', () => {
@@ -1645,10 +1655,12 @@ export class WindowHandler {
 
       this.screenPickerWindow.webContents.setZoomFactor(1);
       this.screenPickerWindow.webContents.setVisualZoomLevelLimits(1, 1);
-
-      this.screenPickerWindow.webContents.send(ScreenPickerEvents.DATA, {
-        sources,
-        id,
+      ipcMain.once(ScreenPickerEvents.READY, () => {
+        this.screenPickerWindow?.webContents.send(ScreenPickerEvents.DATA, {
+          sources,
+          id,
+        });
+        this.screenPickerWindow?.show();
       });
     });
 
@@ -1865,7 +1877,8 @@ export class WindowHandler {
 
     this.notificationSettingsWindow = createComponentWindow(
       'notification-settings',
-      opts
+      opts,
+      false
     );
     this.moveWindow(this.notificationSettingsWindow);
     this.notificationSettingsWindow.setVisibleOnAllWorkspaces(true);
@@ -1874,17 +1887,20 @@ export class WindowHandler {
         this.notificationSettingsWindow &&
         windowExists(this.notificationSettingsWindow)
       ) {
-        let screens: Electron.Display[] = [];
-        if (app.isReady()) {
-          screens = screen.getAllDisplays();
-        }
-        const { position, display } = config.getConfigFields([
-          'notificationSettings',
-        ]).notificationSettings;
-        this.notificationSettingsWindow.webContents.send(
-          'notification-settings-data',
-          { screens, position, display, theme }
-        );
+        ipcMain.once(NotificationSettingsEvents.READY, () => {
+          let screens: Electron.Display[] = [];
+          if (app.isReady()) {
+            screens = screen.getAllDisplays();
+          }
+          const { position, display } = config.getConfigFields([
+            'notificationSettings',
+          ]).notificationSettings;
+          this.notificationSettingsWindow?.webContents.send(
+            NotificationSettingsEvents.DATA,
+            { screens, position, display, theme }
+          );
+          this.notificationSettingsWindow?.show();
+        });
       }
     });
 

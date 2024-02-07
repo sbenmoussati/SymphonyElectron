@@ -10,6 +10,8 @@ import {
 } from '../notification-theme';
 import { Themes } from '../notification-settings';
 import { CallNotificationEvents } from 'common/ipcEvent';
+import './call-notification.less';
+import { ReactComponent as SymphonyBadge } from '../../../assets/symphony-badge.svg';
 
 type CallType = 'IM' | 'ROOM' | 'OTHER';
 
@@ -84,7 +86,11 @@ export default class CallNotification extends React.Component<
    * Callback to handle event when a component is mounted
    */
   public componentDidMount(): void {
-    window.electron.ipcRenderer.on(CallNotificationEvents.DATA, this.updateState);
+    window.electron.ipcRenderer.on(
+      CallNotificationEvents.DATA,
+      this.updateState
+    );
+    window.electron.ipcRenderer.sendMessage(CallNotificationEvents.READY);
   }
 
   /**
@@ -133,7 +139,7 @@ export default class CallNotification extends React.Component<
       theme,
       flash,
       isExternal,
-      false,
+      false
     );
     let containerCssClass = `container ${themeClassName} `;
     customCssClasses.push(window.electron.isMac ? 'mac' : 'windows');
@@ -148,7 +154,7 @@ export default class CallNotification extends React.Component<
 
     return (
       <div
-        data-testid='CALL_NOTIFICATION_CONTAINER'
+        data-testid="CALL_NOTIFICATION_CONTAINER"
         className={containerCssClass}
         style={{
           backgroundColor: themeColors.notificationBackgroundColor,
@@ -157,28 +163,28 @@ export default class CallNotification extends React.Component<
         onClick={this.eventHandlers.onClick(id)}
       >
         <div className={`title ${themeClassName}`}>{title}</div>
-        <div className='caller-info-container'>
-          <div className='logo-container'>
+        <div className="caller-info-container">
+          <div className="logo-container">
             {this.renderImage(
               icon,
               profilePlaceHolderText,
               callType,
               shouldDisplayBadge,
-              isExternal,
+              isExternal
             )}
           </div>
-          <div className='info-text-container'>
-            <div className='primary-text-container'>
-              <div className='caller-name-container'>
+          <div className="info-text-container">
+            <div className="primary-text-container">
+              <div className="caller-name-container">
                 <div
-                  data-testid='CALL_NOTIFICATION_NAME'
+                  data-testid="CALL_NOTIFICATION_NAME"
                   className={`caller-name ${themeClassName} tooltip-trigger`}
                   ref={this.primaryTooltipRef}
                 >
                   {primaryText}
                 </div>
                 {isPrimaryTextOverflowing && (
-                  <div className='tooltip-content tooltip-primary'>
+                  <div className="tooltip-content tooltip-primary">
                     {primaryText}
                   </div>
                 )}
@@ -186,8 +192,8 @@ export default class CallNotification extends React.Component<
               </div>
             </div>
             {secondaryText ? (
-              <div className='secondary-text-container'>
-                <div className='caller-details'>
+              <div className="secondary-text-container">
+                <div className="caller-details">
                   <div
                     className={`caller-role ${themeClassName} tooltip-trigger`}
                     ref={this.secondaryTooltipRef}
@@ -195,7 +201,7 @@ export default class CallNotification extends React.Component<
                     {secondaryText}
                   </div>
                   {isSecondaryTextOverflowing && (
-                    <div className='tooltip-content tooltip-secondary'>
+                    <div className="tooltip-content tooltip-secondary">
                       {secondaryText}
                     </div>
                   )}
@@ -205,8 +211,8 @@ export default class CallNotification extends React.Component<
               <></>
             )}
             {company || companyIconUrl ? (
-              <div className='tertiary-text-container'>
-                <div className='application-details'>
+              <div className="tertiary-text-container">
+                <div className="application-details">
                   {company && companyIconUrl && (
                     <img
                       className={'company-icon'}
@@ -224,24 +230,24 @@ export default class CallNotification extends React.Component<
             )}
           </div>
         </div>
-        <div className='actions'>
+        <div className="actions">
           <button
-            data-testid='CALL_NOTIFICATION_REJECT_BUTTON'
+            data-testid="CALL_NOTIFICATION_REJECT_BUTTON"
             className={classNames('decline', {
               'call-type-other': callType === 'OTHER',
             })}
             onClick={this.eventHandlers.onReject(id)}
           >
-            <div className='label'>{rejectText}</div>
+            <div className="label">{rejectText}</div>
           </button>
           <button
-            data-testid='CALL_NOTIFICATION_ACCEPT_BUTTON'
+            data-testid="CALL_NOTIFICATION_ACCEPT_BUTTON"
             className={classNames('accept', {
               'call-type-other': callType === 'OTHER',
             })}
             onClick={this.eventHandlers.onAccept(id)}
           >
-            <div className='label'>{acceptText}</div>
+            <div className="label">{acceptText}</div>
           </button>
         </div>
       </div>
@@ -254,12 +260,18 @@ export default class CallNotification extends React.Component<
 
   private accept = (event, id: number) => {
     event.stopPropagation();
-    window.electron.ipcRenderer.sendMessage(CallNotificationEvents.ON_ACCEPT, id);
+    window.electron.ipcRenderer.sendMessage(
+      CallNotificationEvents.ON_ACCEPT,
+      id
+    );
   };
 
   private reject = (event, id: number) => {
     event.stopPropagation();
-    window.electron.ipcRenderer.sendMessage(CallNotificationEvents.ON_REJECT, id);
+    window.electron.ipcRenderer.sendMessage(
+      CallNotificationEvents.ON_REJECT,
+      id
+    );
   };
 
   private checkTextOverflow = () => {
@@ -291,7 +303,7 @@ export default class CallNotification extends React.Component<
    * @param _event
    * @param data {Object}
    */
-  private updateState(_event, data): void {
+  private updateState(data): void {
     this.setState({ ...this.defaultState });
     const { color } = data;
     // FYI: 1.5 sends hex color but without '#', reason why we check and add prefix if necessary.
@@ -323,7 +335,7 @@ export default class CallNotification extends React.Component<
     profilePlaceHolderText: string,
     callType: CallType,
     shouldDisplayBadge: boolean,
-    isExternal: boolean,
+    isExternal: boolean
   ): JSX.Element | undefined {
     let imgClass = 'default-logo';
     let url = '../renderer/assets/notification-symphony-logo.svg';
@@ -340,7 +352,7 @@ export default class CallNotification extends React.Component<
           ? 'profilePlaceHolderContainer'
           : 'roomPlaceHolderContainer';
       return (
-        <div className='logo'>
+        <div className="logo">
           <div
             className={classNames('thumbnail', profilePlaceHolderClassName, {
               external: isExternal,
@@ -354,7 +366,7 @@ export default class CallNotification extends React.Component<
     }
 
     return (
-      <div className='logo'>
+      <div className="logo">
         <img className={imgClass} src={url} alt={alt} />
         {this.renderSymphonyBadge(shouldDisplayBadge)}
       </div>
@@ -368,15 +380,13 @@ export default class CallNotification extends React.Component<
    */
   private renderSymphonyBadge(
     hasImageUrl: boolean,
-    callType: CallType = 'IM',
+    callType: CallType = 'IM'
   ): JSX.Element | undefined {
     const badgePositionClass =
       callType === 'IM' ? 'badge-position-im' : 'badge-position-room';
     if (hasImageUrl) {
       return (
-        <img
-          src='../renderer/assets/symphony-badge.svg'
-          alt=''
+        <SymphonyBadge
           className={`profile-picture-badge ${badgePositionClass}`}
         />
       );
@@ -393,10 +403,10 @@ export default class CallNotification extends React.Component<
       return;
     }
     return (
-      <div className='ext-badge-container'>
+      <div className="ext-badge-container">
         <img
-          src='../renderer/assets/notification-ext-badge.svg'
-          alt='ext-badge'
+          src="../renderer/assets/notification-ext-badge.svg"
+          alt="ext-badge"
         />
       </div>
     );

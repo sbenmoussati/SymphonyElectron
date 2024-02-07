@@ -4,18 +4,20 @@ export enum ScreenShotAnnotationEvents {
   CLOSE = 'close-snippet',
   ANALYTICS = 'snippet-analytics-data',
   UPLOAD_SNIPPET = 'upload-snippet',
-  DATA = 'snipping-tool-data'
+  DATA = 'snipping-tool-data',
 }
 
 export enum AboutAppEvents {
   DATA = 'about-app-data',
   CLOSE = 'close-about-app',
-  POD_UPDATED = 'user-pod-updated'
+  POD_UPDATED = 'user-pod-updated',
+  READY = 'about-app-ready',
 }
 
 export enum NotificationSettingsEvents {
   DATA = 'notification-settings-data',
-  UPDATE_SETTINGS = 'notification-settings-update'
+  UPDATE_SETTINGS = 'notification-settings-update',
+  READY = 'notification-settings-ready',
 }
 
 export enum NotificationEvents {
@@ -27,11 +29,11 @@ export enum NotificationEvents {
   ON_IGNORE = 'notification-on-ignore',
   ON_REPLY = 'notification-on-reply',
   SHOW_REPLY = 'show-reply',
-  READY = 'notification-ready'
+  READY = 'notification-ready',
 }
 
 export enum ScreenShareIndicatorEvents {
-  DATA = 'screen-sharing-indicator-data'
+  DATA = 'screen-sharing-indicator-data',
 }
 
 export enum ScreenShareEvents {
@@ -39,39 +41,51 @@ export enum ScreenShareEvents {
   START = 'start-share',
   ARGV = 'screen-share-argv',
   IS_ENABLED = 'is-screen-share-enabled',
-  STOPPED = 'screen-sharing-stopped'
+  STOPPED = 'screen-sharing-stopped',
 }
 
 export enum ScreenPickerEvents {
   DATA = 'screen-picker-data',
   SOURCE_SELECT = 'screen-source-select',
-  SOURCE_SELECTED = 'screen-source-selected'
+  SOURCE_SELECTED = 'screen-source-selected',
+  READY = 'screen-picker-ready',
 }
 
 export enum CallNotificationEvents {
   CLICKED = 'call-notification-clicked',
   ON_ACCEPT = 'call-notification-on-accept',
   ON_REJECT = 'call-notification-on-reject',
-  DATA = 'call-notification-data'
+  DATA = 'call-notification-data',
+  READY = 'call-notification-ready',
 }
 
 export enum TitleBarEvents {
   MAXIMIZE = 'maximize',
   UNMAXIMIZE = 'unmaximize',
   MOVE = 'move',
-  DISABLE_ACTION_BUTTON = 'disable-action-button', 
+  DISABLE_ACTION_BUTTON = 'disable-action-button',
 }
 
 export enum LoadingScreenEvents {
   RELOAD = 'reload-symphony',
   QUIT = 'quit-symphony',
-  DATA = 'loading-screen-data'
+  DATA = 'loading-screen-data',
 }
 
 export enum BasicAuthEvents {
   DATA = 'basic-auth-data',
   LOGIN = 'basic-auth-login',
-  CLOSED = 'basic-auth-closed'
+  CLOSED = 'basic-auth-closed',
 }
 
-export type IpcEvents = ScreenShotAnnotationEvents | AboutAppEvents | NotificationSettingsEvents | NotificationEvents | ScreenShareIndicatorEvents | ScreenShareEvents | ScreenPickerEvents | CallNotificationEvents | LoadingScreenEvents | string;
+export type IpcEvents =
+  | ScreenShotAnnotationEvents
+  | AboutAppEvents
+  | NotificationSettingsEvents
+  | NotificationEvents
+  | ScreenShareIndicatorEvents
+  | ScreenShareEvents
+  | ScreenPickerEvents
+  | CallNotificationEvents
+  | LoadingScreenEvents
+  | string;

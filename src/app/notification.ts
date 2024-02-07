@@ -20,7 +20,10 @@ import { logger } from '../common/logger';
 import NotificationHandler, { ICorner } from './notification-handler';
 import { NotificationEvents } from '../common/ipcEvent';
 import { analytics } from './bi/analytics-handler';
-import { AnalyticsElements, ToastNotificationActionTypes } from './bi/interface';
+import {
+  AnalyticsElements,
+  ToastNotificationActionTypes,
+} from './bi/interface';
 import { getGuid } from '../common/utils';
 
 const CLEAN_UP_INTERVAL = 60 * 1000; // Closes inactive notification
@@ -71,8 +74,8 @@ class Notification extends NotificationHandler {
     onMouseOver: (_event: any, windowId: number) => this.onMouseOver(windowId),
     onMouseLeave: (_event: any, windowId: number, isInputHidden: boolean) =>
       this.onMouseLeave(windowId, isInputHidden),
-      onShowReply: (_event: any, windowId: number) => this.onShowReply(windowId),
-    };
+    onShowReply: (_event: any, windowId: number) => this.onShowReply(windowId),
+  };
   private activeNotifications: ICustomBrowserWindow[] = [];
   private inactiveWindows: ICustomBrowserWindow[] = [];
   private cleanUpTimer: NodeJS.Timer;
@@ -117,7 +120,7 @@ class Notification extends NotificationHandler {
     app.on('ready', () => this.updateNotificationSettings());
     this.cleanUpTimer = setInterval(
       this.funcHandlers.onCleanUpInactiveNotification,
-      CLEAN_UP_INTERVAL,
+      CLEAN_UP_INTERVAL
     );
   }
 
@@ -136,7 +139,7 @@ class Notification extends NotificationHandler {
     this.notificationCallbacks[data.id] = callback;
     this.cleanUpTimer = setInterval(
       this.funcHandlers.onCleanUpInactiveNotification,
-      CLEAN_UP_INTERVAL,
+      CLEAN_UP_INTERVAL
     );
   }
 
@@ -146,7 +149,7 @@ class Notification extends NotificationHandler {
    * @param data
    */
   public async createNotificationWindow(
-    data,
+    data
   ): Promise<ICustomBrowserWindow | undefined> {
     // TODO: Handle MAX_QUEUE_SIZE
     if (data.tag) {
@@ -197,7 +200,7 @@ class Notification extends NotificationHandler {
     const notificationWindow = createComponentWindow(
       'notification',
       opts,
-      false,
+      false
     ) as ICustomBrowserWindow;
     windowHandler.addWindow(opts.winKey, notificationWindow);
     notificationWindow.notificationData = data;
@@ -223,9 +226,9 @@ class Notification extends NotificationHandler {
     notificationWindow.on('resize', (event) => {
       event.preventDefault();
     });
-    ipcMain.once(NotificationEvents.READY, (() => {
+    ipcMain.once(NotificationEvents.READY, () => {
       this.renderNotification(notificationWindow, data);
-    }));
+    });
     // await this.didFinishLoad(notificationWindow, data);
     return;
   }
@@ -238,7 +241,7 @@ class Notification extends NotificationHandler {
    */
   public setNotificationContent(
     notificationWindow: ICustomBrowserWindow,
-    data: INotificationData,
+    data: INotificationData
   ): void {
     notificationWindow.clientId = data.id;
     notificationWindow.notificationData = data;
@@ -255,7 +258,7 @@ class Notification extends NotificationHandler {
     notificationWindow.setSize(
       notificationSettings.width,
       notificationSettings.height,
-      true,
+      true
     );
     // Move notification to top
     notificationWindow.moveTop();
@@ -283,7 +286,7 @@ class Notification extends NotificationHandler {
       hasReply,
       hasMention,
     } = data;
-    notificationWindow.webContents.send('notification-data', {
+    notificationWindow.webContents.send(NotificationEvents.DATA, {
       title,
       company,
       body,
@@ -433,10 +436,10 @@ class Notification extends NotificationHandler {
    * @param clientId {number}
    */
   public getNotificationWindow(
-    clientId: number,
+    clientId: number
   ): ICustomBrowserWindow | undefined {
     return this.activeNotifications.find(
-      (notification) => notification.clientId === clientId,
+      (notification) => notification.clientId === clientId
     );
   }
 
@@ -493,7 +496,7 @@ class Notification extends NotificationHandler {
       .filter(
         (browserWindow) =>
           typeof browserWindow.notificationData === 'object' &&
-          browserWindow.isVisible(),
+          browserWindow.isVisible()
       )
       .forEach((browserWindow) => {
         if (
@@ -560,12 +563,15 @@ class Notification extends NotificationHandler {
    * @param notificationWindow {BrowserWindow}
    * @param data {INotificationData}
    */
-  private renderNotification(notificationWindow: ICustomBrowserWindow, data): void {
+  private renderNotification(
+    notificationWindow: ICustomBrowserWindow,
+    data
+  ): void {
     this.calcNextInsertPos(this.activeNotifications);
     this.setWindowPosition(
       notificationWindow,
       this.nextInsertPos.x,
-      this.nextInsertPos.y,
+      this.nextInsertPos.y
     );
     this.setNotificationContent(notificationWindow, {
       ...data,
@@ -638,7 +644,7 @@ class Notification extends NotificationHandler {
     notificationWindow.setSize(
       CONTAINER_WIDTH,
       CONTAINER_HEIGHT_WITH_INPUT,
-      true,
+      true
     );
     const pos = this.activeNotifications.indexOf(notificationWindow) + 1;
     this.moveNotificationUp(pos, this.activeNotifications);

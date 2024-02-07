@@ -10,12 +10,18 @@ import { logger } from '../../common/logger';
 import {
   AUX_CLICK,
   ICustomBrowserWindow,
+  ICustomBrowserWindowConstructorOpts,
   IS_NODE_INTEGRATION_ENABLED,
   IS_SAND_BOXED,
+  windowHandler,
 } from '../window-handler';
 import { createComponentWindow, windowExists } from '../window-utils';
-import { CallNotificationEvents, NotificationSettingsEvents } from '../../common/ipcEvent';
+import {
+  CallNotificationEvents,
+  NotificationSettingsEvents,
+} from '../../common/ipcEvent';
 import { notification } from '../notification';
+import { getGuid } from '../../../lib/src/common/utils';
 
 const CALL_NOTIFICATION_WIDTH = 264;
 const CALL_NOTIFICATION_HEIGHT = 290;
@@ -72,19 +78,23 @@ class CallNotification {
       this.callNotificationWindow.notificationData = callNotificationData;
       this.callNotificationWindow.winName = apiName.notificationWindowName;
       this.notificationCallbacks.set(callNotificationData.id, callback);
-      this.callNotificationWindow.webContents.send(
-        CallNotificationEvents.DATA,
-        callNotificationData
-      );
+      ipcMain.once(CallNotificationEvents.READY, () => {
+        this.callNotificationWindow?.webContents.send(
+          CallNotificationEvents.DATA,
+          callNotificationData
+        );
+      });
+
       return;
     }
-
+    const opts = this.getCallNotificationOpts();
     // Set stream id as winKey to link stream to the window
     this.callNotificationWindow = createComponentWindow(
       'call-notification',
-      this.getCallNotificationOpts(),
+      opts,
       false
     ) as ICustomBrowserWindow;
+    windowHandler.addWindow(opts.winKey, this.callNotificationWindow);
 
     this.callNotificationWindow.notificationData = callNotificationData;
     this.callNotificationWindow.winName = apiName.notificationWindowName;
@@ -113,15 +123,18 @@ class CallNotification {
       }
       this.callNotificationWindow.webContents.setZoomFactor(1);
       this.callNotificationWindow.webContents.setVisualZoomLevelLimits(1, 1);
-      this.callNotificationWindow.webContents.send(
-        CallNotificationEvents.DATA,
-        callNotificationData
-      );
+      ipcMain.once(CallNotificationEvents.READY, () => {
+        this.callNotificationWindow?.webContents.send(
+          CallNotificationEvents.DATA,
+          callNotificationData
+        );
+      });
       this.callNotificationWindow.showInactive();
     });
 
     this.callNotificationWindow.once('closed', () => {
       this.callNotificationWindow = undefined;
+      windowHandler.removeWindow(opts.winKey);
     });
   };
 
@@ -211,37 +224,37 @@ class CallNotification {
     return;
   }
 
-  private getCallNotificationOpts =
-    (): Electron.BrowserWindowConstructorOptions => {
-      const callNotificationOpts: Electron.BrowserWindowConstructorOptions = {
-        width: CALL_NOTIFICATION_WIDTH,
-        height: CALL_NOTIFICATION_HEIGHT,
-        alwaysOnTop: true,
-        skipTaskbar: true,
-        resizable: false,
-        show: false,
-        frame: false,
-        transparent: true,
-        fullscreenable: false,
-        acceptFirstMouse: true,
-        modal: false,
-        focusable: true,
-        autoHideMenuBar: true,
-        minimizable: false,
-        maximizable: false,
-        title: 'Call Notification - Symphony',
-        webPreferences: {
-          sandbox: IS_SAND_BOXED,
-          nodeIntegration: IS_NODE_INTEGRATION_ENABLED,
-          devTools: isDevEnv,
-          disableBlinkFeatures: AUX_CLICK,
-        },
-      };
-      if (isMac) {
-        callNotificationOpts.type = 'panel';
-      }
-      return callNotificationOpts;
+  private getCallNotificationOpts = (): ICustomBrowserWindowConstructorOpts => {
+    const callNotificationOpts: ICustomBrowserWindowConstructorOpts = {
+      width: CALL_NOTIFICATION_WIDTH,
+      height: CALL_NOTIFICATION_HEIGHT,
+      alwaysOnTop: true,
+      skipTaskbar: true,
+      resizable: false,
+      show: false,
+      frame: false,
+      transparent: true,
+      fullscreenable: false,
+      acceptFirstMouse: true,
+      modal: false,
+      focusable: true,
+      autoHideMenuBar: true,
+      minimizable: false,
+      maximizable: false,
+      title: 'Call Notification - Symphony',
+      webPreferences: {
+        sandbox: IS_SAND_BOXED,
+        nodeIntegration: IS_NODE_INTEGRATION_ENABLED,
+        devTools: isDevEnv,
+        disableBlinkFeatures: AUX_CLICK,
+      },
+      winKey: getGuid(),
     };
+    if (isMac) {
+      callNotificationOpts.type = 'panel';
+    }
+    return callNotificationOpts;
+  };
 }
 
 const callNotification = new CallNotification();

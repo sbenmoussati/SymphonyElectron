@@ -21,7 +21,7 @@ const MenuButton: React.FunctionComponent<IMenuButtonProps> = ({
     useState<HTMLButtonElement>();
   const listRef = useRef<HTMLDivElement>(document.createElement('div'));
   const menuButtonRef = useRef<HTMLButtonElement>(
-    document.createElement('button'),
+    document.createElement('button')
   );
   //#endregion
 
@@ -129,7 +129,7 @@ const MenuButton: React.FunctionComponent<IMenuButtonProps> = ({
 
       return (
         <button
-          className='general-font list-item'
+          className="general-font list-item"
           data-testid={`${id}_${listItem.dataTestId}`}
           lang={i18n.getLocale()}
           onClick={sendClick}
@@ -145,7 +145,7 @@ const MenuButton: React.FunctionComponent<IMenuButtonProps> = ({
 
   return (
     <>
-      <div className='menu-button-wrapper'>
+      <div className="menu-button-wrapper">
         <button
           onKeyUp={onMenuKeyUp}
           className={`menu-button`}
@@ -153,17 +153,11 @@ const MenuButton: React.FunctionComponent<IMenuButtonProps> = ({
           data-testid={testId.menu}
           ref={menuButtonRef}
         >
-          {/* <img
-            src={`../renderer/assets/single-chevron-down.svg`}
-            title={i18n.t('Open menu')()}
-            alt={i18n.t('Open menu')()}
-            draggable={false}
-          /> */}
           <SingleChevronDown />
         </button>
         {isDisplay && (
           <div
-            className='menu'
+            className="menu"
             data-testid={testId.list}
             ref={listRef}
             onKeyUp={onListKeyUp}

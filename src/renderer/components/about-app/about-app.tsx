@@ -103,6 +103,7 @@ export default class AboutApp extends React.Component<unknown, IState> {
     setTimeout(() => {
       this.closeButtonRef.current?.focus();
     }, 0);
+    window.electron.ipcRenderer.sendMessage(AboutAppEvents.READY);
     window.electron.ipcRenderer.on(AboutAppEvents.DATA, this.updateState);
   }
 
@@ -127,7 +128,7 @@ export default class AboutApp extends React.Component<unknown, IState> {
         cmd: apiCmds.aboutAppClipBoardData,
         clipboard: data,
         clipboardType: 'clipboard',
-      })
+      });
     }
   }
 
@@ -138,7 +139,10 @@ export default class AboutApp extends React.Component<unknown, IState> {
     const { isValidHostname, didUpdateHostname, hostname } = this.state;
     window.electron.ipcRenderer.sendMessage(AboutAppEvents.CLOSE);
     if (isValidHostname && didUpdateHostname) {
-      window.electron.ipcRenderer.sendMessage(AboutAppEvents.POD_UPDATED, hostname);
+      window.electron.ipcRenderer.sendMessage(
+        AboutAppEvents.POD_UPDATED,
+        hostname
+      );
     }
   }
 
@@ -200,14 +204,12 @@ export default class AboutApp extends React.Component<unknown, IState> {
    * @param _event
    * @param data {Object} { buildNumber, clientVersion, version }
    */
-  private updateState(
-    data: {
-      buildNumber: string;
-      clientVersion: string;
-      version: string;
-      hostname: string;
-    }
-  ): void {
+  private updateState(data: {
+    buildNumber: string;
+    clientVersion: string;
+    version: string;
+    hostname: string;
+  }): void {
     const updatedData = { ...data, updatedHostname: data.hostname };
     this.setState(updatedData as IState);
   }
@@ -216,27 +218,34 @@ export default class AboutApp extends React.Component<unknown, IState> {
    * Renders component versions
    * @param symphonySectionItems
    */
-  private renderVersions(symphonySectionItems: Array<{key: string; value: string}>) {
+  private renderVersions(
+    symphonySectionItems: Array<{ key: string; value: string }>
+  ) {
     return (
       <section>
         <ul className="AboutApp-symphony-section">
-          {symphonySectionItems.map((item: {key: string; value: string}, idx: number) => {
-            if (item.key === 'POD:') {
-              return this.renderEditablePodElement(item, idx);
+          {symphonySectionItems.map(
+            (item: { key: string; value: string }, idx: number) => {
+              if (item.key === 'POD:') {
+                return this.renderEditablePodElement(item, idx);
+              }
+              return (
+                <li key={idx}>
+                  <strong>{item.key}</strong>
+                  <span>{item.value}</span>
+                </li>
+              );
             }
-            return (
-              <li key={idx}>
-                <strong>{item.key}</strong>
-                <span>{item.value}</span>
-              </li>
-            );
-          })}
+          )}
         </ul>
       </section>
     );
   }
 
-  private renderEditablePodElement = (item: {key: string; value: string}, idx: number) => {
+  private renderEditablePodElement = (
+    item: { key: string; value: string },
+    idx: number
+  ) => {
     const { isPodEditing, isValidHostname, updatedHostname } = this.state;
     return (
       <li key={idx}>
@@ -291,7 +300,7 @@ export default class AboutApp extends React.Component<unknown, IState> {
     const formattedSfeVersion = sfeVersion?.includes(sfeVersionPrefix)
       ? sfeVersion.split(sfeVersionPrefix)[1]
       : sfeVersion;
-    const symphonySectionItems: Array<{key: string; value: string}> = [
+    const symphonySectionItems: Array<{ key: string; value: string }> = [
       {
         key: 'POD:',
         value: `${hostname || ''}`,

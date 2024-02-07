@@ -67,7 +67,8 @@ export default class ScreenPicker extends React.Component<{}, IState> {
    * Callback to handle event when a component is mounted
    */
   public componentDidMount(): void {
-    window.electron.ipcRenderer.on(ScreenPickerEvents.DATA, this.updateState)
+    window.electron.ipcRenderer.sendMessage(ScreenPickerEvents.READY);
+    window.electron.ipcRenderer.on(ScreenPickerEvents.DATA, this.updateState);
     document.addEventListener('keyup', this.handleKeyUpPress, true);
     if (window.electron.isWindowsOS) {
       document.body.classList.add('ScreenPicker-window-border');
@@ -88,22 +89,22 @@ export default class ScreenPicker extends React.Component<{}, IState> {
   public render(): JSX.Element {
     const { sources, selectedSource } = this.state;
     return (
-      <div className='ScreenPicker ScreenPicker-content'>
-        <div className='ScreenPicker-title'>
+      <div className="ScreenPicker ScreenPicker-content">
+        <div className="ScreenPicker-title">
           <span>
             {i18n.t(
               `Choose what you'd like to share`,
-              SCREEN_PICKER_NAMESPACE,
+              SCREEN_PICKER_NAMESPACE
             )()}
           </span>
           <div
-            className='ScreenPicker-x-button'
+            className="ScreenPicker-x-button"
             onClick={this.eventHandlers.onClose}
           >
-            <div className='content-button'>
+            <div className="content-button">
               <i>
-                <svg viewBox='0 0 48 48' fill='grey'>
-                  <path d='M39.4,33.8L31,25.4c-0.4-0.4-0.9-0.9-1.4-1.4c0.5-0.5,1-1,1.4-1.4l8.4-8.4c0.8-0.8,0.8-2,0-2.8l-2.8-2.8 c-0.8-0.8-2-0.8-2.8,0L25.4,17c-0.4,0.4-0.9,0.9-1.4,1.4c-0.5-0.5-1-1-1.4-1.4l-8.4-8.4c-0.8-0.8-2-0.8-2.8,0l-2.8,2.8 c-0.8,0.8-0.8,2,0,2.8l8.4,8.4c0.4,0.4,0.9,0.9,1.4,1.4c-0.5,0.5-1,1-1.4,1.4l-8.4,8.4c-0.8,0.8-0.8,2,0,2.8l2.8,2.8 c0.8,0.8,2,0.8,2.8,0l8.4-8.4c0.4-0.4,0.9-0.9,1.4-1.4c0.5,0.5,1,1,1.4,1.4l8.4,8.4c0.8,0.8,2,0.8,2.8,0l2.8-2.8 C40.2,35.8,40.2,34.6,39.4,33.8z' />
+                <svg viewBox="0 0 48 48" fill="grey">
+                  <path d="M39.4,33.8L31,25.4c-0.4-0.4-0.9-0.9-1.4-1.4c0.5-0.5,1-1,1.4-1.4l8.4-8.4c0.8-0.8,0.8-2,0-2.8l-2.8-2.8 c-0.8-0.8-2-0.8-2.8,0L25.4,17c-0.4,0.4-0.9,0.9-1.4,1.4c-0.5-0.5-1-1-1.4-1.4l-8.4-8.4c-0.8-0.8-2-0.8-2.8,0l-2.8,2.8 c-0.8,0.8-0.8,2,0,2.8l8.4,8.4c0.4,0.4,0.9,0.9,1.4,1.4c-0.5,0.5-1,1-1.4,1.4l-8.4,8.4c-0.8,0.8-0.8,2,0,2.8l2.8,2.8 c0.8,0.8,2,0.8,2.8,0l8.4-8.4c0.4-0.4,0.9-0.9,1.4-1.4c0.5,0.5,1,1,1.4,1.4l8.4,8.4c0.8,0.8,2,0.8,2.8,0l2.8-2.8 C40.2,35.8,40.2,34.6,39.4,33.8z" />
                 </svg>
               </i>
             </div>
@@ -112,7 +113,7 @@ export default class ScreenPicker extends React.Component<{}, IState> {
         {this.renderSources(sources)}
         <footer>
           <button
-            className='ScreenPicker-cancel-button'
+            className="ScreenPicker-cancel-button"
             onClick={this.eventHandlers.onClose}
           >
             {i18n.t('Cancel', SCREEN_PICKER_NAMESPACE)()}
@@ -144,11 +145,12 @@ export default class ScreenPicker extends React.Component<{}, IState> {
       screenRegExp.lastIndex = 0;
       const shouldHighlight: string = classNames(
         'ScreenPicker-item-container',
-        { 'ScreenPicker-selected': this.shouldHighlight(source.id) },
+        { 'ScreenPicker-selected': this.shouldHighlight(source.id) }
       );
       const sourceName = source.name.toLocaleLowerCase();
       if (
-        ((window.electron.isMac || window.electron.isLinux) && source.display_id !== '') ||
+        ((window.electron.isMac || window.electron.isLinux) &&
+          source.display_id !== '') ||
         (window.electron.isWindowsOS &&
           (sourceName === ENTIRE_SCREEN || screenRegExp.exec(sourceName)))
       ) {
@@ -160,7 +162,7 @@ export default class ScreenPicker extends React.Component<{}, IState> {
           const screenNumber = source.name.substr(7, source.name.length);
           screenName = i18n.t(
             'Screen {number}',
-            SCREEN_PICKER_NAMESPACE,
+            SCREEN_PICKER_NAMESPACE
           )({ number: screenNumber });
         }
         screens.push(
@@ -170,15 +172,15 @@ export default class ScreenPicker extends React.Component<{}, IState> {
             key={source.id}
             onClick={() => this.eventHandlers.onSelect(source)}
           >
-            <div className='ScreenPicker-screen-section-box'>
+            <div className="ScreenPicker-screen-section-box">
               <img
-                className='ScreenPicker-img-wrapper'
+                className="ScreenPicker-img-wrapper"
                 src={source.thumbnail as any}
-                alt='thumbnail image'
+                alt="thumbnail image"
               />
             </div>
-            <div className='ScreenPicker-screen-source-title'>{screenName}</div>
-          </div>,
+            <div className="ScreenPicker-screen-source-title">{screenName}</div>
+          </div>
         );
       } else {
         source.fileName = null;
@@ -189,17 +191,17 @@ export default class ScreenPicker extends React.Component<{}, IState> {
             key={source.id}
             onClick={() => this.eventHandlers.onSelect(source)}
           >
-            <div className='ScreenPicker-screen-section-box'>
+            <div className="ScreenPicker-screen-section-box">
               <img
-                className='ScreenPicker-img-wrapper'
+                className="ScreenPicker-img-wrapper"
                 src={source.thumbnail as any}
-                alt='thumbnail image'
+                alt="thumbnail image"
               />
             </div>
-            <div className='ScreenPicker-screen-source-title'>
+            <div className="ScreenPicker-screen-source-title">
               {source.name}
             </div>
-          </div>,
+          </div>
         );
       }
     });
@@ -207,11 +209,11 @@ export default class ScreenPicker extends React.Component<{}, IState> {
     this.isApplicationsAvailable = applications.length > 0;
     if (!this.isScreensAvailable && !this.isApplicationsAvailable) {
       return (
-        <div className='ScreenPicker-error-content' key='spec'>
-          <span className='error-message'>
+        <div className="ScreenPicker-error-content" key="spec">
+          <span className="error-message">
             {i18n.t(
               'No screens or applications are currently available.',
-              SCREEN_PICKER_NAMESPACE,
+              SCREEN_PICKER_NAMESPACE
             )()}
           </span>
         </div>
@@ -219,10 +221,10 @@ export default class ScreenPicker extends React.Component<{}, IState> {
     }
 
     return (
-      <div className='ScreenPicker-main-content' key='spmc'>
+      <div className="ScreenPicker-main-content" key="spmc">
         {this.renderTabTitles()}
-        <section id='screen-contents'>{screens}</section>
-        <section id='application-contents'> {applications}</section>
+        <section id="screen-contents">{screens}</section>
+        <section id="application-contents"> {applications}</section>
       </div>
     );
   }
@@ -235,10 +237,10 @@ export default class ScreenPicker extends React.Component<{}, IState> {
     if (this.isScreensAvailable && this.isApplicationsAvailable) {
       return [
         <input
-          id='screen-tab'
-          className='ScreenPicker-screen-tab'
-          type='radio'
-          name='tabs'
+          id="screen-tab"
+          className="ScreenPicker-screen-tab"
+          type="radio"
+          name="tabs"
           checked={selectedTab === 'screens'}
           onChange={this.eventHandlers.onToggle('screens')}
         />,
@@ -246,15 +248,15 @@ export default class ScreenPicker extends React.Component<{}, IState> {
           className={classNames('screens', {
             hidden: !this.isScreensAvailable,
           })}
-          htmlFor='screen-tab'
+          htmlFor="screen-tab"
         >
           {i18n.t('Screens', SCREEN_PICKER_NAMESPACE)()}
         </label>,
         <input
-          id='application-tab'
-          className='ScreenPicker-application-tab'
-          type='radio'
-          name='tabs'
+          id="application-tab"
+          className="ScreenPicker-application-tab"
+          type="radio"
+          name="tabs"
           checked={selectedTab === 'applications'}
           onChange={this.eventHandlers.onToggle('applications')}
         />,
@@ -262,7 +264,7 @@ export default class ScreenPicker extends React.Component<{}, IState> {
           className={classNames('applications', {
             hidden: !this.isApplicationsAvailable,
           })}
-          htmlFor='application-tab'
+          htmlFor="application-tab"
         >
           {i18n.t('Applications', SCREEN_PICKER_NAMESPACE)()}
         </label>,
@@ -271,10 +273,10 @@ export default class ScreenPicker extends React.Component<{}, IState> {
     if (this.isScreensAvailable) {
       return [
         <input
-          id='screen-tab'
-          className='ScreenPicker-screen-tab'
-          type='radio'
-          name='tabs'
+          id="screen-tab"
+          className="ScreenPicker-screen-tab"
+          type="radio"
+          name="tabs"
           checked={true}
           onChange={this.eventHandlers.onToggle('screens')}
         />,
@@ -282,7 +284,7 @@ export default class ScreenPicker extends React.Component<{}, IState> {
           className={classNames('screens', {
             hidden: !this.isScreensAvailable,
           })}
-          htmlFor='screen-tab'
+          htmlFor="screen-tab"
         >
           {i18n.t('Screens', SCREEN_PICKER_NAMESPACE)()}
         </label>,
@@ -291,10 +293,10 @@ export default class ScreenPicker extends React.Component<{}, IState> {
     if (this.isApplicationsAvailable) {
       return [
         <input
-          id='application-tab'
-          className='ScreenPicker-application-tab'
-          type='radio'
-          name='tabs'
+          id="application-tab"
+          className="ScreenPicker-application-tab"
+          type="radio"
+          name="tabs"
           checked={true}
           onChange={this.eventHandlers.onToggle('applications')}
         />,
@@ -302,7 +304,7 @@ export default class ScreenPicker extends React.Component<{}, IState> {
           className={classNames('applications', {
             hidden: !this.isApplicationsAvailable,
           })}
-          htmlFor='application-tab'
+          htmlFor="application-tab"
         >
           {i18n.t('Applications', SCREEN_PICKER_NAMESPACE)()}
         </label>,
@@ -330,7 +332,10 @@ export default class ScreenPicker extends React.Component<{}, IState> {
     this.setState({ selectedSource });
 
     if (selectedSource) {
-      window.electron.ipcRenderer.sendMessage(ScreenPickerEvents.SOURCE_SELECT, selectedSource);
+      window.electron.ipcRenderer.sendMessage(
+        ScreenPickerEvents.SOURCE_SELECT,
+        selectedSource
+      );
     }
   }
 
@@ -348,11 +353,14 @@ export default class ScreenPicker extends React.Component<{}, IState> {
    */
   private close(): void {
     // setting null will clean up listeners
-    window.electron.ipcRenderer.sendMessage(ScreenPickerEvents.SOURCE_SELECTED, null);
+    window.electron.ipcRenderer.sendMessage(
+      ScreenPickerEvents.SOURCE_SELECTED,
+      null
+    );
     window.electron.ipcRenderer.sendMessage(apiName.symphonyApi, {
       cmd: apiCmds.closeWindow,
       windowType: 'screen-picker',
-    })
+    });
   }
 
   /**
@@ -362,7 +370,10 @@ export default class ScreenPicker extends React.Component<{}, IState> {
   private submit(): void {
     const { selectedSource } = this.state;
     if (selectedSource) {
-      window.electron.ipcRenderer.sendMessage(ScreenPickerEvents.SOURCE_SELECTED, selectedSource);
+      window.electron.ipcRenderer.sendMessage(
+        ScreenPickerEvents.SOURCE_SELECTED,
+        selectedSource
+      );
     }
   }
 

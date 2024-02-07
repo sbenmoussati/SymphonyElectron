@@ -55,49 +55,49 @@ export default class BasicAuth extends React.Component<{}, IState> {
       'display-error': !isValidCredentials,
     });
     return (
-      <div className='container' lang={i18n.getLocale()}>
+      <div className="basic-container" lang={i18n.getLocale()}>
         <span>
           {i18n.t(
             'Please provide your login credentials for:',
-            BASIC_AUTH_NAMESPACE,
+            BASIC_AUTH_NAMESPACE
           )()}
         </span>
-        {hostname && <span className='hostname'>{hostname}</span>}
-        <span id='credentialsError' className={shouldShowError}>
+        {hostname && <span className="hostname">{hostname}</span>}
+        <span id="credentialsError" className={shouldShowError}>
           {i18n.t('Invalid user name/password', BASIC_AUTH_NAMESPACE)()}
         </span>
         <form
-          id='basicAuth'
-          name='Basic Auth'
-          action='Login'
+          id="basicAuth"
+          name="Basic Auth"
+          action="Login"
           onSubmit={this.eventHandlers.onSubmit}
         >
-          <table className='form'>
+          <table className="form">
             <tbody>
               <tr>
-                <td id='username-text'>
+                <td id="username-text">
                   {i18n.t('User name:', BASIC_AUTH_NAMESPACE)()}
                 </td>
                 <td>
                   <input
-                    id='username'
-                    name='username'
-                    title='Username'
+                    id="username"
+                    name="username"
+                    title="Username"
                     onChange={this.eventHandlers.onChange}
                     required
                   />
                 </td>
               </tr>
               <tr>
-                <td id='password-text'>
+                <td id="password-text">
                   {i18n.t('Password:', BASIC_AUTH_NAMESPACE)()}
                 </td>
                 <td>
                   <input
-                    name='password'
-                    id='password'
-                    type='password'
-                    title='Password'
+                    name="password"
+                    id="password"
+                    type="password"
+                    title="Password"
                     onChange={this.eventHandlers.onChange}
                     required
                   />
@@ -105,16 +105,16 @@ export default class BasicAuth extends React.Component<{}, IState> {
               </tr>
             </tbody>
           </table>
-          <div className='footer'>
-            <div className='button-container'>
-              <button type='submit' id='login'>
+          <div className="footer">
+            <div className="button-container">
+              <button type="submit" id="login">
                 {i18n.t('Log In', BASIC_AUTH_NAMESPACE)()}
               </button>
             </div>
-            <div className='button-container'>
+            <div className="button-container">
               <button
-                type='button'
-                id='cancel'
+                type="button"
+                id="cancel"
                 onClick={this.eventHandlers.onClose}
               >
                 {i18n.t('Cancel', BASIC_AUTH_NAMESPACE)()}
@@ -143,7 +143,10 @@ export default class BasicAuth extends React.Component<{}, IState> {
     event.preventDefault();
     const { username, password } = this.state;
     if (username && password) {
-      window.electron.ipcRenderer.sendMessage(BasicAuthEvents.LOGIN, { username, password });
+      window.electron.ipcRenderer.sendMessage(BasicAuthEvents.LOGIN, {
+        username,
+        password,
+      });
     }
   }
 

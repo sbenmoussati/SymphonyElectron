@@ -47,7 +47,7 @@ export default class NotificationSettings extends React.Component<{}, IState> {
 
     return (
       <div
-        className='content'
+        className="content"
         style={
           this.state.theme === Themes.DARK
             ? { backgroundColor: '#25272B' }
@@ -55,32 +55,32 @@ export default class NotificationSettings extends React.Component<{}, IState> {
         }
       >
         <header
-          className='header'
+          className="header"
           style={
             this.state.theme === Themes.DARK
               ? { color: 'white', borderBottom: '1px solid #525760' }
               : undefined
           }
         >
-          <span className='header-title'>
+          <span className="header-title">
             {i18n.t(
               'Set Notification Position',
-              NOTIFICATION_SETTINGS_NAMESPACE,
+              NOTIFICATION_SETTINGS_NAMESPACE
             )()}
           </span>
         </header>
-        <div className='form'>
+        <div className="form">
           <label
-            className='display-label'
+            className="display-label"
             style={
               this.state.theme === Themes.DARK ? { color: 'white' } : undefined
             }
           >
             {i18n.t('Show on display', NOTIFICATION_SETTINGS_NAMESPACE)()}
           </label>
-          <div id='screens' className='display-container'>
+          <div id="screens" className="display-container">
             <select
-              className='display-selector'
+              className="display-selector"
               style={
                 this.state.theme === Themes.DARK
                   ? {
@@ -90,7 +90,7 @@ export default class NotificationSettings extends React.Component<{}, IState> {
                     }
                   : undefined
               }
-              id='screen-selector'
+              id="screen-selector"
               title={i18n.t('Position', NOTIFICATION_SETTINGS_NAMESPACE)()}
               value={this.state.display}
               onChange={this.selectDisplay.bind(this)}
@@ -99,41 +99,41 @@ export default class NotificationSettings extends React.Component<{}, IState> {
             </select>
           </div>
           <label
-            className='position-label'
+            className="position-label"
             style={
               this.state.theme === Themes.DARK ? { color: 'white' } : undefined
             }
           ></label>
           <div
-            className='position-container'
+            className="position-container"
             style={
               this.state.theme === Themes.DARK
                 ? { background: '#2E3136' }
                 : undefined
             }
           >
-            <div className='button-set-left'>
+            <div className="button-set-left">
               {this.renderPositionButton('upper-left', 'Top Left')}
               {this.renderPositionButton('lower-left', 'Bottom Left')}
             </div>
-            <div className='button-set-right'>
+            <div className="button-set-right">
               {this.renderPositionButton('upper-right', 'Top Right')}
               {this.renderPositionButton('lower-right', 'Bottom Right')}
             </div>
           </div>
         </div>
         <footer
-          className='footer'
+          className="footer"
           style={
             this.state.theme === Themes.DARK
               ? { borderTop: '1px solid #525760' }
               : undefined
           }
         >
-          <div className='footer-button-container'>
+          <div className="footer-button-container">
             <button
-              id='cancel'
-              className='footer-button footer-button-dismiss'
+              id="cancel"
+              className="footer-button footer-button-dismiss"
               onClick={this.close.bind(this)}
               style={
                 this.state.theme === Themes.DARK
@@ -144,8 +144,8 @@ export default class NotificationSettings extends React.Component<{}, IState> {
               {i18n.t('CANCEL', NOTIFICATION_SETTINGS_NAMESPACE)()}
             </button>
             <button
-              id='ok-button'
-              className='footer-button footer-button-ok'
+              id="ok-button"
+              className="footer-button footer-button-ok"
               onClick={this.submit.bind(this)}
               style={
                 this.state.theme === Themes.DARK
@@ -165,7 +165,11 @@ export default class NotificationSettings extends React.Component<{}, IState> {
    * Handles event when the component is mounted
    */
   public componentDidMount(): void {
-    window.electron.ipcRenderer.on(NotificationSettingsEvents.DATA, this.updateState);
+    window.electron.ipcRenderer.sendMessage(NotificationSettingsEvents.READY);
+    window.electron.ipcRenderer.on(
+      NotificationSettingsEvents.DATA,
+      this.updateState
+    );
   }
 
   /**
@@ -200,7 +204,10 @@ export default class NotificationSettings extends React.Component<{}, IState> {
    */
   public submit(): void {
     const { position, display } = this.state;
-    window.electron.ipcRenderer.sendMessage(NotificationSettingsEvents.UPDATE_SETTINGS, { position, display });
+    window.electron.ipcRenderer.sendMessage(
+      NotificationSettingsEvents.UPDATE_SETTINGS,
+      { position, display }
+    );
   }
 
   /**
@@ -222,15 +229,15 @@ export default class NotificationSettings extends React.Component<{}, IState> {
   private renderPositionButton(id: startCorner, content: string): JSX.Element {
     const style = this.getPositionButtonStyle(id);
     return (
-      <div className='position-button-container'>
+      <div className="position-button-container">
         <button
           onClick={this.togglePosition.bind(this)}
-          className='position-button'
+          className="position-button"
           style={style}
           id={id}
           data-testid={id}
-          type='button'
-          name='position'
+          type="button"
+          name="position"
           value={id}
         >
           {i18n.t(`${content}`, NOTIFICATION_SETTINGS_NAMESPACE)()}

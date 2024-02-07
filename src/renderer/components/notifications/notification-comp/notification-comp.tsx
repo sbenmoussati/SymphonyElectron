@@ -19,6 +19,7 @@ import SymphonyLogo from '../../../assets/notification-symphony-logo.svg';
 import SendButton from '../../../assets/notification-send-button-enabled.svg';
 import SendButtonDisabled from '../../../assets/notification-send-button-disabled.svg';
 import { NotificationEvents } from '../../../../common/ipcEvent';
+import { ReactComponent as SymphonyBadge } from '../../../assets/symphony-badge.svg';
 
 import './notification-comp.less';
 
@@ -150,20 +151,21 @@ export default class NotificationComp extends React.Component<
       flash,
       isExternal,
       hasMention,
-      color,
+      color
     );
-    const closeImg = themeClassName === Themes.DARK ? CloseIconDark : CloseIconLight;
+    const closeImg =
+      themeClassName === Themes.DARK ? CloseIconDark : CloseIconLight;
     let containerCssClass = `container ${themeClassName} `;
     const customCssClasses = getContainerCssClasses(
       theme,
       flash,
       isExternal,
-      hasMention,
+      hasMention
     );
     containerCssClass += customCssClasses.join(' ');
     return (
       <div
-        data-testid='NOTIFICATION_CONTAINER'
+        data-testid="NOTIFICATION_CONTAINER"
         className={containerCssClass}
         style={{
           height: containerHeight,
@@ -181,20 +183,20 @@ export default class NotificationComp extends React.Component<
           <img
             src={closeImg}
             title={i18n.t('Close')()}
-            alt='close'
+            alt="close"
             onClick={this.eventHandlers.onClose(id)}
           />
         </div>
         <div
-          className='main-container'
-          role='alert'
+          className="main-container"
+          role="alert"
           onContextMenu={this.eventHandlers.onContextMenu}
           onClick={this.eventHandlers.onClick(id)}
         >
-          <div className='logo-container'>{this.renderImage(icon)}</div>
-          <div className='notification-container'>
-            <div className='notification-header'>
-              <div className='notification-header-content'>
+          <div className="logo-container">{this.renderImage(icon)}</div>
+          <div className="notification-container">
+            <div className="notification-header">
+              <div className="notification-header-content">
                 <span className={`title ${themeClassName}`}>{title}</span>
                 {this.renderExtBadge(isExternal)}
               </div>
@@ -224,8 +226,8 @@ export default class NotificationComp extends React.Component<
     const sendIcon = canSendMessage ? SendButton : SendButtonDisabled;
     if (!isInputHidden) {
       return (
-        <div className='rte-container'>
-          <div className='input-container'>
+        <div className="rte-container">
+          <div className="input-container">
             <input
               className={themeClassName}
               autoFocus={true}
@@ -265,7 +267,7 @@ export default class NotificationComp extends React.Component<
     if (!isUpdated) {
       return;
     }
-    return <div className='updated-badge'>{i18n.t('Updated')()}</div>;
+    return <div className="updated-badge">{i18n.t('Updated')()}</div>;
   }
 
   /**
@@ -277,11 +279,8 @@ export default class NotificationComp extends React.Component<
       return;
     }
     return (
-      <div className='ext-badge-container'>
-        <img
-          src={NotificationBadgeExt}
-          alt='ext-badge'
-        />
+      <div className="ext-badge-container">
+        <img src={NotificationBadgeExt} alt="ext-badge" />
       </div>
     );
   }
@@ -301,7 +300,7 @@ export default class NotificationComp extends React.Component<
       alt = 'Profile picture';
     }
     return (
-      <div className='logo'>
+      <div className="logo">
         <img className={imgClass} src={url} alt={alt} />
         {this.renderSymphonyBadge(shouldDisplayBadge)}
       </div>
@@ -314,13 +313,7 @@ export default class NotificationComp extends React.Component<
    */
   private renderSymphonyBadge(hasImageUrl: boolean): JSX.Element | undefined {
     if (hasImageUrl) {
-      return (
-        <img
-          src='../renderer/assets/symphony-badge.svg'
-          alt=''
-          className='profile-picture-badge'
-        />
-      );
+      return <SymphonyBadge className={`profile-picture-badge`} />;
     }
     return;
   }
@@ -369,7 +362,11 @@ export default class NotificationComp extends React.Component<
    */
   private onMouseLeave(id: number): void {
     const { isInputHidden } = this.state;
-    window.electron.ipcRenderer.sendMessage(NotificationEvents.MOUSE_LEAVE, id, isInputHidden);
+    window.electron.ipcRenderer.sendMessage(
+      NotificationEvents.MOUSE_LEAVE,
+      id,
+      isInputHidden
+    );
   }
 
   /**
@@ -392,7 +389,6 @@ export default class NotificationComp extends React.Component<
    */
   private onIgnore(id: number): void {
     window.electron.ipcRenderer.sendMessage(NotificationEvents.ON_IGNORE, id);
-
   }
 
   /**
@@ -405,7 +401,11 @@ export default class NotificationComp extends React.Component<
     if (replyText) {
       // need to replace 👍 with :thumbsup: to make sure client displays the correct emoji
       replyText = replyText.replace(/👍/g, ':thumbsup: ');
-      window.electron.ipcRenderer.sendMessage(NotificationEvents.ON_REPLY, id, replyText);
+      window.electron.ipcRenderer.sendMessage(
+        NotificationEvents.ON_REPLY,
+        id,
+        replyText
+      );
     }
   }
 
@@ -425,7 +425,7 @@ export default class NotificationComp extends React.Component<
       },
       () => {
         this.input.current?.focus();
-      },
+      }
     );
   }
 
@@ -506,7 +506,7 @@ export default class NotificationComp extends React.Component<
    */
   private renderReplyButton(
     id: number,
-    theming: string,
+    theming: string
   ): JSX.Element | undefined {
     const { hasReply } = this.state;
     if (hasReply) {
@@ -530,7 +530,7 @@ export default class NotificationComp extends React.Component<
    */
   private renderIgnoreButton(
     id: number,
-    theming: string,
+    theming: string
   ): JSX.Element | undefined {
     if (this.state.hasIgnore) {
       return (

@@ -1,10 +1,25 @@
 // Disable no-unused-vars, broken for spread args
 /* eslint no-unused-vars: off */
-import { app, contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
-import { apiCmds, apiName, IBoundsChange, ILogMsg, INotificationData, IRestartFloaterData, IScreenSharingIndicator, IScreenSharingIndicatorOptions, IScreenSnippet, LogLevel } from 'common/api-interface';
+import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
+import {
+  apiCmds,
+  apiName,
+  IBoundsChange,
+  ILogMsg,
+  INotificationData,
+  IRestartFloaterData,
+  IScreenSharingIndicator,
+  IScreenSharingIndicatorOptions,
+  IScreenSnippet,
+  LogLevel,
+} from 'common/api-interface';
 import { SSFApi } from './ssf-api';
 import { IpcEvents } from 'common/ipcEvent';
-import { IScreenSourceError, ICustomDesktopCapturerSource, ICustomSourcesOptions } from 'renderer/components/desktop-capturer/desktop-capturer';
+import {
+  IScreenSourceError,
+  ICustomDesktopCapturerSource,
+  ICustomSourcesOptions,
+} from 'renderer/components/desktop-capturer/desktop-capturer';
 import { isLinux, isMac, isWindowsOS } from 'common/env';
 import { IAnalyticsData } from './bi/interface';
 
@@ -14,6 +29,7 @@ const isDevEnv = process.env['WEBPACK_SERVE'] === 'true';
 const electronHandler = {
   ipcRenderer: {
     sendMessage(channel: Channels, ...args: unknown[]) {
+      console.log('sending message ', channel);
       ipcRenderer.send(channel, ...args);
     },
     on(channel: Channels, func: (...args: any) => void) {
@@ -30,12 +46,12 @@ const electronHandler = {
     },
     invoke(channel: Channels, ...args: unknown[]) {
       return ipcRenderer.invoke(channel, ...args);
-    }
+    },
   },
   isMac,
   isWindowsOS,
   isLinux,
-  isDevEnv
+  isDevEnv,
 };
 
 contextBridge.exposeInMainWorld('electron', electronHandler);
@@ -129,8 +145,6 @@ if (ssfWindow.ssf) {
   });
 }
 
-
-
 export class AppBridge {
   /**
    * Validates the incoming postMessage
@@ -157,7 +171,7 @@ export class AppBridge {
     onRegisterLoggerCallback: (
       msg: ILogMsg,
       logLevel: LogLevel,
-      showInConsole: boolean,
+      showInConsole: boolean
     ) => this.registerLoggerCallback(msg, logLevel, showInConsole),
     onRegisterProtocolHandlerCallback: (uri: string) =>
       this.protocolHandlerCallback(uri),
@@ -166,7 +180,7 @@ export class AppBridge {
       this.screenSharingIndicatorCallback(arg),
     onMediaSourceCallback: (
       error: IScreenSourceError | null,
-      source: ICustomDesktopCapturerSource | undefined,
+      source: ICustomDesktopCapturerSource | undefined
     ): void => this.gotMediaSource(error, source),
     onNotificationCallback: (event, data) =>
       this.notificationCallback(event, data),
@@ -255,37 +269,41 @@ export class AppBridge {
       case apiCmds.registerActivityDetection:
         ssfWindow.ssf?.registerActivityDetection(
           data as number,
-          this.callbackHandlers.onActivityCallback,
+          this.callbackHandlers.onActivityCallback
         );
         break;
       case apiCmds.registerDownloadHandler:
         ssfWindow.ssf?.registerDownloadHandler(
-          this.callbackHandlers.onDownloadItemCallback,
+          this.callbackHandlers.onDownloadItemCallback
         );
         break;
       case apiCmds.openScreenSnippet:
-        ssfWindow.ssf?.openScreenSnippet(this.callbackHandlers.onScreenSnippetCallback);
+        ssfWindow.ssf?.openScreenSnippet(
+          this.callbackHandlers.onScreenSnippetCallback
+        );
         break;
       case apiCmds.closeScreenSnippet:
         ssfWindow.ssf?.closeScreenSnippet();
         break;
       case apiCmds.registerBoundsChange:
         ssfWindow.ssf?.registerBoundsChange(
-          this.callbackHandlers.onRegisterBoundsChangeCallback,
+          this.callbackHandlers.onRegisterBoundsChangeCallback
         );
         break;
       case apiCmds.registerLogger:
-        ssfWindow.ssf?.registerLogger(this.callbackHandlers.onRegisterLoggerCallback);
+        ssfWindow.ssf?.registerLogger(
+          this.callbackHandlers.onRegisterLoggerCallback
+        );
         break;
       case apiCmds.registerProtocolHandler:
         ssfWindow.ssf?.registerProtocolHandler(
-          this.callbackHandlers.onRegisterProtocolHandlerCallback,
+          this.callbackHandlers.onRegisterProtocolHandlerCallback
         );
         break;
       case apiCmds.registerLogRetriever:
         ssfWindow.ssf?.registerLogRetriever(
           this.callbackHandlers.onCollectLogsCallback,
-          data,
+          data
         );
         break;
       case apiCmds.sendLogs:
@@ -294,7 +312,7 @@ export class AppBridge {
       case apiCmds.openScreenSharingIndicator:
         ssfWindow.ssf?.openScreenSharingIndicator(
           data as IScreenSharingIndicatorOptions,
-          this.callbackHandlers.onScreenSharingIndicatorCallback,
+          this.callbackHandlers.onScreenSharingIndicatorCallback
         );
         break;
       case apiCmds.closeScreenSharingIndicator:
@@ -303,13 +321,13 @@ export class AppBridge {
       case apiCmds.getMediaSource:
         await ssfWindow.ssf?.getMediaSource(
           data as ICustomSourcesOptions,
-          this.callbackHandlers.onMediaSourceCallback,
+          this.callbackHandlers.onMediaSourceCallback
         );
         break;
       case apiCmds.notification:
         ssfWindow.ssf?.showNotification(
           data as INotificationData,
-          this.callbackHandlers.onNotificationCallback,
+          this.callbackHandlers.onNotificationCallback
         );
         break;
       case apiCmds.closeNotification:
@@ -325,11 +343,13 @@ export class AppBridge {
         break;
       case apiCmds.registerAnalyticsHandler:
         ssfWindow.ssf?.registerAnalyticsEvent(
-          this.callbackHandlers.onAnalyticsEventCallback,
+          this.callbackHandlers.onAnalyticsEventCallback
         );
         break;
       case apiCmds.registerRestartFloater:
-        ssfWindow.ssf?.registerRestartFloater(this.callbackHandlers.restartFloater);
+        ssfWindow.ssf?.registerRestartFloater(
+          this.callbackHandlers.restartFloater
+        );
         break;
       case apiCmds.setCloudConfig:
         ssfWindow.ssf?.setCloudConfig(data as object);
@@ -387,7 +407,7 @@ export class AppBridge {
   private registerLoggerCallback(
     msg: ILogMsg,
     logLevel: LogLevel,
-    showInConsole: boolean,
+    showInConsole: boolean
   ): void {
     this.broadcastMessage('logger-callback', { msg, logLevel, showInConsole });
   }
@@ -441,7 +461,7 @@ export class AppBridge {
    */
   private gotMediaSource(
     sourceError: IScreenSourceError | null,
-    selectedSource: ICustomDesktopCapturerSource | undefined,
+    selectedSource: ICustomDesktopCapturerSource | undefined
   ): void {
     if (sourceError) {
       const { requestId, ...error } = sourceError;

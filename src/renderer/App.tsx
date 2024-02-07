@@ -1,4 +1,4 @@
-import { Routes, Route, HashRouter, BrowserRouter, Router } from 'react-router-dom';
+import { Routes, Route, HashRouter } from 'react-router-dom';
 import React from 'react';
 import LoadingScreen from './components/loading-screen/loading-screen';
 import BasicAuth from './components/basic-auth/basic-auth';
@@ -31,13 +31,13 @@ const WindowsTitleBar = React.lazy(
 function getRoutes() {
   return (
     <Routes>
-      <Route path='/windows-title-bar' Component={WindowsTitleBar}/>
+      <Route path="/windows-title-bar" Component={WindowsTitleBar} />
       <Route path="/about" element={<AboutApp />} />
       <Route path="/welcome" element={<Welcome />} />
       <Route path="/snipping-tool" element={<SnippingTool />} />
+      <Route path="/call-notification" element={<CallNotification />} />
       <Route path="/notification-settings" element={<NotificationSettings />} />
       <Route path="/notification" element={<NotificationComp />} />
-      <Route path="/call-notification" element={<CallNotification />} />
       <Route path="/loading-screen" element={<LoadingScreen />} />
       <Route path="/basic-auth" element={<BasicAuth />} />
       <Route
@@ -47,18 +47,16 @@ function getRoutes() {
       <Route path="/screen-picker" element={<ScreenPicker />} />
     </Routes>
   );
-};
+}
 export default function App() {
-  return (
-      <HashRouter>{ getRoutes() }</HashRouter>
-  );
+  return <HashRouter>{getRoutes()}</HashRouter>;
 }
 
 /**
  *TODO: remaining tasks
  *
  * Handle listeners removal on component unmount
- * Components: 
+ * Components:
  *  - Call notifications
  * Presence status in sys tray / task bar
  */
