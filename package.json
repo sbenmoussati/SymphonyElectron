@@ -50,34 +50,11 @@
       "uninstallDisplayName": "${productName}"
     },
     "files": [
-      "!.git${/*}",
-      "!coverage/*",
-      "!installer/*",
-      "!dist/*",
-      "!src/*",
-      "!tests/*",
-      "!node_modules/@nornagon/cld/deps/cld${/*}",
-      "!node_modules/@nornagon/cld/build/deps${/*}",
-      "!node_modules/@nornagon/spellchecker/vendor${/*}",
-      "!**/*.map",
-      "**/*",
-      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
-      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
-      "!**/node_modules/*.d.ts",
-      "!**/node_modules/.bin",
-      "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
-      "!.editorconfig",
-      "!**/._*",
-      "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}",
-      "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
-      "!**/{appveyor.yml,.travis.yml,circle.yml}",
-      "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
-    ],
-    "extraFiles": [
-      "config/Symphony.config",
-      "config/titleBarStyles.css",
-      "config/InstallVariant.info",
-      "dictionaries/**",
+      "dist",
+      "node_modules",
+      "package.json",
+      "config",
+      "dictionaries",
       "installer/mac/postinstall.sh",
       "node_modules/screen-share-indicator-frame/SymphonyScreenShareIndicator"
     ],
@@ -110,27 +87,6 @@
       "target": [
         "dir",
         "nsis"
-      ],
-      "files": [
-        "**/*",
-        "!.git${/*}",
-        "!**/installer${/*}",
-        "!node_modules/@symphony/symphony-c9-shell${/*}",
-        "!**/node_modules/@nornagon/cld/deps/cld${/*}",
-        "!**/node_modules/@nornagon/cld/build/deps${/*}",
-        "!**/node_modules/@nornagon/spellchecker/vendor${/*}",
-        "!**/*.map",
-        "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
-        "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
-        "!**/node_modules/*.d.ts",
-        "!**/node_modules/.bin",
-        "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
-        "!.editorconfig",
-        "!**/._*",
-        "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}",
-        "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
-        "!**/{appveyor.yml,.travis.yml,circle.yml}",
-        "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
       ],
       "extraFiles": [
         {
