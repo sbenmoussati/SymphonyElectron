@@ -56,7 +56,11 @@
       "config",
       "dictionaries",
       "installer/mac/postinstall.sh",
-      "node_modules/screen-share-indicator-frame/SymphonyScreenShareIndicator"
+      "!node_modules/@symphony"
+    ],
+    "extraFiles": [
+      "config",
+      "dictionaries"
     ],
     "mac": {
       "category": "public.app-category.business",
