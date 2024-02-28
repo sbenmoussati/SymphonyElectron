@@ -72,9 +72,9 @@ export class AppBridge {
       .invoke(apiName.symphonyApi, {
         cmd: apiCmds.getCurrentOriginUrl,
       })
-      .then((origin) => {
-        this.origin = origin;
-        // this.origin = '*'; // DEMO-APP: Comment this line back in only to test demo-app - DO NOT COMMIT
+      .then((_origin) => {
+        // this.origin = origin;
+        this.origin = '*'; // DEMO-APP: Comment this line back in only to test demo-app - DO NOT COMMIT
         ipcRenderer.send(apiName.symphonyApi, {
           cmd: apiCmds.setBroadcastMessage,
         });

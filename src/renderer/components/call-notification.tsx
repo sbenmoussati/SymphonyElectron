@@ -35,6 +35,7 @@ interface ICallNotificationState {
   theme: Theme;
   isPrimaryTextOverflowing: boolean;
   isSecondaryTextOverflowing: boolean;
+  isFederation: boolean;
 }
 
 type mouseEventButton =
@@ -76,6 +77,7 @@ export default class CallNotification extends React.Component<
       theme: '',
       isPrimaryTextOverflowing: false,
       isSecondaryTextOverflowing: false,
+      isFederation: false,
     };
     this.state = { ...this.defaultState };
     this.updateState = this.updateState.bind(this);
@@ -118,6 +120,7 @@ export default class CallNotification extends React.Component<
       icon,
       isPrimaryTextOverflowing,
       isSecondaryTextOverflowing,
+      isFederation,
     } = this.state;
 
     let themeClassName;
@@ -129,12 +132,20 @@ export default class CallNotification extends React.Component<
       themeClassName =
         color && color.match(whiteColorRegExp) ? Themes.LIGHT : Themes.DARK;
     }
-    const themeColors = getThemeColors(theme, flash, isExternal, false, color);
+    const themeColors = getThemeColors(
+      theme,
+      flash,
+      isExternal,
+      false,
+      color,
+      isFederation,
+    );
     const customCssClasses = getContainerCssClasses(
       theme,
       flash,
       isExternal,
       false,
+      isFederation,
     );
     let containerCssClass = `container ${themeClassName} `;
     customCssClasses.push(isMac ? 'mac' : 'windows');

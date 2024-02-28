@@ -61,10 +61,13 @@ export const getContainerCssClasses = (
   flash,
   isExternal,
   hasMention,
+  isFederation,
 ): string[] => {
   const customClasses: string[] = [];
   if (flash && theme) {
-    if (isExternal) {
+    if (isFederation) {
+      customClasses.push('federation-border');
+    } else if (isExternal) {
       customClasses.push('external-border');
       if (hasMention) {
         customClasses.push(`${theme}-ext-mention-flashing`);
@@ -77,6 +80,8 @@ export const getContainerCssClasses = (
       // In case it's a regular message notification
       customClasses.push(`${theme}-flashing`);
     }
+  } else if (isFederation) {
+    customClasses.push('federation-border');
   } else if (isExternal) {
     customClasses.push('external-border');
   }
@@ -131,13 +136,16 @@ export const getThemeColors = (
   isExternal,
   hasMention,
   color,
+  isFederation,
 ): { [key: string]: string } => {
   const currentColors =
     theme === Themes.DARK ? { ...Colors.dark } : { ...Colors.light };
   const externalFlashingBackgroundColor =
     theme === Themes.DARK ? '#70511f' : '#f6e5a6';
   if (flash && theme) {
-    if (isExternal) {
+    if (isFederation) {
+      currentColors.notificationBorderColor = '#65C862';
+    } else if (isExternal) {
       if (!hasMention) {
         currentColors.notificationBorderColor = '#F7CA3B';
         currentColors.notificationBackgroundColor =
@@ -179,6 +187,8 @@ export const getThemeColors = (
         theme,
         color,
       );
+    } else if (isFederation) {
+      currentColors.notificationBorderColor = '#65C862';
     } else if (isExternal) {
       currentColors.notificationBorderColor = '#F7CA3B';
     }

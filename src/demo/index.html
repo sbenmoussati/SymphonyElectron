@@ -209,6 +209,10 @@
           <input type="checkbox" id="isExternal" />
         </div>
         <div class="input-container">
+          <label for="isFederation">Federation</label>
+          <input type="checkbox" id="isFederation" />
+        </div>
+        <div class="input-container">
           <label for="isUpdated">Is updated</label>
           <input type="checkbox" id="isUpdated" />
         </div>
@@ -624,6 +628,7 @@ Writes some thing to the file</textarea
       var imageUrl = document.getElementById('image').value;
       var shouldFlash = document.getElementById('flash').checked;
       var isExternal = document.getElementById('isExternal').checked;
+      var isFederation = document.getElementById('isFederation').checked;
       var isUpdated = document.getElementById('isUpdated').checked;
       var hasMention = document.getElementById('hasMention').checked;
       var shouldStick = document.getElementById('sticky').checked;
@@ -646,6 +651,7 @@ Writes some thing to the file</textarea
         color: color,
         sticky: shouldStick,
         isExternal: isExternal,
+        isFederation: isFederation,
         isUpdated,
         theme: theme,
         data: {
@@ -710,6 +716,7 @@ Writes some thing to the file</textarea
       var imageUrl = document.getElementById('image').value;
       var shouldFlash = document.getElementById('flash').checked;
       var isExternal = document.getElementById('isExternal').checked;
+      var isFederation = document.getElementById('isFederation').checked;
       var color = document.getElementById('color').value;
       var company = document.getElementById('company').value;
       num++;
@@ -723,6 +730,7 @@ Writes some thing to the file</textarea
         color: color,
         flash: shouldFlash,
         isExternal: isExternal,
+        isFederation: isFederation,
         theme: theme,
         data: {
           hello: `Notification with id ${num} clicked')`,

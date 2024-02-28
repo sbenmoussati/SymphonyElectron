@@ -31,6 +31,7 @@ interface INotificationState {
   isInputHidden: boolean;
   containerHeight: number;
   canSendMessage: boolean;
+  isFederation: boolean;
 }
 
 type mouseEventButton =
@@ -84,6 +85,7 @@ export default class NotificationComp extends React.Component<
       hasMention: false,
       containerHeight: CONTAINER_HEIGHT,
       canSendMessage: false,
+      isFederation: false,
     };
     this.updateState = this.updateState.bind(this);
     this.onInputChange = this.onInputChange.bind(this);
@@ -123,6 +125,7 @@ export default class NotificationComp extends React.Component<
       containerHeight,
       flash,
       icon,
+      isFederation,
     } = this.state;
     let themeClassName;
     if (theme) {
@@ -139,6 +142,7 @@ export default class NotificationComp extends React.Component<
       isExternal,
       hasMention,
       color,
+      isFederation,
     );
     const closeImgFilePath = `../renderer/assets/close-icon-${themeClassName}.svg`;
     let containerCssClass = `container ${themeClassName} `;
@@ -147,6 +151,7 @@ export default class NotificationComp extends React.Component<
       flash,
       isExternal,
       hasMention,
+      isFederation,
     );
     containerCssClass += customCssClasses.join(' ');
     return (
@@ -184,7 +189,7 @@ export default class NotificationComp extends React.Component<
             <div className='notification-header'>
               <div className='notification-header-content'>
                 <span className={`title ${themeClassName}`}>{title}</span>
-                {this.renderExtBadge(isExternal)}
+                {this.renderBadges(isExternal, isFederation)}
               </div>
               {this.renderReplyButton(id, themeClassName)}
               {this.renderIgnoreButton(id, themeClassName)}
@@ -254,20 +259,33 @@ export default class NotificationComp extends React.Component<
   }
 
   /**
-   * Renders external badge if the content is from external
+   * Renders external / federation badge if the content is from external / federation
    * @param isExternal
+   * @param isFederation
    */
-  private renderExtBadge(isExternal: boolean): JSX.Element | undefined {
-    if (!isExternal) {
+  private renderBadges(
+    isExternal: boolean,
+    isFederation: boolean,
+  ): JSX.Element | undefined {
+    if (!isExternal && !isFederation) {
       return;
     }
     return (
-      <div className='ext-badge-container'>
-        <img
-          src='../renderer/assets/notification-ext-badge.svg'
-          alt='ext-badge'
-        />
-      </div>
+      <React.Fragment>
+        {isExternal && (
+          <div className='ext-badge-container'>
+            <img
+              src='../renderer/assets/notification-ext-badge.svg'
+              alt='ext-badge'
+            />
+          </div>
+        )}
+        {isFederation && (
+          <div className='ext-badge-container'>
+            <label className='channel'>WHATSAPP</label>
+          </div>
+        )}
+      </React.Fragment>
     );
   }
   /**
