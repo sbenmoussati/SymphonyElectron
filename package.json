@@ -50,7 +50,7 @@
       "uninstallDisplayName": "${productName}"
     },
     "files": [
-      "dist",
+      "lib",
       "node_modules",
       "package.json",
       "config",
