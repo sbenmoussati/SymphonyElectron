@@ -67,6 +67,7 @@ export interface ILocalObject {
   updateMyPresenceCallback?: (presence: EPresenceStatusCategory) => void;
   phoneNumberCallback?: (arg: string) => void;
   writeImageToClipboard?: (blob: string) => void;
+  updateMiniModeStateCallback?: (arg: boolean) => void;
 }
 
 const local: ILocalObject = {
@@ -419,6 +420,16 @@ export class SSFApi {
       local.updateMyPresenceCallback = callback;
     }
   }
+
+  /**
+   * to be documented
+   */
+  public updateMiniModeState(callback: (isMiniModeEnabled: boolean) => void) {
+    if (typeof callback === 'function') {
+      local.updateMiniModeStateCallback = callback;
+    }
+  }
+
   /**
    * Get presence of current user
    * @param myPresence IPresenceStatus
@@ -810,6 +821,15 @@ export class SSFApi {
   }
 
   /**
+   * to be documented
+   */
+  public isMiniModeEnabled() {
+    return ipcRenderer.invoke(apiName.symphonyApi, {
+      cmd: apiCmds.isMiniModeEnabled,
+    });
+  }
+
+  /**
    * Retrieves the current status of Citrix' media redirection feature
    * @returns status
    */
@@ -1036,6 +1056,12 @@ local.ipcRenderer.on(
     }
   },
 );
+
+local.ipcRenderer.on('update-minimode-state', (_event: Event, arg: boolean) => {
+  if (typeof local.updateMiniModeStateCallback === 'function') {
+    local.updateMiniModeStateCallback(arg);
+  }
+});
 
 local.ipcRenderer.on(
   'copy-to-clipboard',

@@ -81,7 +81,7 @@ export default class WindowsTitleBar extends React.Component<{}, IState> {
    * Renders the component
    */
   public render(): JSX.Element | null {
-    const { title } = this.state;
+    // const { title } = this.state;
 
     return (
       <div
@@ -119,7 +119,26 @@ export default class WindowsTitleBar extends React.Component<{}, IState> {
         </div>
         <div className='title-container'>
           {this.getSymphonyLogo()}
-          <p id='title-bar-title'>{title}</p>
+          {/* <p id='title-bar-title'>{title}</p> */}
+        </div>
+        <div className='title-bar-button-container'>
+          <button
+            className='hamburger-menu-button'
+            onClick={this.toggleMiniMode}
+          >
+            <svg
+              width='16'
+              height='16'
+              viewBox='0 0 16 16'
+              xmlns='http://www.w3.org/2000/svg'
+            >
+              <path
+                fill='rgba(255, 255, 255, 0.9)'
+                clip-rule='evenodd'
+                d='M2 0C0.89543 0 0 0.895431 0 2V14C0 15.1046 0.895431 16 2 16H8C9.10457 16 10 15.1046 10 14V2C10 0.895431 9.10457 0 8 0H2ZM2 2L8 2V14H2V2ZM12 2H14V14H12V16H14C15.1046 16 16 15.1046 16 14V2C16 0.895431 15.1046 0 14 0H12V2Z'
+              />
+            </svg>
+          </button>
         </div>
         <div className='title-bar-button-container'>
           <button
@@ -223,6 +242,15 @@ export default class WindowsTitleBar extends React.Component<{}, IState> {
   public minimize(): void {
     ipcRenderer.send(apiName.symphonyApi, {
       cmd: apiCmds.minimizeMainWindow,
+    });
+  }
+
+  /**
+   * to be documented
+   */
+  public toggleMiniMode(): void {
+    ipcRenderer.send(apiName.symphonyApi, {
+      cmd: apiCmds.toggleMiniMode,
     });
   }
 

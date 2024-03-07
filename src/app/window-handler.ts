@@ -70,6 +70,7 @@ import {
   createComponentWindow,
   didVerifyAndRestoreWindow,
   getBounds,
+  getTitleBarHeight,
   getWindowByName,
   handleCertificateProxyVerification,
   handleDownloadManager,
@@ -125,7 +126,8 @@ export interface ICustomBrowserView extends Electron.BrowserView {
 // Default window width & height
 export const DEFAULT_WIDTH: number = 900;
 export const DEFAULT_HEIGHT: number = 900;
-export const TITLE_BAR_HEIGHT: number = 32;
+export const MINI_MODE_DEFAULT_WIDTH: number = 400;
+export const MINI_MODE_DEFAULT_HEIGHT: number = 770;
 export const IS_SAND_BOXED: boolean = true;
 export const IS_NODE_INTEGRATION_ENABLED: boolean = false;
 export const AUX_CLICK = 'Auxclick';
@@ -256,6 +258,7 @@ export class WindowHandler {
       'enableBrowserLogin',
       'browserLoginAutoConnect',
       'devToolsEnabled',
+      'isMiniModeEnabled',
     ]);
     logger.info(
       `window-handler: main windows initialized with following config data`,
@@ -287,17 +290,27 @@ export class WindowHandler {
       (this.globalConfig.url.includes(this.defaultUrl) &&
         config.isFirstTimeLaunch()) ||
       !!this.config.enableBrowserLogin;
-
+    const defaultWidth = this.config.isMiniModeEnabled
+      ? MINI_MODE_DEFAULT_WIDTH
+      : DEFAULT_WIDTH;
+    const defaultHeight = this.config.isMiniModeEnabled
+      ? MINI_MODE_DEFAULT_HEIGHT
+      : DEFAULT_HEIGHT;
     this.windowOpts = {
       ...this.getWindowOpts(
         {
           alwaysOnTop:
             this.config.alwaysOnTop === CloudConfigDataTypes.ENABLED || false,
-          frame: !this.isCustomTitleBar,
-          minHeight: 300,
-          minWidth: 300,
+          frame: !this.isCustomTitleBar && !this.config.isMiniModeEnabled,
           title: 'Symphony',
           show: false,
+          titleBarOverlay: {
+            height: getTitleBarHeight(),
+            color: '#000028',
+            symbolColor: 'white',
+          },
+          titleBarStyle: this.config.isMiniModeEnabled ? 'hidden' : 'default',
+          resizable: !this.config.isMiniModeEnabled,
         },
         {
           preload: path.join(__dirname, '../renderer/_preload-main.js'),
@@ -305,6 +318,10 @@ export class WindowHandler {
       ),
       ...this.opts,
     };
+    if (this.config.isMiniModeEnabled) {
+      this.windowOpts.maxWidth = 450;
+      this.windowOpts.maxHeight = 770;
+    }
     const locale: LocaleType = (this.config.locale ||
       app.getLocale()) as LocaleType;
     i18n.setLocale(locale);
@@ -336,9 +353,15 @@ export class WindowHandler {
     logger.info(`window-handler: setting url ${this.url} from config file!`);
 
     // set window opts with additional config
+
     this.mainWindow = new BrowserWindow({
       ...this.windowOpts,
-      ...getBounds(this.config.mainWinPos, DEFAULT_WIDTH, DEFAULT_HEIGHT),
+      ...getBounds(
+        this.config.mainWinPos,
+        defaultWidth,
+        defaultHeight,
+        !!this.config.isMiniModeEnabled,
+      ),
     }) as ICustomBrowserWindow;
     const localMenuShortcuts = new LocalMenuShortcuts();
     localMenuShortcuts.buildShortcutMenu();
@@ -351,7 +374,11 @@ export class WindowHandler {
       logger.info(
         'window-handler: windowSize: sizes: ' + JSON.stringify(sizes),
       );
-      if (this.mainWindow && windowExists(this.mainWindow)) {
+      if (
+        this.mainWindow &&
+        windowExists(this.mainWindow) &&
+        !this.config.isMiniModeEnabled
+      ) {
         this.mainWindow.setSize(Number(sizes[0]), Number(sizes[1]));
       }
     }
@@ -864,7 +891,7 @@ export class WindowHandler {
         height: DEFAULT_WELCOME_SCREEN_HEIGHT,
         frame: !this.isCustomTitleBar,
         alwaysOnTop: isMac,
-        resizable: false,
+        resizable: true,
         minimizable: true,
         fullscreenable: false,
       },
@@ -919,7 +946,7 @@ export class WindowHandler {
       titleBarView.setBounds({
         x: 0,
         y: 0,
-        height: TITLE_BAR_HEIGHT,
+        height: getTitleBarHeight(),
         width: DEFAULT_WELCOME_SCREEN_WIDTH,
       });
       this.welcomeScreenWindow.setBrowserView(titleBarView);
@@ -2215,6 +2242,7 @@ export class WindowHandler {
    * @returns void
    */
   public forceUnmaximize() {
+    const titleBarHeight = getTitleBarHeight();
     if (this.titleBarView) {
       {
         if (
@@ -2226,15 +2254,16 @@ export class WindowHandler {
           return;
         }
         const [width, height] = this.mainWindow?.getSize();
+
         this.mainView.setBounds({
           width,
-          height: height - TITLE_BAR_HEIGHT,
+          height: height - titleBarHeight,
           x: 0,
-          y: TITLE_BAR_HEIGHT,
+          y: titleBarHeight,
         });
         this.titleBarView.setBounds({
           width,
-          height: TITLE_BAR_HEIGHT,
+          height: titleBarHeight,
           x: 0,
           y: 0,
         });

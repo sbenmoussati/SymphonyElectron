@@ -209,10 +209,14 @@ export const handleChildWindow = (webContents: WebContents): void => {
         // only accept if both are successfully parsed.
         if (Number.isInteger(newX) && Number.isInteger(newY)) {
           const newWinRect = { x: newX, y: newY, width, height };
+          const { isMiniModeEnabled } = config.getCloudConfigFields([
+            'isMiniModeEnabled',
+          ]);
           const { x, y } = getBounds(
             newWinRect,
             DEFAULT_POP_OUT_WIDTH,
             DEFAULT_POP_OUT_HEIGHT,
+            !!isMiniModeEnabled,
           );
           newWinOptions.x = x;
           newWinOptions.y = y;

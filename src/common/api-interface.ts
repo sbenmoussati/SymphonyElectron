@@ -82,6 +82,9 @@ export enum apiCmds {
   updateSymphonyTray = 'update-system-tray',
   registerPhoneNumberServices = 'register-phone-numbers-services',
   unregisterPhoneNumberServices = 'unregister-phone-numbers-services',
+  toggleMiniMode = 'toggle-mini-mode',
+  isMiniModeEnabled = 'is-mini-mode-enabled',
+  updateMiniModeState = 'update-mini-mode-state',
 }
 
 export enum apiName {

@@ -45,7 +45,6 @@ import {
   ICustomBrowserWindow,
   IS_NODE_INTEGRATION_ENABLED,
   IS_SAND_BOXED,
-  TITLE_BAR_HEIGHT,
   windowHandler,
 } from './window-handler';
 
@@ -90,6 +89,9 @@ const TITLE_BAR_EVENTS = [
   'enter-full-screen',
   'leave-full-screen',
 ];
+
+export const MINI_MODE_TITLE_BAR_HEIGHT: number = 50;
+export const TITLE_BAR_HEIGHT: number = 32;
 
 /**
  * Checks if window is valid and exists
@@ -496,7 +498,11 @@ export const getBounds = (
   winPos: ICustomRectangle | Electron.Rectangle | undefined,
   defaultWidth: number,
   defaultHeight: number,
+  isMiniMode: boolean,
 ): Partial<Electron.Rectangle> => {
+  if (isMiniMode) {
+    return { width: defaultWidth, height: defaultHeight };
+  }
   logger.info('window-utils: getBounds, winPos: ' + JSON.stringify(winPos));
 
   if (!winPos || !winPos.x || !winPos.y || !winPos.width || !winPos.height) {
@@ -1265,7 +1271,7 @@ export const loadBrowserViews = async (
       width: mainWindowBounds?.width || DEFAULT_WIDTH,
       height: mainWindowBounds?.height || DEFAULT_HEIGHT,
       x: 0,
-      y: TITLE_BAR_HEIGHT,
+      y: getTitleBarHeight(),
     },
   }) as ICustomBrowserView;
 
@@ -1331,8 +1337,8 @@ export const loadBrowserViews = async (
     mainView.setBounds({
       ...mainViewBounds,
       ...{
-        y: TITLE_BAR_HEIGHT,
-        height: height - TITLE_BAR_HEIGHT,
+        y: getTitleBarHeight(),
+        height: height - getTitleBarHeight(),
       },
     });
     // Workaround as electron does not resize devtools automatically
@@ -1348,6 +1354,7 @@ export const loadBrowserViews = async (
   }, 50);
 
   const onMaximizeHandler = () => {
+    const titleBarHeight = getTitleBarHeight();
     logger.info('window-change: maximizing');
     if (!mainView || !viewExists(mainView)) {
       return;
@@ -1358,7 +1365,7 @@ export const loadBrowserViews = async (
     }).workArea;
     if (
       winBounds.width === currentScreenBounds.width &&
-      winBounds.height === currentScreenBounds.height - TITLE_BAR_HEIGHT
+      winBounds.height === currentScreenBounds.height - titleBarHeight
     ) {
       return;
     }
@@ -1369,19 +1376,20 @@ export const loadBrowserViews = async (
     );
     mainView.setBounds({
       width: currentScreenBounds.width,
-      height: currentScreenBounds.height - TITLE_BAR_HEIGHT,
+      height: currentScreenBounds.height - titleBarHeight,
       x: 0,
-      y: TITLE_BAR_HEIGHT,
+      y: titleBarHeight,
     });
     titleBarView.setBounds({
       width: currentScreenBounds.width,
-      height: TITLE_BAR_HEIGHT,
+      height: titleBarHeight,
       x: 0,
       y: 0,
     });
   };
   mainWindow.on('maximize', onMaximize);
   const onResizeHandler = () => {
+    const titleBarHeight = getTitleBarHeight();
     logger.info('window-change: resizing');
     // Resize event is also triggered on maximize. As we already have a handler for maximize event we don't need to perform any action
     // We also need to ensure that everything works well while connecting/disconnecting an external monitor with a maximized BrowserWindow
@@ -1399,13 +1407,13 @@ export const loadBrowserViews = async (
     const mainWindowBounds = mainWindow.getBounds();
     mainView.setBounds({
       width: mainWindowBounds.width,
-      height: mainWindowBounds.height - TITLE_BAR_HEIGHT,
+      height: mainWindowBounds.height - titleBarHeight,
       x: 0,
-      y: TITLE_BAR_HEIGHT,
+      y: titleBarHeight,
     });
     titleBarView.setBounds({
       width: mainWindowBounds.width,
-      height: TITLE_BAR_HEIGHT,
+      height: titleBarHeight,
       x: 0,
       y: 0,
     });
@@ -1455,17 +1463,18 @@ export const loadBrowserViews = async (
     );
   });
   await titleBarView.webContents.loadURL(titleBarWindowUrl);
+  const titleBarHeight = getTitleBarHeight();
   titleBarView.setBounds({
     ...mainWindow.getBounds(),
-    ...{ x: 0, y: 0, height: TITLE_BAR_HEIGHT },
+    ...{ x: 0, y: 0, height: titleBarHeight },
   });
 
   mainView.setBounds({
     ...mainWindow.getBounds(),
     ...{
       x: 0,
-      y: TITLE_BAR_HEIGHT,
-      height: (mainWindowBounds?.height || DEFAULT_HEIGHT) - TITLE_BAR_HEIGHT,
+      y: titleBarHeight,
+      height: (mainWindowBounds?.height || DEFAULT_HEIGHT) - titleBarHeight,
     },
   });
 
@@ -1498,4 +1507,9 @@ export const isValidUrl = (text: string): false | URL => {
   } catch (err) {
     return false;
   }
+};
+
+export const getTitleBarHeight = () => {
+  const { isMiniModeEnabled } = config.getConfigFields(['isMiniModeEnabled']);
+  return isMiniModeEnabled ? MINI_MODE_TITLE_BAR_HEIGHT : TITLE_BAR_HEIGHT;
 };

@@ -81,6 +81,7 @@ export interface IConfig {
   isPodUrlEditable?: boolean;
   sdaInstallerMsiUrlEnabledVisible?: boolean;
   sdaInstallerMsiUrlBetaEnabledVisible?: boolean;
+  isMiniModeEnabled?: boolean;
 }
 
 export interface IGlobalConfig {

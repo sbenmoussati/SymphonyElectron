@@ -39,7 +39,14 @@ import {
 } from './reports-handler';
 import { screenSnippet } from './screen-snippet-handler';
 import { activate, handleKeyPress } from './window-actions';
-import { ICustomBrowserWindow, windowHandler } from './window-handler';
+import {
+  DEFAULT_HEIGHT,
+  DEFAULT_WIDTH,
+  ICustomBrowserWindow,
+  MINI_MODE_DEFAULT_HEIGHT,
+  MINI_MODE_DEFAULT_WIDTH,
+  windowHandler,
+} from './window-handler';
 import {
   downloadManagerAction,
   getWindowByName,
@@ -530,6 +537,35 @@ ipcMain.on(
       case apiCmds.unregisterPhoneNumberServices:
         voiceHandler.unregisterSymphonyAsDefaultApp(arg.protocols);
         break;
+      case apiCmds.toggleMiniMode:
+        const { isMiniModeEnabled } = config.getConfigFields([
+          'isMiniModeEnabled',
+        ]);
+        const updatedMiniModeValue = !isMiniModeEnabled;
+        config.updateUserConfig({ isMiniModeEnabled: updatedMiniModeValue });
+        const window = windowHandler.getMainWindow();
+        if (window) {
+          // windowHandler.getMainWebContents()?.reload();
+          // window.hide();
+
+          // try {
+          // window.setTitleBarOverlay({ height: getTitleBarHeight() });
+          // } catch (error) {}
+          if (mainWebContents) {
+            mainWebContents.send('update-minimode-state', updatedMiniModeValue);
+          }
+          setTimeout(() => {
+            window?.setResizable(!updatedMiniModeValue);
+            const defaultWidth = updatedMiniModeValue
+              ? MINI_MODE_DEFAULT_WIDTH
+              : DEFAULT_WIDTH;
+            const defaultHeight = updatedMiniModeValue
+              ? MINI_MODE_DEFAULT_HEIGHT
+              : DEFAULT_HEIGHT;
+            window?.setBounds({ width: defaultWidth, height: defaultHeight });
+          }, 1000);
+        }
+        break;
       default:
         break;
     }
@@ -600,6 +636,11 @@ ipcMain.handle(
         break;
       case apiCmds.getCitrixMediaRedirectionStatus:
         return getCitrixMediaRedirectionStatus();
+      case apiCmds.isMiniModeEnabled:
+        const { isMiniModeEnabled } = config.getConfigFields([
+          'isMiniModeEnabled',
+        ]);
+        return isMiniModeEnabled;
       default:
         break;
     }
