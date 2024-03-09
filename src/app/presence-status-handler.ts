@@ -7,6 +7,7 @@ import {
 } from '../common/api-interface';
 import { i18n } from '../common/i18n';
 import { logger } from '../common/logger';
+import { config } from './config-handler';
 import { presenceStatusStore } from './stores';
 import { windowHandler } from './window-handler';
 import { initSysTray, showBadgeCount } from './window-utils';
@@ -117,6 +118,7 @@ class PresenceStatus {
   public updateSystemTrayPresence = (): void => {
     const presence = presenceStatusStore.getPresence();
     let tray = presenceStatusStore.getCurrentTray();
+    const { isMiniModeEnabled } = config.getConfigFields(['isMiniModeEnabled']);
     const backgroundImage = presenceStatusStore.generateImagePath(
       presence.statusGroup,
       'tray',
@@ -134,6 +136,14 @@ class PresenceStatus {
     const presenceNamespace = 'PresenceStatus';
     const isMana = !!windowHandler.isMana;
     const contextMenu = Menu.buildFromTemplate([
+      {
+        label: 'Open Symphony',
+        enabled: true,
+        visible: isMiniModeEnabled,
+        click: () => {
+          windowHandler.getMainWindow()?.show();
+        },
+      },
       {
         label: i18n.t('Status')(),
         visible: isMana,

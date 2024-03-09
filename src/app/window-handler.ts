@@ -124,7 +124,7 @@ export interface ICustomBrowserView extends Electron.BrowserView {
 }
 
 // Default window width & height
-export const DEFAULT_WIDTH: number = 900;
+export const DEFAULT_WIDTH: number = 1400;
 export const DEFAULT_HEIGHT: number = 900;
 export const MINI_MODE_DEFAULT_WIDTH: number = 400;
 export const MINI_MODE_DEFAULT_HEIGHT: number = 770;
@@ -779,6 +779,15 @@ export class WindowHandler {
     // Handle main window close
     this.mainWindow.on('close', (event) => {
       if (!this.mainWindow || !windowExists(this.mainWindow)) {
+        return;
+      }
+
+      const { isMiniModeEnabled } = config.getConfigFields([
+        'isMiniModeEnabled',
+      ]);
+      if (isMiniModeEnabled) {
+        event.preventDefault();
+        this.mainWindow.hide();
         return;
       }
 

@@ -49,6 +49,7 @@ import {
 } from './window-handler';
 import {
   downloadManagerAction,
+  getTitleBarHeight,
   getWindowByName,
   isValidView,
   isValidWindow,
@@ -554,16 +555,19 @@ ipcMain.on(
           if (mainWebContents) {
             mainWebContents.send('update-minimode-state', updatedMiniModeValue);
           }
-          setTimeout(() => {
-            window?.setResizable(!updatedMiniModeValue);
-            const defaultWidth = updatedMiniModeValue
-              ? MINI_MODE_DEFAULT_WIDTH
-              : DEFAULT_WIDTH;
-            const defaultHeight = updatedMiniModeValue
-              ? MINI_MODE_DEFAULT_HEIGHT
-              : DEFAULT_HEIGHT;
-            window?.setBounds({ width: defaultWidth, height: defaultHeight });
-          }, 1000);
+          window?.setResizable(!updatedMiniModeValue);
+          const defaultWidth = updatedMiniModeValue
+            ? MINI_MODE_DEFAULT_WIDTH
+            : DEFAULT_WIDTH;
+          const defaultHeight = updatedMiniModeValue
+            ? MINI_MODE_DEFAULT_HEIGHT
+            : DEFAULT_HEIGHT;
+          window?.setBounds({ width: defaultWidth, height: defaultHeight });
+          window.setTitleBarOverlay({
+            height: getTitleBarHeight(),
+            color: '#000028',
+            symbolColor: 'white',
+          });
         }
         break;
       default:
