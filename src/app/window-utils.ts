@@ -445,7 +445,7 @@ export const showPopupMenu = (opts: Electron.PopupOptions): void => {
     isValidWindow(browserWindow)
   ) {
     const coordinates = windowHandler.isCustomTitleBar
-      ? { x: 20, y: 15 }
+      ? { x: 50, y: 20 }
       : { x: 10, y: -20 };
     const { x, y } = browserWindow.isFullScreen()
       ? { x: 0, y: 0 }
@@ -835,7 +835,7 @@ export const reloadWindow = (browserWindow: ICustomBrowserWindow) => {
     windowHandler.closeAllWindows();
     main?.setThumbarButtons([]);
     presenceStatus.onSignOut();
-
+    windowHandler.titleBarView?.webContents.send('hide-mini-mode');
     windowHandler.closeScreenSharingIndicator();
 
     return;

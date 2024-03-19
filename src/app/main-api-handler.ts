@@ -332,6 +332,7 @@ ipcMain.on(
       case apiCmds.setIsMana:
         if (typeof arg.isMana === 'boolean') {
           windowHandler.isMana = arg.isMana;
+          windowHandler.titleBarView?.webContents.send('mini-mode-ready');
           // Update App Menu
           const appMenu = windowHandler.appMenu;
           const mainWindow = windowHandler.getMainWindow();
@@ -383,6 +384,7 @@ ipcMain.on(
         main?.setThumbarButtons([]);
         presenceStatus.onSignOut();
         await appStats.sendAnalytics(SDAUserSessionActionTypes.Logout);
+        windowHandler.titleBarView?.webContents.send('hide-mini-mode');
         break;
       case apiCmds.setZoomLevel:
         if (typeof arg.zoomLevel === 'number') {
@@ -546,12 +548,6 @@ ipcMain.on(
         config.updateUserConfig({ isMiniModeEnabled: updatedMiniModeValue });
         const window = windowHandler.getMainWindow();
         if (window) {
-          // windowHandler.getMainWebContents()?.reload();
-          // window.hide();
-
-          // try {
-          // window.setTitleBarOverlay({ height: getTitleBarHeight() });
-          // } catch (error) {}
           if (mainWebContents) {
             mainWebContents.send('update-minimode-state', updatedMiniModeValue);
           }
