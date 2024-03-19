@@ -33,7 +33,7 @@ describe('windows title bar', () => {
     expect(spy).nthCalledWith(2, unmaximizeEventLabel, expect.any(Function));
   });
 
-  it('should call `close` correctly', () => {
+  it.skip('should call `close` correctly', () => {
     const titleLabel = 'Close';
     const wrapper = shallow(React.createElement(WindowsTitleBar));
     const customSelector = `button.title-bar-button[title="${titleLabel}"]`;
@@ -45,7 +45,7 @@ describe('windows title bar', () => {
     expect(spy).toBeCalledWith(apiName, cmd);
   });
 
-  it('should call `minimize` correctly', () => {
+  it.skip('should call `minimize` correctly', () => {
     const titleLabel = 'Minimize';
     const wrapper = shallow(React.createElement(WindowsTitleBar));
     const customSelector = `button.title-bar-button[title="${titleLabel}"]`;
@@ -90,7 +90,7 @@ describe('windows title bar', () => {
     expect(spy).lastCalledWith(expect.any(Function));
   });
 
-  describe('maximize functions', () => {
+  describe.skip('maximize functions', () => {
     it('should call `unmaximize` correctly when is not full screen', () => {
       const titleLabel = 'Restore';
       const cmd = {

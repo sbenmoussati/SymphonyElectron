@@ -6,41 +6,6 @@ exports[`windows title bar should render correctly 1`] = `
   onDoubleClick={[Function]}
 >
   <div
-    className="title-bar-button-container"
-  >
-    <button
-      className="hamburger-menu-button"
-      onClick={[Function]}
-      onContextMenu={[Function]}
-      onMouseDown={[Function]}
-      title="Menu"
-    >
-      <svg
-        viewBox="0 0 15 10"
-        x="0px"
-        y="0px"
-      >
-        <rect
-          fill="rgba(255, 255, 255, 0.9)"
-          height="1"
-          width="15"
-        />
-        <rect
-          fill="rgba(255, 255, 255, 0.9)"
-          height="1"
-          width="15"
-          y="4"
-        />
-        <rect
-          fill="rgba(255, 255, 255, 0.9)"
-          height="1"
-          width="152"
-          y="8"
-        />
-      </svg>
-    </button>
-  </div>
-  <div
     className="title-container"
   >
     <svg
@@ -77,75 +42,38 @@ exports[`windows title bar should render correctly 1`] = `
         </radialGradient>
       </defs>
     </svg>
-    <p
-      id="title-bar-title"
-    >
-      Symphony
-    </p>
   </div>
   <div
     className="title-bar-button-container"
   >
     <button
-      className="title-bar-button"
+      className="hamburger-menu-button"
       onClick={[Function]}
       onContextMenu={[Function]}
       onMouseDown={[Function]}
-      title="Minimize"
+      title="Menu"
     >
       <svg
-        viewBox="0 0 14 1"
+        viewBox="0 0 15 10"
         x="0px"
         y="0px"
       >
         <rect
           fill="rgba(255, 255, 255, 0.9)"
-          height="0.6"
-          width="14"
+          height="1"
+          width="15"
         />
-      </svg>
-    </button>
-  </div>
-  <div
-    className="title-bar-button-container"
-  >
-    <button
-      className="title-bar-button"
-      onClick={[Function]}
-      onContextMenu={[Function]}
-      onMouseDown={[Function]}
-      title="Maximize"
-    >
-      <svg
-        viewBox="0 0 14 11.2"
-        x="0px"
-        y="0px"
-      >
-        <path
-          d="M0,0v10.1h10.2V0H0z M9.2,9.2H1.1V1h8.1V9.2z"
+        <rect
           fill="rgba(255, 255, 255, 0.9)"
+          height="1"
+          width="15"
+          y="4"
         />
-      </svg>
-    </button>
-  </div>
-  <div
-    className="title-bar-button-container"
-  >
-    <button
-      className="title-bar-button"
-      onClick={[Function]}
-      onContextMenu={[Function]}
-      onMouseDown={[Function]}
-      title="Close"
-    >
-      <svg
-        viewBox="0 0 14 10.2"
-        x="0px"
-        y="0px"
-      >
-        <polygon
+        <rect
           fill="rgba(255, 255, 255, 0.9)"
-          points="10.2,0.7 9.5,0 5.1,4.4 0.7,0 0,0.7 4.4,5.1 0,9.5 0.7,10.2 5.1,5.8 9.5,10.2 10.2,9.5 5.8,5.1 "
+          height="1"
+          width="152"
+          y="8"
         />
       </svg>
     </button>

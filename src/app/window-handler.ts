@@ -310,7 +310,7 @@ export class WindowHandler {
             color: '#000028',
             symbolColor: 'white',
           },
-          titleBarStyle: this.config.isMiniModeEnabled ? 'hidden' : 'default',
+          titleBarStyle: 'hidden',
           resizable: !this.config.isMiniModeEnabled,
         },
         {
