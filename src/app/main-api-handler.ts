@@ -564,6 +564,7 @@ ipcMain.on(
             color: '#000028',
             symbolColor: 'white',
           });
+          presenceStatus.updateSystemTrayPresence();
         }
         break;
       default:

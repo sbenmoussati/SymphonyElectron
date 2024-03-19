@@ -98,6 +98,7 @@ export enum ClientSwitchType {
   CLIENT_2_0_DAILY = 'CLIENT_2_0_DAILY',
   STARTPAGE_CLIENT_2_0 = 'START_PAGE_CLIENT_2_0',
   STARTPAGE_CLIENT_2_0_DAILY = 'START_PAGE_CLIENT_2_0_DAILY',
+  STARTPAGE_CLIENT_2_0_INNOVATE = 'STARTPAGE_CLIENT_2_0_INNOVATE',
 }
 
 export const DEFAULT_WELCOME_SCREEN_WIDTH: number = 542;
@@ -124,7 +125,7 @@ export interface ICustomBrowserView extends Electron.BrowserView {
 }
 
 // Default window width & height
-export const DEFAULT_WIDTH: number = 1400;
+export const DEFAULT_WIDTH: number = 1000;
 export const DEFAULT_HEIGHT: number = 900;
 export const MINI_MODE_DEFAULT_WIDTH: number = 400;
 export const MINI_MODE_DEFAULT_HEIGHT: number = 770;
@@ -2350,6 +2351,9 @@ export class WindowHandler {
           break;
         case ClientSwitchType.STARTPAGE_CLIENT_2_0_DAILY:
           this.url = `https://${parsedUrl.hostname}/apps/client2/daily`;
+          break;
+        case ClientSwitchType.STARTPAGE_CLIENT_2_0_INNOVATE:
+          this.url = `https://${parsedUrl.hostname}/apps/client2/innovate`;
           break;
         default:
           this.url = this.globalConfig.url + `?x-km-csrf-token=${csrfToken}`;

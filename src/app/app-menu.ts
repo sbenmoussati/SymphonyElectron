@@ -119,6 +119,7 @@ enum Channels {
   Stable = 'stable',
   Latest = 'latest',
   IV = 'iv',
+  Innovate = 'innovate',
 }
 
 const menuItemsArray = Object.keys(menuSections)
@@ -703,7 +704,7 @@ export class AppMenu {
         },
         {
           label: i18n.t('Client 2.0 channel')(),
-          visible: isCorp,
+          visible: true,
           id: C2_CHANNELS_MENU_ID,
           submenu: [
             {
@@ -727,6 +728,15 @@ export class AppMenu {
               id: `${Target.C2}-${Channels.Daily}`,
               label: i18n.t('Daily')(),
               accelerator: 'CmdorCtrl+2',
+            },
+            {
+              click: (_item) => this.switchTo(Channels.Innovate),
+              visible: isCorp,
+              type: 'checkbox',
+              checked: windowHandler.url?.includes('innovate'),
+              id: `${Target.C2}-${Channels.Innovate}`,
+              label: i18n.t('Innovate')(),
+              accelerator: 'CmdorCtrl+3',
             },
           ],
         },
@@ -921,6 +931,9 @@ export class AppMenu {
         clientSwitchType = isBFFServedContent
           ? ClientSwitchType.CLIENT_2_0
           : ClientSwitchType.STARTPAGE_CLIENT_2_0;
+        break;
+      case Channels.Innovate:
+        clientSwitchType = ClientSwitchType.STARTPAGE_CLIENT_2_0_INNOVATE;
         break;
       default:
         break;
