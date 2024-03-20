@@ -821,6 +821,9 @@ const onMiniModeStateChange = (
   const window = windowHandler.getMainWindow();
   const mainWebContents = windowHandler.getMainWebContents();
   if (window) {
+    if (isMiniModeEnabled && window.isMaximized()) {
+      window.unmaximize();
+    }
     mainWebContents?.send('on-mini-mode-state-change', isMiniModeEnabled);
     if (autoResize) {
       const defaultWidth = isMiniModeEnabled
