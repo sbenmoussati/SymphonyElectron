@@ -713,7 +713,8 @@ export class AppMenu {
               type: 'checkbox',
               checked:
                 windowHandler.url?.startsWith(CORP_URL) &&
-                !windowHandler.url?.includes('daily'),
+                !windowHandler.url?.includes('daily') &&
+                !windowHandler.url?.includes('innovate'),
               id: `${Target.C2}-${Channels.Stable}`,
               label: i18n.t('Stable')(),
               accelerator: 'CmdorCtrl+1',
@@ -731,7 +732,7 @@ export class AppMenu {
             },
             {
               click: (_item) => this.switchTo(Channels.Innovate),
-              visible: isCorp,
+              visible: true,
               type: 'checkbox',
               checked: windowHandler.url?.includes('innovate'),
               id: `${Target.C2}-${Channels.Innovate}`,
