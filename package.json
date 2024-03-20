@@ -17,7 +17,7 @@
     "browserify-preload-component": "browserify -o lib/src/renderer/_preload-component.js -x electron --insert-global-vars=__filename,__dirname -t imgurify lib/src/renderer/preload-component.js",
     "compile": "run-s lint compile:*",
     "compile:project": "gulp build",
-    "dev": "gulp build && npm run browserify && cross-env ELECTRON_DEV=true electron .",
+    "dev": "gulp build && npm run browserify && cross-env ELECTRON_DEV=true electron . --remote-debugging-port=9222 --remote-allow-origins=*",
     "demo": "run-os",
     "demo:win32": "gulp build && npm run browserify && cross-env ELECTRON_DEV=true electron . --url=file:///src/demo/index.html",
     "demo:darwin": "gulp build && npm run browserify && cross-env ELECTRON_DEV=true electron . --url=file://$(pwd)/src/demo/index.html",
@@ -94,7 +94,7 @@
       ]
     },
     "win": {
-      "icon": "images/icon.ico",
+      "icon": "images/Symphony.ico",
       "target": [
         "dir",
         "nsis"

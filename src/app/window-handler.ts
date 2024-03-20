@@ -790,7 +790,7 @@ export class WindowHandler {
       const { isMiniModeEnabled } = config.getConfigFields([
         'isMiniModeEnabled',
       ]);
-      if (isMiniModeEnabled) {
+      if (isMiniModeEnabled && !this.willQuitApp) {
         event.preventDefault();
         this.mainWindow.hide();
         return;
