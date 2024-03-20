@@ -312,10 +312,11 @@ export class WindowHandler {
             symbolColor: 'white',
           },
           titleBarStyle: 'hidden',
-          resizable: !this.config.isMiniModeEnabled,
+          resizable: true,
           icon: nativeImage.createFromPath(
             path.join(__dirname, '../renderer/assets/Symphony.ico'),
           ),
+          backgroundColor: '#000028',
         },
         {
           preload: path.join(__dirname, '../renderer/_preload-main.js'),

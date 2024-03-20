@@ -106,7 +106,8 @@ if (ssfWindow.ssf) {
     registerPhoneNumberServices: ssfWindow.ssf.registerPhoneNumberServices,
     unregisterPhoneNumberServices: ssfWindow.ssf.unregisterPhoneNumberServices,
     isMiniModeEnabled: ssfWindow.ssf.isMiniModeEnabled,
-    updateMiniModeState: ssfWindow.ssf.updateMiniModeState,
+    onMiniModeStateChange: ssfWindow.ssf.onMiniModeStateChange,
+    updateSDAMiniModeState: ssfWindow.ssf.updateSDAMiniModeState,
   });
 }
 

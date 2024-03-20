@@ -84,7 +84,8 @@ export enum apiCmds {
   unregisterPhoneNumberServices = 'unregister-phone-numbers-services',
   toggleMiniMode = 'toggle-mini-mode',
   isMiniModeEnabled = 'is-mini-mode-enabled',
-  updateMiniModeState = 'update-mini-mode-state',
+  onMiniModeStateChange = 'on-mini-mode-state-change',
+  updateSDAMiniModeState = 'update-mini-mode-state',
 }
 
 export enum apiName {
@@ -151,6 +152,7 @@ export interface IApiArgs {
   hideOnCapture: boolean;
   status: IPresenceStatus;
   protocols: PhoneNumberProtocol[];
+  isMiniModeEnabled: boolean;
 }
 
 export type Themes = 'light' | 'dark';

@@ -544,28 +544,10 @@ ipcMain.on(
         const { isMiniModeEnabled } = config.getConfigFields([
           'isMiniModeEnabled',
         ]);
-        const updatedMiniModeValue = !isMiniModeEnabled;
-        config.updateUserConfig({ isMiniModeEnabled: updatedMiniModeValue });
-        const window = windowHandler.getMainWindow();
-        if (window) {
-          if (mainWebContents) {
-            mainWebContents.send('update-minimode-state', updatedMiniModeValue);
-          }
-          window?.setResizable(!updatedMiniModeValue);
-          const defaultWidth = updatedMiniModeValue
-            ? MINI_MODE_DEFAULT_WIDTH
-            : DEFAULT_WIDTH;
-          const defaultHeight = updatedMiniModeValue
-            ? MINI_MODE_DEFAULT_HEIGHT
-            : DEFAULT_HEIGHT;
-          window?.setBounds({ width: defaultWidth, height: defaultHeight });
-          window.setTitleBarOverlay({
-            height: getTitleBarHeight(),
-            color: '#000028',
-            symbolColor: 'white',
-          });
-          presenceStatus.updateSystemTrayPresence();
-        }
+        onMiniModeStateChange(!isMiniModeEnabled, true);
+        break;
+      case apiCmds.updateSDAMiniModeState:
+        onMiniModeStateChange(arg.isMiniModeEnabled, false);
         break;
       default:
         break;
@@ -830,4 +812,44 @@ const loadPodUrl = (proxyLogin = false) => {
         error.code,
       );
     });
+};
+const onMiniModeStateChange = (
+  isMiniModeEnabled: boolean | undefined,
+  autoResize = false,
+) => {
+  config.updateUserConfig({ isMiniModeEnabled });
+  const window = windowHandler.getMainWindow();
+  const mainWebContents = windowHandler.getMainWebContents();
+  if (window) {
+    mainWebContents?.send('on-mini-mode-state-change', isMiniModeEnabled);
+    if (autoResize) {
+      const defaultWidth = isMiniModeEnabled
+        ? MINI_MODE_DEFAULT_WIDTH
+        : DEFAULT_WIDTH;
+      const defaultHeight = isMiniModeEnabled
+        ? MINI_MODE_DEFAULT_HEIGHT
+        : DEFAULT_HEIGHT;
+      window.setBounds({ width: defaultWidth, height: defaultHeight });
+    }
+    const titleBarHeight = getTitleBarHeight();
+    window.setTitleBarOverlay({
+      height: titleBarHeight,
+      color: '#000028',
+      symbolColor: 'white',
+    });
+    const mainWindowBounds = window.getBounds();
+    windowHandler.mainView?.setBounds({
+      width: mainWindowBounds.width,
+      height: mainWindowBounds.height - titleBarHeight,
+      x: 0,
+      y: titleBarHeight,
+    });
+    windowHandler.titleBarView?.setBounds({
+      width: mainWindowBounds.width,
+      height: titleBarHeight,
+      x: 0,
+      y: 0,
+    });
+    presenceStatus.updateSystemTrayPresence();
+  }
 };

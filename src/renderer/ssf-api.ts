@@ -67,7 +67,7 @@ export interface ILocalObject {
   updateMyPresenceCallback?: (presence: EPresenceStatusCategory) => void;
   phoneNumberCallback?: (arg: string) => void;
   writeImageToClipboard?: (blob: string) => void;
-  updateMiniModeStateCallback?: (arg: boolean) => void;
+  onMiniModeStateChangeCallback?: (arg: boolean) => void;
 }
 
 const local: ILocalObject = {
@@ -424,9 +424,9 @@ export class SSFApi {
   /**
    * to be documented
    */
-  public updateMiniModeState(callback: (isMiniModeEnabled: boolean) => void) {
+  public onMiniModeStateChange(callback: (isMiniModeEnabled: boolean) => void) {
     if (typeof callback === 'function') {
-      local.updateMiniModeStateCallback = callback;
+      local.onMiniModeStateChangeCallback = callback;
     }
   }
 
@@ -992,6 +992,17 @@ export class SSFApi {
       protocols,
     });
   }
+
+  /**
+   * Change SDA mini-mode state in case mini mode is enabled on window resize
+   * @param isMiniModeEnabled mini-mode value
+   */
+  public updateSDAMiniModeState(isMiniModeEnabled: boolean) {
+    ipcRenderer.send(apiName.symphonyApi, {
+      cmd: apiCmds.updateSDAMiniModeState,
+      isMiniModeEnabled,
+    });
+  }
 }
 
 /**
@@ -1057,11 +1068,14 @@ local.ipcRenderer.on(
   },
 );
 
-local.ipcRenderer.on('update-minimode-state', (_event: Event, arg: boolean) => {
-  if (typeof local.updateMiniModeStateCallback === 'function') {
-    local.updateMiniModeStateCallback(arg);
-  }
-});
+local.ipcRenderer.on(
+  'on-mini-mode-state-change',
+  (_event: Event, arg: boolean) => {
+    if (typeof local.onMiniModeStateChangeCallback === 'function') {
+      local.onMiniModeStateChangeCallback(arg);
+    }
+  },
+);
 
 local.ipcRenderer.on(
   'copy-to-clipboard',
