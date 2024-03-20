@@ -10,6 +10,7 @@ import {
   Event,
   ipcMain,
   MessageBoxSyncOptions,
+  nativeImage,
   nativeTheme,
   RenderProcessGoneDetails,
   screen,
@@ -312,6 +313,9 @@ export class WindowHandler {
           },
           titleBarStyle: 'hidden',
           resizable: !this.config.isMiniModeEnabled,
+          icon: nativeImage.createFromPath(
+            path.join(__dirname, '../renderer/assets/Symphony.ico'),
+          ),
         },
         {
           preload: path.join(__dirname, '../renderer/_preload-main.js'),
