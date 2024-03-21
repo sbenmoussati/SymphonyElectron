@@ -25,7 +25,7 @@ class Script
     static public void Main(string[] args)
     {
         // The name "Symphony" is used in a lot of places, for paths, shortut names and installer filename, so define it once
-        var productName = "Symphony";
+        var productName = "Symphony Mini-mode";
 
         var userDataPathArgument = "--userDataPath=\"[USER_DATA_PATH]\"";
 
@@ -39,12 +39,12 @@ class Script
                     // Create two shortcuts to the main Symphony.exe file, one on the desktop and one in the program menu
                     new FileShortcut(productName, @"%Desktop%")
                     {
-                        IconFile = @"..\..\..\images\icon.ico",
+                        IconFile = @"..\..\..\images\Symphony.ico",
                         Arguments = userDataPathArgument
                     },
                     new FileShortcut(productName, @"%ProgramMenu%")
                     {
-                        IconFile = @"..\..\..\images\icon.ico",
+                        IconFile = @"..\..\..\images\Symphony.ico",
                         Arguments = userDataPathArgument
                     }
                 ),
@@ -156,7 +156,7 @@ class Script
             new PublicProperty("POD_URL", "https://my.symphony.com"),
             new PublicProperty("CONTEXT_ORIGIN_URL", ""),
             new PublicProperty("POINTER_LOCK", "true"),
-            new PublicProperty("USER_DATA_PATH", ""),
+            new PublicProperty("USER_DATA_PATH", "%LOCALAPPDATA%/Symphony-mini-mode"),
             new PublicProperty("OVERRIDE_USER_AGENT", "false"),
             new PublicProperty("ENABLE_BROWSER_LOGIN", "false"),
             new PublicProperty("BROWSER_LOGIN_AUTOCONNECT", "false"),

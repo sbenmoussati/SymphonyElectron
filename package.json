@@ -1,6 +1,6 @@
 {
-  "name": "symphony",
-  "productName": "Symphony",
+  "name": "symphony-mini",
+  "productName": "Symphony Mini",
   "version": "24.4.0",
   "clientVersion": "2.0.1",
   "buildNumber": "0",
@@ -36,7 +36,7 @@
     "unpacked-win": "npm run prebuild && npm run test && node_modules\\.bin\\electron-builder build --win --x64"
   },
   "build": {
-    "appId": "com.symphony.electron-desktop",
+    "appId": "com.symphony.mini",
     "compression": "maximum",
     "artifactName": "${productName}-${version}-${os}.${ext}",
     "asar": true,
