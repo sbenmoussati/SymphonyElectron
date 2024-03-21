@@ -324,10 +324,6 @@ export class WindowHandler {
       ),
       ...this.opts,
     };
-    if (this.config.isMiniModeEnabled) {
-      this.windowOpts.maxWidth = 450;
-      this.windowOpts.maxHeight = 770;
-    }
     const locale: LocaleType = (this.config.locale ||
       app.getLocale()) as LocaleType;
     i18n.setLocale(locale);
@@ -1797,7 +1793,7 @@ export class WindowHandler {
         height: isMac ? 270 : 295,
         alwaysOnTop: isMac,
         skipTaskbar: true,
-        resizable: false,
+        resizable: true,
         show: false,
         modal: true,
         frame: false,
