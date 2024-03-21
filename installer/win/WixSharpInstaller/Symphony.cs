@@ -25,7 +25,7 @@ class Script
     static public void Main(string[] args)
     {
         // The name "Symphony" is used in a lot of places, for paths, shortut names and installer filename, so define it once
-        var productName = "Symphony Mini-mode";
+        var productName = "Symphony-Mini";
 
         var userDataPathArgument = "--userDataPath=\"[USER_DATA_PATH]\"";
 
@@ -35,7 +35,7 @@ class Script
         // desired contents of installation, and then we can simplify this bit.
         var project = new ManagedProject(productName,
             new Dir(@"%ProgramFiles%\" + productName,
-                new File(new Id("symphony_exe"), @"..\..\..\dist\win-unpacked\Symphony.exe",
+                new File(new Id("symphonymini_exe"), @"..\..\..\dist\win-unpacked\Symphony-Mini.exe",
                     // Create two shortcuts to the main Symphony.exe file, one on the desktop and one in the program menu
                     new FileShortcut(productName, @"%Desktop%")
                     {
@@ -103,7 +103,7 @@ class Script
             // will not work for us, as we have a "minimize on close" option, which stops the app from terminating on WM_CLOSE. So we
             // instruct the installer to not send a Close message, but instead send the EndSession message, and we have a custom event
             // handler in the SDA code which listens for this message, and ensures app termination when it is received.
-            new CloseApplication("Symphony.exe", false) { EndSessionMessage = true }
+            new CloseApplication("Symphony-Mini.exe", false) { EndSessionMessage = true }
             );
 
         // The build script which calls the wix# builder, will be run from a command environment which has %SYMVER% set.
@@ -269,16 +269,16 @@ class Script
                     else
                     {
                         // Install for all users
-                        e.Session["INSTALLDIR"] = e.Session["PROGRAMSFOLDER"] + @"\Symphony\" + e.ProductName;
+                        e.Session["INSTALLDIR"] = e.Session["PROGRAMSFOLDER"] + @"\Symphony-Mini\" + e.ProductName;
                     }
                 }
 
                 // Try to close all running symphony instances before installing. Since we have started using the EndSession message to tell the app to exit,
                 // we don't really need to force terminate anymore. But the older versions of SDA does not listen for the EndSession event, so we still need
                 // this code to ensure older versions gets shut down properly.
-                System.Diagnostics.Process.GetProcessesByName("Symphony").ForEach(p =>
+                System.Diagnostics.Process.GetProcessesByName("Symphony-Mini").ForEach(p =>
                 {
-                    if (System.IO.Path.GetFileName(p.MainModule.FileName) == "Symphony.exe")
+                    if (System.IO.Path.GetFileName(p.MainModule.FileName) == "Symphony-Mini.exe")
                     {
                         if (!p.HasExited)
                         {

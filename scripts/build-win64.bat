@@ -103,9 +103,9 @@ mkdir targets
 set targetsDir="%CD%\targets\"
 
 IF "%EXPIRY_PERIOD%"=="0" (
-    set archiveName=Symphony-Win64-%SYMVER%
+    set archiveName=SymphonyMini-Win64-%SYMVER%
 ) else (
-    set archiveName=Symphony-Win64-%SYMVER%-TTL-%EXPIRY_PERIOD%
+    set archiveName=SymphonyMini-Win64-%SYMVER%-TTL-%EXPIRY_PERIOD%
 )
 
 set installerDir="%CD%\installer\win"
@@ -122,32 +122,32 @@ copy /y "%PFX_DIR%\%PFX_FILE%" "%installerDir%\%PFX_FILE%"
 cd %installerDir%
 
 
-call %SIGNING_FILE_PATH% ..\..\dist\win-unpacked\Symphony.exe
+call %SIGNING_FILE_PATH% ..\..\dist\win-unpacked\Symphony-Mini.exe
 IF %errorlevel% neq 0 (
 	echo "Signing failed"
 	exit /b -1
 )
 
-call %SIGNING_FILE_PATH% ..\..\dist\Symphony-%SYMVER%-win.exe
+call %SIGNING_FILE_PATH% ..\..\dist\Symphony-Mini-%SYMVER%-win.exe
 IF %errorlevel% neq 0 (
 	echo "Signing failed"
 	exit /b -1
 )
 
 
-node ..\..\scripts\windows_update_checksum.js "..\..\dist\Symphony-%SYMVER%-win.exe" "..\..\dist\latest.yml"
+node ..\..\scripts\windows_update_checksum.js "..\..\dist\Symphony-Mini-%SYMVER%-win.exe" "..\..\dist\latest.yml"
 
 echo "Building new installer with Wix Sharp"
 call "BuildWixSharpInstaller.bat"
 
-call %SIGNING_FILE_PATH% WixSharpInstaller\Symphony.msi
+call %SIGNING_FILE_PATH% WixSharpInstaller\Symphony-Mini.msi
 IF %errorlevel% neq 0 (
 	echo "Failed to sign installer"
 	exit /b -1
 )
 
 echo "Copying New MSI installer to target dir"
-copy "WixSharpInstaller\Symphony.msi" "%targetsDir%\%archiveName%.msi"
+copy "WixSharpInstaller\Symphony-Mini.msi" "%targetsDir%\%archiveName%.msi"
 
 echo "Setting up markdown to pdf package"
 %SystemRoot%\System32\where.exe /q markdown-pdf
