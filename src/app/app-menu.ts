@@ -709,7 +709,7 @@ export class AppMenu {
           submenu: [
             {
               click: (_item) => this.switchTo(Channels.Stable),
-              visible: isCorp,
+              visible: true,
               type: 'checkbox',
               checked:
                 windowHandler.url?.startsWith(CORP_URL) &&
@@ -721,7 +721,7 @@ export class AppMenu {
             },
             {
               click: (_item) => this.switchTo(Channels.Daily),
-              visible: isCorp,
+              visible: true,
               type: 'checkbox',
               checked:
                 windowHandler.url?.startsWith(CORP_URL) &&

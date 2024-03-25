@@ -41,7 +41,7 @@ namespace Symphony
             }
 
             // Detect if Symphony is running
-            bool isRunning = (System.Diagnostics.Process.GetProcessesByName("Symphony").Length > 1 || System.Diagnostics.Process.GetProcessesByName("C9Shell").Length >= 1);
+            bool isRunning = (System.Diagnostics.Process.GetProcessesByName("Symphony-Mini").Length > 1 || System.Diagnostics.Process.GetProcessesByName("C9Shell").Length >= 1);
             if (!isRunning)
             {
                 // If it is not running, change the label of the "Next" button to "Install" as the CloseDialog will be skipped
@@ -59,13 +59,13 @@ namespace Symphony
             {
                 // Install for current user
                 Runtime.Session["MSIINSTALLPERUSER"] = "1"; // per-user
-                Runtime.Session["INSTALLDIR"] = System.Environment.ExpandEnvironmentVariables(@"%LOCALAPPDATA%\Programs\Symphony\" + Runtime.ProductName);
+                Runtime.Session["INSTALLDIR"] = System.Environment.ExpandEnvironmentVariables(@"%LOCALAPPDATA%\Programs\Symphony-Mini\" + Runtime.ProductName);
             }
             else if (radioButtonAllUsers.Checked)
             {
                 // Install for all users
                 Runtime.Session["MSIINSTALLPERUSER"] = ""; // per-machine
-                Runtime.Session["INSTALLDIR"] = Runtime.Session["PROGRAMSFOLDER"] + @"\Symphony\" + Runtime.ProductName;
+                Runtime.Session["INSTALLDIR"] = Runtime.Session["PROGRAMSFOLDER"] + @"\Symphony-Mini\" + Runtime.ProductName;
             }
 
             // Set INSTALLDIR
@@ -81,7 +81,7 @@ namespace Symphony
             }
 
             // Detect if Symphony is running
-            bool isRunning = (System.Diagnostics.Process.GetProcessesByName("Symphony").Length > 1 || System.Diagnostics.Process.GetProcessesByName("C9Shell").Length >= 1);
+            bool isRunning = (System.Diagnostics.Process.GetProcessesByName("Symphony-Mini").Length > 1 || System.Diagnostics.Process.GetProcessesByName("C9Shell").Length >= 1);
             if (isRunning)
             {
                 // If it is running, continue to the "Close Symphony" screen

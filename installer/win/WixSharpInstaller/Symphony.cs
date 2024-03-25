@@ -156,7 +156,7 @@ class Script
             new PublicProperty("POD_URL", "https://my.symphony.com"),
             new PublicProperty("CONTEXT_ORIGIN_URL", ""),
             new PublicProperty("POINTER_LOCK", "true"),
-            new PublicProperty("USER_DATA_PATH", "%LOCALAPPDATA%/Symphony-mini-mode"),
+            new PublicProperty("USER_DATA_PATH", ""),
             new PublicProperty("OVERRIDE_USER_AGENT", "false"),
             new PublicProperty("ENABLE_BROWSER_LOGIN", "false"),
             new PublicProperty("BROWSER_LOGIN_AUTOCONNECT", "false"),
