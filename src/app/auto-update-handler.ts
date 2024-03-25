@@ -136,8 +136,8 @@ export class AutoUpdate {
     if (this.autoUpdater) {
       const opts: GenericServerOptions = await this.getGenericServerOptions();
       this.autoUpdater.setFeedURL(opts);
-      const updateCheckResult = await this.autoUpdater.checkForUpdates();
-      logger.info('auto-update-handler: ', updateCheckResult);
+      // const updateCheckResult = await this.autoUpdater.checkForUpdates();
+      // logger.info('auto-update-handler: ', updateCheckResult);
     }
     logger.info('auto-update-handler: After checking auto update');
   };
