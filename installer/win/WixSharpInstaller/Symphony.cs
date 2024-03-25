@@ -119,7 +119,7 @@ class Script
         //      https://stackoverflow.com/a/26344742
         project.GUID = new System.Guid("6f330b47-2577-43ad-9095-1861ba25889b");
         project.ProductId = System.Guid.NewGuid();
-        project.UpgradeCode = new System.Guid("{36402281-8141-4797-8A90-07CFA75EFA55}");
+        project.UpgradeCode = new System.Guid("6fe30b47-2577-43ad-9095-1861ba25889b");;
 
         // Allow any versions to be upgraded/downgraded freely
         project.MajorUpgradeStrategy = MajorUpgradeStrategy.Default;
