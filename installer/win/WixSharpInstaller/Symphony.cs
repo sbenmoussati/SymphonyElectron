@@ -95,9 +95,9 @@ class Script
             new LaunchCondition("VersionNT>=600 AND WindowsBuild>=6001", "OS not supported"),
 
             // Add registry entry used by protocol handler to launch symphony when opening symphony:// URIs
-            new RegValue(WixSharp.RegistryHive.ClassesRoot, productName, "", "URL:symphony"),
-            new RegValue(WixSharp.RegistryHive.ClassesRoot, productName, "URL Protocol", ""),
-            new RegValue(WixSharp.RegistryHive.ClassesRoot, productName + @"\shell\open\command", "", "\"[INSTALLDIR]Symphony.exe\" " + userDataPathArgument + " \"%1\""),
+            // new RegValue(WixSharp.RegistryHive.ClassesRoot, productName, "", "URL:symphony"),
+            // new RegValue(WixSharp.RegistryHive.ClassesRoot, productName, "URL Protocol", ""),
+            // new RegValue(WixSharp.RegistryHive.ClassesRoot, productName + @"\shell\open\command", "", "\"[INSTALLDIR]Symphony.exe\" " + userDataPathArgument + " \"%1\""),
 
             // When installing or uninstalling, we want Symphony to be closed down, but the standard way of sending a WM_CLOSE message
             // will not work for us, as we have a "minimize on close" option, which stops the app from terminating on WM_CLOSE. So we
@@ -117,7 +117,7 @@ class Script
         // side-by-side with the previous version, we would generate a new UpgradeCode for the new version onwards.
         // More details can be found in this stackoverflow post:
         //      https://stackoverflow.com/a/26344742
-        project.GUID = new System.Guid("{4042AD1C-90E1-4032-B6B9-2BF6A4214096}");
+        project.GUID = new System.Guid("6f330b47-2577-43ad-9095-1861ba25889b");
         project.ProductId = System.Guid.NewGuid();
         project.UpgradeCode = new System.Guid("{36402281-8141-4797-8A90-07CFA75EFA55}");
 
@@ -235,7 +235,7 @@ class Script
 
         project.ControlPanelInfo.NoRepair = true;
         project.ControlPanelInfo.NoModify = true;
-        project.ControlPanelInfo.ProductIcon = @"..\..\..\images\icon.ico";
+        project.ControlPanelInfo.ProductIcon = @"..\..\..\images\Symphony.ico";
         project.ControlPanelInfo.Manufacturer = "Symphony";
 
         project.Platform = Platform.x64;
@@ -264,7 +264,7 @@ class Script
                     else if (e.Session["ALLUSERS"] == "")
                     {
                         // Install for current user
-                        e.Session["INSTALLDIR"] = System.Environment.ExpandEnvironmentVariables(@"%LOCALAPPDATA%\Programs\Symphony\" + e.ProductName);
+                        e.Session["INSTALLDIR"] = System.Environment.ExpandEnvironmentVariables(@"%LOCALAPPDATA%\Programs\Symphony-Mini\" + e.ProductName);
                     }
                     else
                     {
@@ -527,7 +527,7 @@ public class CustomActions
             if (session.Property("LAUNCH_ON_INSTALL") == "true")
             {
                 System.Diagnostics.Process process = new System.Diagnostics.Process();
-                process.StartInfo.FileName = System.IO.Path.Combine(session.Property("INSTALLDIR"), "Symphony.exe");
+                process.StartInfo.FileName = System.IO.Path.Combine(session.Property("INSTALLDIR"), "Symphony-Mini.exe");
                 if (session.Property("USER_DATA_PATH") != "")
                 {
                     process.StartInfo.Arguments = "--userDataPath=\"" + session.Property("USER_DATA_PATH") + "\"";
