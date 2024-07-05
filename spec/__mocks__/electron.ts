@@ -37,6 +37,7 @@ interface IApp {
     args: string[];
   }): ILoginItemSettings;
   setAppLogsPath(): void;
+  disableHardwareAcceleration(): void;
 }
 interface ILoginItemSettings {
   openAtLogin: boolean;
@@ -108,6 +109,9 @@ export const app: IApp = {
     return '';
   },
   setAppLogsPath: (): void => {
+    return;
+  },
+  disableHardwareAcceleration: (): void => {
     return;
   },
 };
