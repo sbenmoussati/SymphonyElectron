@@ -39,7 +39,9 @@
     "appId": "com.symphony.electron-desktop",
     "compression": "maximum",
     "artifactName": "${productName}-${version}-${os}.${ext}",
-    "asar": true,
+    "asar": {
+      "unpackDir": "{node_modules}"
+    },
     "asarUnpack": "**/*.node",
     "afterPack": "scripts/afterPackHoock.js",
     "nsis": {
@@ -57,9 +59,10 @@
       "!dist/*",
       "!src/*",
       "!tests/*",
-      "!node_modules/@nornagon/cld/deps/cld${/*}",
-      "!node_modules/@nornagon/cld/build/deps${/*}",
-      "!node_modules/@nornagon/spellchecker/vendor${/*}",
+      "!**/node_modules/@nornagon/cld/deps/cld${/*}",
+      "!**/node_modules/@nornagon/cld/build/deps${/*}",
+      "!**/node_modules/@nornagon/spellchecker/vendor${/*}",
+      "!**/node_modules/@symphony/symphony-c9-shell${/*}",
       "!**/*.map"
     ],
     "extraFiles": [
