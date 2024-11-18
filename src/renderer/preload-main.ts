@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
+import { openFinHandler } from '../app/openfin-handler';
 import { apiCmds, apiName } from '../common/api-interface';
 
 import { i18n } from '../common/i18n-preload';
@@ -106,6 +107,10 @@ if (ssfWindow.ssf) {
     unregisterPhoneNumberServices: ssfWindow.ssf.unregisterPhoneNumberServices,
   });
 }
+
+contextBridge.exposeInMainWorld('fdc3', {
+  init: openFinHandler.init,
+});
 
 /**
  * Returns a random number that is between (min - max)
