@@ -278,7 +278,7 @@ class Config {
         analytics.writeAnalyticFile();
         this.isUpdatingConfigFile = false;
         this.didUpdateConfigFile = true;
-        powerSaveBlocker.stop(id);
+        // powerSaveBlocker.stop(id);
         app.quit();
       } else if (!this.didUpdateConfigFile && this.isUpdatingConfigFile) {
         logger.info('config-handler: config file updating...');
