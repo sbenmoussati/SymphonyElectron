@@ -1,4 +1,4 @@
-import { app, dialog, powerSaveBlocker, systemPreferences } from 'electron';
+import { app, dialog, systemPreferences } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -178,6 +178,7 @@ class Config {
   private isFirstTime: boolean = true;
   private didUpdateConfigFile: boolean = false;
   private isUpdatingConfigFile: boolean = false;
+  private forceQuitTimeout?: NodeJS.Timeout;
   private installVariant: string | undefined;
   private bootCount: number | undefined;
   private readonly configFileName: string;
@@ -257,31 +258,44 @@ class Config {
     this.readCloudConfig();
 
     app.on('before-quit', async (event) => {
-      const id = powerSaveBlocker.start('prevent-app-suspension');
-      logger.info('config-handler: before-quit application is terminated');
-      terminateC9Shell();
-      if (!this.didUpdateConfigFile) {
+      if (!this.didUpdateConfigFile && !this.isUpdatingConfigFile) {
         this.isUpdatingConfigFile = true;
         event.preventDefault();
+        this.forceQuitTimeout = setTimeout(() => {
+          logger.error(
+            'config-handler: forcing app quit as is took more than 5sec',
+          );
+          app.exit(1);
+        }, 5000);
+        try {
+          logger.info('config-handler: before-quit application is terminated.');
+          await terminateC9Shell();
+          this.writeUserConfig();
+          await appStats.sendAnalytics(
+            SDAUserSessionActionTypes.End,
+            SDAEndReasonTypes.Closed,
+          );
+          analytics.writeAnalyticFile();
+          logger.info('config-handler: config file updated. Closing the app.');
+          clearTimeout(this.forceQuitTimeout);
+          this.didUpdateConfigFile = true;
+          this.isUpdatingConfigFile = false;
+          app.quit();
+        } catch (error) {
+          logger.error('config-handler: error before quit', error);
+          clearTimeout(this.forceQuitTimeout);
+          this.didUpdateConfigFile = true;
+          this.isUpdatingConfigFile = false;
+          app.exit(1);
+        }
+      } else if (this.isUpdatingConfigFile) {
         logger.info(
-          `config-handler: power save blocker id ${id} and is started`,
-          powerSaveBlocker.isStarted(id),
+          'config-handler: config file update and process termination still in progress.',
         );
-        this.writeUserConfig();
-        await appStats.sendAnalytics(
-          SDAUserSessionActionTypes.End,
-          SDAEndReasonTypes.Closed,
-        );
-        analytics.writeAnalyticFile();
-        this.isUpdatingConfigFile = false;
-        this.didUpdateConfigFile = true;
-        powerSaveBlocker.stop(id);
-        app.quit();
-      } else if (!this.didUpdateConfigFile && this.isUpdatingConfigFile) {
-        logger.info('config-handler: config file updating...');
         event.preventDefault();
+      } else {
+        app.quit();
       }
-      logger.info('config-handler: config file updated. Closing the app.');
     });
   }
 
