@@ -269,13 +269,21 @@ class Config {
         }, 5000);
         try {
           logger.info('config-handler: before-quit application is terminated.');
+          logger.info('config-handler: start shell termination.');
           await terminateC9Shell();
+          logger.info('config-handler: shell termination completed.');
+          logger.info('config-handler: start userconfig update.');
           this.writeUserConfig();
+          logger.info('config-handler: user config updated.');
+          logger.info('config-handler: start sending events.');
           await appStats.sendAnalytics(
             SDAUserSessionActionTypes.End,
             SDAEndReasonTypes.Closed,
           );
+          logger.info('config-handler: sending events completed.');
+          logger.info('config-handler: start writing events file.');
           analytics.writeAnalyticFile();
+          logger.info('config-handler: writing events file completed.');
           logger.info('config-handler: config file updated. Closing the app.');
           clearTimeout(this.forceQuitTimeout);
           this.didUpdateConfigFile = true;
@@ -294,7 +302,8 @@ class Config {
         );
         event.preventDefault();
       } else {
-        app.quit();
+        logger.info('config-handler: app exit.');
+        app.exit(1);
       }
     });
   }
