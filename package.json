@@ -93,10 +93,8 @@
       "gatekeeperAssess": true,
       "hardenedRuntime": true,
       "target": [
-        {
-          "arch": "arm64",
-          "target": "dir"
-        }
+        "dir",
+        "zip"
       ]
     },
     "win": {
@@ -190,7 +188,7 @@
     "cheerio": "v1.0.0-rc.12",
     "cross-env": "7.0.3",
     "del": "3.0.0",
-    "electron": "35.0.0",
+    "electron": "35.0.3",
     "electron-builder": "^25.1.8",
     "electron-devtools-installer": "^3.2.0",
     "electron-icon-maker": "0.0.5",
