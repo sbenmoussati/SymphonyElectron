@@ -20,10 +20,6 @@ export NVM_DIR="/data/nvm/.nvm"
 
 command -v nvm
 
-nvm install 22
-nvm use 22
-node -v
-npm -v
 
 NODE_CURRENT_VERSION=$(nvm current)
 if [ "$NODE_REQUIRED_VERSION" != "$NODE_CURRENT_VERSION" ]; then
