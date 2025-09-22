@@ -158,7 +158,6 @@
       ]
     },
     "linux": {
-      "artifactName": "Symphony-${version}-linux.${ext}",
       "category": "Network;InstantMessaging;Chat",
       "target": [
         "deb",
@@ -174,7 +173,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SymphonyOSS/SymphonyElectron.git"
+    "url": "git+https://github.com/finos/SymphonyElectron.git"
   },
   "keywords": [
     "Symphony",
