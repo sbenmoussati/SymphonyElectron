@@ -158,6 +158,7 @@
       ]
     },
     "linux": {
+      "artifactName": "Symphony-${version}-linux.${ext}",
       "category": "Network;InstantMessaging;Chat",
       "target": [
         "deb",
