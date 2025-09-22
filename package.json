@@ -165,7 +165,11 @@
         "rpm",
         "AppImage"
       ],
-      "icon": "images/linux"
+      "icon": "images/linux",
+      "arch": [
+        "arm64",
+        "x64"
+      ]
     }
   },
   "repository": {
