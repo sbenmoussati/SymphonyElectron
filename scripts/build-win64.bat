@@ -55,10 +55,9 @@ call npm install --cache "%NPM_CACHE%" --prefer-offline
 :: ================================
 :: Snyk test & monitor
 :: ================================
-for /f "delims=" %%b in ('git rev-parse --abbrev-ref HEAD') do set CURRENT_BRANCH=%%b
-echo Current branch: %CURRENT_BRANCH%
-call snyk test --file=package-lock.json --org=%SNYK_ORG% --project-name=Symphony-Desktop-Application --remote-repo-url="Symphony-Desktop-Application:%CURRENT_BRANCH%"
-call snyk monitor --file=package-lock.json --org=%SNYK_ORG% --project-name=Symphony-Desktop-Application --remote-repo-url="Symphony-Desktop-Application:%CURRENT_BRANCH%"
+echo Current branch: %BRANCH_NAME%
+call snyk test --file=package-lock.json --org=%SNYK_ORG% --project-name="Symphony Desktop Application" --target-reference="%BRANCH_NAME%"
+call snyk monitor --file=package-lock.json --org=%SNYK_ORG% --project-name="Symphony Desktop Application" --target-reference="%BRANCH_NAME%"
 
 :: ================================
 :: Sign binaries
