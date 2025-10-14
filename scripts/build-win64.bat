@@ -43,11 +43,14 @@ echo SYMPHONY_EXE_PATH=%SYMPHONY_EXE_PATH%
 echo SYMPHONY_MSI_PATH=%SYMPHONY_MSI_PATH%
 echo ============================
 
+set "NPM_CACHE=%WORKSPACE%\.npm-cache-win"
+call npm config set cache "%NPM_CACHE%"
+
 :: ================================
 :: Install dependencies
 :: ================================
 echo === Installing npm dependencies ===
-call npm install
+call npm install --cache "%NPM_CACHE%" --prefer-offline
 
 :: ================================
 :: Snyk test & monitor
