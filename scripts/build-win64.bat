@@ -93,12 +93,12 @@ set "targetsDir=targets"
 call :sign_file "%SYMPHONY_EXE_PATH%"
 call :sign_file "dist\Symphony-%SYMVER%-win-x64.exe"
 
-node ..\..\scripts\windows_update_checksum.js "..\..\dist\Symphony-%SYMVER%-win-x64.exe" "..\..\dist\latest.yml"
+node scripts\windows_update_checksum.js "dist\Symphony-%SYMVER%-win-x64.exe" "dist\latest.yml"
 
 :: ================================
 :: Build MSI
 :: ================================
-cd "%rootDir%\installer\win"
+cd "installer\win"
 call "BuildWixSharpInstaller.bat"
 
 signtool sign /d Symphony /tr http://timestamp.digicert.com /td SHA256 /fd SHA256 /sha1 %DIGICERT_FINGERPRINT% "%SYMPHONY_MSI_PATH%"
