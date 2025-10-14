@@ -20,12 +20,11 @@ call npm config set msvs_version 2017
 :: ================================
 :: PATHS
 :: ================================
-set "rootDir=%CD%"
-set "SCREENSHARE_INDICATOR_PATH=%rootDir%\node_modules\screen-share-indicator-frame\ScreenShareIndicatorFrame.exe"
-set "NATIVE_WINDOW_HANDLE_PATH=%rootDir%\node_modules\symphony-native-window-handle-helper\SymphonyNativeWindowHandleHelper.exe"
-set "SCREEN_SNIPPET_PATH=%rootDir%\node_modules\screen-snippet\ScreenSnippet.exe"
-set "SYMPHONY_EXE_PATH=%WORKSPACE%\dist\win-unpacked\Symphony.exe"
-set "SYMPHONY_MSI_PATH=%rootDir%\WixSharpInstaller\Symphony.msi"
+set SCREENSHARE_INDICATOR_PATH="node_modules\screen-share-indicator-frame\ScreenShareIndicatorFrame.exe"
+set NATIVE_WINDOW_HANDLE_PATH="node_modules\symphony-native-window-handle-helper\SymphonyNativeWindowHandleHelper.exe"
+set SCREEN_SNIPPET_PATH="node_modules\screen-snippet\ScreenSnippet.exe"
+set SYMPHONY_EXE_PATH="dist\win-unpacked\Symphony.exe"
+set SYMPHONY_MSI_PATH="WixSharpInstaller\Symphony.msi"
 
 (
   endlocal
@@ -43,7 +42,8 @@ echo SYMPHONY_EXE_PATH=%SYMPHONY_EXE_PATH%
 echo SYMPHONY_MSI_PATH=%SYMPHONY_MSI_PATH%
 echo ============================
 
-set "NPM_CACHE=%WORKSPACE%\.npm-cache-win"
+set "NPM_CACHE=C:\jenkins\.npm-cache-win"
+if not exist "%NPM_CACHE%" mkdir "%NPM_CACHE%"
 call npm config set cache "%NPM_CACHE%"
 
 :: ================================
@@ -85,13 +85,13 @@ if "%SYMVER%"=="" (
 echo Creating targets directory
 rmdir /q /s targets 2>nul
 mkdir targets
-set "targetsDir=%rootDir%\targets"
+set "targetsDir=targets"
 
 :: ================================
 :: Sign Symphony exe
 :: ================================
 call :sign_file "%SYMPHONY_EXE_PATH%"
-call :sign_file "%WORKSPACE%\dist\Symphony-%SYMVER%-win-x64.exe"
+call :sign_file "dist\Symphony-%SYMVER%-win-x64.exe"
 
 node ..\..\scripts\windows_update_checksum.js "..\..\dist\Symphony-%SYMVER%-win-x64.exe" "..\..\dist\latest.yml"
 
@@ -129,10 +129,10 @@ if "%FILE%"=="" (
     echo [ERROR] Missing argument in sign_file
     exit /b -1
 )
-if not exist "%FILE%" (
-    echo [ERROR] File not found: %FILE%
-    exit /b -1
-)
+@REM if not exist "%FILE%" (
+@REM     echo [ERROR] File not found: %FILE%
+@REM     exit /b -1
+@REM )
 echo [INFO] Signing "%FILE%" ...
 smctl sign --tool signtool --fingerprint %DIGICERT_FINGERPRINT% --input "%FILE%" --verbose || exit /b -1
 smctl sign verify --input "%FILE%" || exit /b -1
